@@ -1,5 +1,11 @@
 schema: spec-driven
 
+context: |
+  Flujo de Git vinculante: openspec/git-workflow.md.
+  Cada cambio de OpenSpec vive completo (specs, implementación y archivado) en la rama
+  feature/<nombre-del-cambio>, creada desde develop. Antes de escribir, comprueba que estás
+  en esa rama; si no, detente y avisa al usuario. Nunca se escribe en main ni en develop.
+
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.
