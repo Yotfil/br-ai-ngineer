@@ -1,44 +1,34 @@
-# Prompt de arranque — implementar `rendimiento-movil`
+# Prompt de arranque — retomar `despliegue-automatico` en las tareas 2.5 y 3.2
 
-> Escrito por Fable 5.2 el 2026-11-13, tras definir el cambio con el usuario. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer/ai-engineer-path`.
+> Escrito por Fable 5.2 el 2026-11-13, tras resolver con el usuario el vacío de la tarea 3.2. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer/ai-engineer-path`.
 
 ---
 
-Vas a implementar el cambio de OpenSpec `rendimiento-movil` con `/opsx:apply`. Respóndeme en español.
+Vas a retomar la implementación del cambio de OpenSpec `despliegue-automatico`. Respóndeme en español.
 
 **Reglas insaltables de este proyecto** (también están en la memoria del proyecto; léela antes de actuar):
 
-1. Implementas tú, Opus 5.5. Las decisiones las toma Fable 5.2 conmigo en otra sesión.
-2. Si encuentras un vacío, una ambigüedad o una contradicción en los artefactos, **no decidas**. Detente, dime exactamente qué falta (archivo y requisito, decisión o tarea) y espera. No rellenes el hueco con un supuesto razonable.
-3. No modifiques `proposal.md`, `design.md` ni los archivos de `specs/` del cambio. En `tasks.md` solo marcas casillas.
-4. Si te digo que se retoma en otro contexto, actualiza la memoria del proyecto y sobrescribe este archivo con un prompt de arranque nuevo; dime la ruta. Nunca lo pongas en un `CLAUDE.md`.
+1. Eres Opus 5.5: implementas las specs ya definidas. No tomas decisiones de producto ni de diseño. Ante un vacío, una ambigüedad o una contradicción, te detienes, me dices exactamente qué falta (archivo y requisito o tarea) y lo dejas para una sesión con Fable 5.2.
+2. No modificas `proposal.md`, `design.md` ni los archivos de `specs/`. En `tasks.md` solo marcas casillas.
+3. Commits y push, solo cuando yo los pida en la sesión. Sin credenciales de Cloudflare: no ejecutas `wrangler deploy`, `wrangler preview` ni `wrangler login`.
+4. Si te detienes o vamos a cambiar de contexto, actualiza la memoria y sobrescribe este archivo (`openspec/handoff-prompt.md`) con el prompt para la sesión siguiente. Nunca en un `CLAUDE.md`.
 
 **Antes de escribir nada:**
 
-- Comprueba la rama con `git branch --show-current`. Debe ser `feature/rendimiento-movil`. Si no lo es, detente y avísame. El flujo de Git es el de `openspec/git-workflow.md`, que es vinculante: no haces commits, push ni pull requests salvo que te lo pida en esta sesión.
-- Lee completos, en este orden: `openspec/changes/rendimiento-movil/proposal.md`, `design.md`, `specs/app-shell/spec.md`, `specs/concept-graph/spec.md` y `tasks.md`.
-- En el árbol de trabajo encontrarás sin commit los artefactos de este cambio y este archivo, escritos por Fable. Es lo esperado.
+- Comprueba la rama con `git branch --show-current`. Debe ser `feature/despliegue-automatico`. Si no lo es, detente y avísame.
+- Lee `openspec/changes/despliegue-automatico/tasks.md`, `design.md` (decisiones 3, 8 y 11, que cambiaron) y `specs/localization/spec.md` (nuevo).
+- En el árbol de trabajo están sin commit los cambios de tu sesión anterior (código, pruebas, configuración, README). Es lo esperado.
 
-**De qué va el cambio:** en iPhone el lector no se desplaza con el dedo, el teléfono se calienta y la app va a tirones. El cambio da al lector desplazamiento propio en tableta y teléfono, reduce los modos de fondo del lector de tres a dos, deja el teléfono sin desenfoques y con el fondo completamente quieto mientras se lee, y abarata el dibujo del cerebro sin cambiar su aspecto.
+**Estado:** 12 de 18 tareas marcadas (1.1, 1.2, 2.1–2.4, 3.1, 3.3–3.5, 4.1, 4.6). El cambio valida con `openspec validate despliegue-automatico --strict`. En tu última ejecución: 258 pruebas en 13 archivos, typecheck, lint y build en verde.
 
-**Puntos donde es fácil equivocarse:**
+**Qué decidió el usuario con Fable el 2026-11-13:**
 
-- La causa del desplazamiento roto no se ha reproducido en un simulador: no hay ninguno en esta máquina. No intentes instalar uno ni des por comprobado en iPhone nada que solo hayas visto en el navegador de escritorio.
-- Los tramos de ancho son los de design.md: teléfono hasta 760 px, tableta de 761 a 1080 px, escritorio a partir de ahí. Tableta y teléfono tienen disposiciones distintas del lector (decisiones 4 y 5).
-- El modo `solid` guardado antes de este cambio no significa lo mismo que el `solid` nuevo. La conversión es la de la decisión 3, con el campo `v: 2`.
-- En teléfono el modo efectivo es Sólido, pero la preferencia guardada no se toca (decisión 2).
-- Con `paused`, el cerebro no programa ningún cuadro; la única excepción es un cuadro al cambiar de tamaño (decisión 6).
-- El token `--glass-strong` no se modifica: lo comprueba una prueba existente de la hoja de temas.
-- La tarea 1.2 (capturas de referencia) va antes de tocar el cerebro o los modos. Sin ellas no se puede hacer la comparación de la tarea 5.6.
-- Los valores marcados en design.md como "de implementación" son los únicos que eliges tú. El resto está fijado.
+- **Tarea 3.2 (el vacío).** La prueba de paridad de textos no existía: ahora hay que crearla. Exige mismas claves en `src/locales/es.json` y `en.json`, todo valor final cadena no vacía y mismos marcadores `{{nombre}}` por clave. El detalle está en design.md decisión 11 y el requisito con sus cuatro escenarios en `specs/localization/spec.md`. Hoy los dos archivos tienen 55 claves y cumplen: la prueba nace en verde. Si falla con los archivos reales, no corrijas el texto: anota la clave y detente. Las claves `reader.loadError` y `reader.retry` ya están añadidas.
+- **Tarea 3.5.** Tu forma de cortar la red (detener el servidor de `npm run preview`) vale; la tarea sigue marcada y `ai-engineer-path-preview` en `.claude/launch.json` se conserva. No hay nada que hacer.
+- **Tarea 2.5 (nueva).** En el `README.md`, el contenido de "Despliegue estático" pasa, con el texto tal cual, a una subsección `### Otro hosting` al final de "Despliegue" (design.md decisión 8).
 
-**Lo que hago yo, no tú:**
+**Orden de trabajo:** 2.5, 3.2, y después 4.2 a 4.5 (confirmación del panel por mi parte, push cuando yo lo pida, comprobaciones con `curl`). Tras la 3.2, repite typecheck, test y lint y anota el número de pruebas.
 
-- Tarea 5.6: te confirmo si el cerebro se ve equivalente y si me convencen Cristal y Sólido. Si pido ajustes, te detienes: se deciden con Fable.
-- Tareas 6.3 y 6.4: ejecuto en mi iPhone el guion de 12 puntos de la decisión 15 y te doy las respuestas. Cualquier "no" en los puntos 1 a 11 lo anotas con lo que observé y te detienes; no improvises una corrección fuera de las decisiones del diseño.
+**Dato para la tarea 4.5:** antes de cualquier push, producción servía el script de entrada `/assets/index-DneNDzhk.js`.
 
-**Al terminar o al detenerte**, dame un resumen con: tareas hechas y pendientes, resultado de `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`, y lo que quede de mi parte. No archives el cambio hasta que las 25 tareas estén marcadas, incluidas las dos que dependen de mi prueba en iPhone.
-
-**Versión:** este cambio lleva el tag `v0.2.1` (design.md decisión 16 y `openspec/git-workflow.md`). No crees el tag salvo que te lo pida.
-
-**Qué sigue después:** la definición de la pista SQL, con Fable 5.2, en la rama `feature/pista-sql`.
+**Pendientes que no cambian:** `rendimiento-movil` sigue integrado en `develop` sin archivar (faltan mi comparación visual y mi prueba en iPhone, que haré en la vista previa de esta rama). Tag de este cambio: `v0.2.2`. Después: la pista SQL en `feature/pista-sql`.

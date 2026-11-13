@@ -25,3 +25,6 @@ dist-ssr
 
 # Salida de compilación del contenido
 src/generated
+
+# Wrangler
+.wrangler
