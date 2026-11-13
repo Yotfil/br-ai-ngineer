@@ -50,13 +50,13 @@ Margen de quien implementa: nombres de funciones, variables y clases, y lo que e
 
 ## Decisions
 
-Las decisiones 1 a 3 las tomó el usuario el 2026-11-13. Ese mismo día, tras leer el panel, eligió también el mecanismo de vista previa (decisión 1), fijar las direcciones `workers.dev` en la configuración de Wrangler (decisión 4) y documentar todos los ajustes del panel con su valor actual (decisión 7). En una sesión posterior del mismo día, con la implementación en 12 de 17 tareas, decidió la prueba de paridad de textos (decisión 11), las dos formas válidas de cortar la red en la tarea 3.5 (decisión 3) y el destino de la sección "Despliegue estático" del `README.md` (decisión 8). Las demás son técnicas o propuestas de Fable derivadas de ellas.
+Las decisiones 1 a 3 las tomó el usuario el 2026-11-13. Ese mismo día, tras leer el panel, eligió también el mecanismo de vista previa (decisión 1), fijar las direcciones `workers.dev` en la configuración de Wrangler (decisión 4) y documentar todos los ajustes del panel con su valor actual (decisión 7). En una sesión posterior del mismo día, con la implementación en 12 de 17 tareas, decidió la prueba de paridad de textos (decisión 11), las dos formas válidas de cortar la red en la tarea 3.5 (decisión 3) y el destino de la sección "Despliegue estático" del `README.md` (decisión 8). Tras integrar el cambio en `main` sin archivar, decidió cómo se cierra (decisiones 4, 10 y 12): no tocar `wrangler.jsonc`, comprobar la vista previa con peticiones de navegación, dar por verificada la tarea 4.5 con lo ya medido, archivar en esta misma rama con un segundo pull request y poner el tag tras el archivado. Las demás son técnicas o propuestas de Fable derivadas de ellas.
 
 ### 1. Producción desde `main`, vista previa del resto de ramas
 
 Cada push a `main` publica producción. Cada push a cualquier otra rama (`develop`, `feature/*`, `chore/*`) genera una vista previa con dirección propia en `workers.dev`, sin tocar producción. Alternativas descartadas por el usuario: vista previa solo de `develop`, y ninguna vista previa.
 
-Mecanismo, elegido por el usuario el 2026-11-13: Worker Previews, con el comando `npx wrangler preview`, que es el que el panel ya tiene. Cada rama tiene una vista previa propia cuya dirección no cambia entre un push y el siguiente: `<nombre>-br-ai-ngineer.jefryeguevarav.workers.dev`, donde `<nombre>` lo deriva Cloudflare del nombre de la rama. El nombre exacto no se fija aquí: el usuario lo lee en el panel o en el comentario que Cloudflare deja en el pull request. Alternativas descartadas por el usuario: `npx wrangler versions upload` (una dirección distinta por cada compilación) y renunciar a las vistas previas.
+Mecanismo, elegido por el usuario el 2026-11-13: Worker Previews, con el comando `npx wrangler preview`, que es el que el panel ya tiene. Cada rama tiene una vista previa propia cuya dirección no cambia entre un push y el siguiente: `<nombre>-br-ai-ngineer.jefryeguevarav.workers.dev`, donde `<nombre>` lo deriva Cloudflare del nombre de la rama. El nombre exacto no se fija aquí: el usuario lo lee en el panel o en el comentario que Cloudflare deja en el pull request. Observado el 2026-11-13: para `feature/despliegue-automatico` el nombre fue `feature-despliegue-automatico` (la barra pasa a guion) y Cloudflare no dejó comentario en el pull request; la dirección se ve en el enlace del check "Workers Builds: br-ai-ngineer" del commit y en el panel. Alternativas descartadas por el usuario: `npx wrangler versions upload` (una dirección distinta por cada compilación) y renunciar a las vistas previas.
 
 Worker Previews impone dos condiciones al repositorio, recogidas en la decisión 4: un bloque `previews` en la configuración de Wrangler y Wrangler 4.135.0 o superior. Sin ellas, la compilación de una rama que no es `main` falla o no entrega dirección.
 
@@ -115,7 +115,8 @@ Archivo `wrangler.jsonc` en la raíz, con exactamente este contenido funcional:
 
 - `name` debe coincidir con el Worker del panel; si no coincide, la compilación de Cloudflare falla.
 - Sin `main`: no hay código de Worker.
-- `previews` es obligatorio para `npx wrangler preview` y va vacío: las vistas previas no necesitan variables ni recursos propios. `assets` y `compatibility_date` se quedan en el nivel superior; la vista previa los toma de ahí.
+- `previews` es obligatorio para `npx wrangler preview` y va vacío: las vistas previas no necesitan variables ni recursos propios. `assets` y `compatibility_date` se quedan en el nivel superior; la vista previa los toma de ahí. El bloque `previews` no admite `assets` (esquema de Wrangler 4.162.0), así que no hay nada que repetir dentro.
+- La vista previa aplica `not_found_handling` solo a las peticiones de navegación, las que llevan la cabecera `Sec-Fetch-Mode: navigate`, que es la que envía un navegador al abrir o recargar una dirección. A cualquier otra petición de una ruta que no es un archivo responde 404 con el cuerpo `Not found`. Producción responde con la página principal a todas. Medido el 2026-11-13 (decisión 12). Por decisión del usuario, `wrangler.jsonc` no se cambia por esto: en un navegador las direcciones funcionan igual en los dos sitios.
 - `workers_dev` y `preview_urls` fijan en el repositorio los dos interruptores de Domains → Worker URL (producción y vistas previas en `workers.dev`), hoy activados. Cada publicación de producción los reafirma.
 - `wrangler` se añade a `devDependencies` con la última versión estable de la serie 4, que debe ser 4.135.0 o superior (la mínima para Worker Previews; el 2026-11-13 la última era 4.162.0), fijada a una versión exacta (sin `^`). Workers Builds usa la versión de Wrangler del `package.json`.
 - `.wrangler` se añade a `.gitignore`.
@@ -135,7 +136,7 @@ Archivo `public/_headers` (Vite lo copia a `dist/`) con una sola regla:
 
 El resto de archivos, incluida la página principal y `favicon.svg`, conservan la cabecera por defecto de Cloudflare (`max-age=0, must-revalidate`), que es lo que permite que una versión nueva se vea en la siguiente visita.
 
-Consecuencia conocida: en el modo de aplicación de una sola página, pedir un archivo inexistente de `/assets/` devuelve la página principal. La decisión 2 no depende del código de estado, sino de comparar el script de entrada, así que funciona igual.
+Consecuencia conocida: en el modo de aplicación de una sola página, pedir un archivo inexistente de `/assets/` devuelve la página principal. La decisión 2 no depende del código de estado, sino de comparar el script de entrada, así que funciona igual. En una vista previa esa misma petición, hecha por la app y no por una navegación, recibe un 404 (decisión 4); la decisión 2 funciona igual también ahí, y la petición de `/index.html` que hace llega a la página principal tras una redirección.
 
 ### 7. Ajustes del panel de Cloudflare
 
@@ -191,14 +192,21 @@ La sección anterior "Despliegue estático" deja de ser una sección aparte (dec
 
 Este cambio lleva el tag `v0.2.2` (decidido por el usuario el 2026-11-13), con la misma regla que `rendimiento-movil`: no figura en el plan numerado y no consume número. Está recogido en `openspec/git-workflow.md`.
 
-### 10. Qué se comprueba antes y después de integrar
+### 10. Qué se comprueba, y cómo se cierra el cambio
 
-El flujo de Git pide archivar el cambio antes del pull request, pero la publicación de producción solo ocurre al llegar a `main`. Se resuelve así:
+Plan original: comprobar la vista previa con el push de la rama, archivar, y solo entonces integrar; tras llegar a `main`, el usuario comprueba producción.
 
-- **Antes de archivar**, con el push de `feature/despliegue-automatico` que pida el usuario: la vista previa de esa rama demuestra que la configuración de Wrangler compila y publica, que las direcciones de la app funcionan, y que `/assets/` lleva la caché nueva. Son tareas del cambio.
-- **Después de integrar en `main`**, fuera de las tareas: el usuario comprueba que producción muestra la versión nueva. Si no ocurre, se abre una sesión con Fable.
+Lo que ocurrió el 2026-11-13: el usuario hizo el commit `ba5bc41`, el push, el pull request #4 a `develop` (merge `06ddb29`, con merge commit) y el #5 de `develop` a `main` (merge `f664cce`) antes de las tareas 4.3 a 4.5 y sin archivar. El código del cambio ya está en producción. Lo que falta por integrar son solo artefactos de OpenSpec. Decidido por el usuario ese mismo día:
 
-La vista previa de esta rama incluye `rendimiento-movil`, así que el usuario puede usarla para la prueba en iPhone que ese cambio tiene pendiente.
+- **Tareas 4.3 a 4.5.** Se verifican con las mediciones de la decisión 12, sin repetir ningún push. La 4.4 se comprueba con peticiones de navegación (decisión 4).
+- **Archivado.** En esta misma rama, `feature/despliegue-automatico`, con `openspec archive` y typecheck, pruebas, lint y compilación en verde.
+- **Integración.** Un commit de tipo `docs` en esta rama con los artefactos, las casillas y el archivado; segundo pull request de `feature/despliegue-automatico` a `develop`, con squash; después pull request de `develop` a `main`, con merge commit. Sin commits directos en `develop` ni en `main`. Si GitHub borró la rama remota tras el primer merge, el push la vuelve a crear. Commit, push y pull requests, cuando el usuario los pida; los merges los hace el usuario.
+- **Tag.** `v0.2.2` sobre el merge commit de `main` que incluya el archivado, no sobre `f664cce`.
+- **Efecto en Cloudflare.** El push de la rama vuelve a compilar su vista previa y la llegada a `main` vuelve a publicar producción. Como no cambia ningún archivo de la app, el script de entrada debe seguir siendo `/assets/index-Bg0ZR7OL.js` en los dos sitios. Tras integrar en `main`, el usuario comprueba que producción sigue respondiendo; si no, se abre una sesión con Fable.
+
+La comprobación posterior a la integración en `main` del plan original ya se hizo y salió bien (decisión 12).
+
+La vista previa de esta rama incluye `rendimiento-movil`, así que el usuario puede usarla para la prueba en iPhone que ese cambio tiene pendiente: en el navegador del teléfono, abrir un enlace directo a un tema y recargar funcionan.
 
 ### 11. Pruebas automáticas
 
@@ -212,15 +220,41 @@ La vista previa de esta rama incluye `rendimiento-movil`, así que el usuario pu
   El mensaje de fallo nombra la clave y, en los puntos 1 y 2, el idioma. El 2026-11-13 los dos archivos tienen 55 claves cada uno y cumplen los tres puntos: la prueba nace en verde sin tocar ningún texto. Si al escribirla falla, no se corrige el texto: se anota la clave y se lleva a Fable. Nombre y ubicación del archivo de prueba: de implementación.
 - Una prueba lee `wrangler.jsonc`, `public/_headers` y `.nvmrc` y comprueba los valores de las decisiones 4, 5 y 6 (en `wrangler.jsonc`: `name`, `workers_dev`, `preview_urls`, `assets.directory`, `assets.not_found_handling`, que `previews` existe y está vacío, y que no hay `main`; en `package.json`: que `wrangler` tiene versión exacta, 4.135.0 o superior), y que `dist/_headers` existe tras compilar se comprueba en la tarea de compilación.
 
+### 12. Mediciones del 2026-11-13
+
+Hechas con `curl`. Son la evidencia con la que se verifican las tareas 4.3 a 4.5.
+
+Vista previa de la rama. El check "Workers Builds: br-ai-ngineer" del commit `ba5bc41` terminó en `success`. Dirección: `https://feature-despliegue-automatico-br-ai-ngineer.jefryeguevarav.workers.dev`.
+
+| Petición | Sin cabeceras | Con `Sec-Fetch-Mode: navigate` |
+|---|---|---|
+| `/` | 200, `text/html`, `cache-control: public, max-age=0, must-revalidate`, script `/assets/index-Bg0ZR7OL.js` | igual |
+| `/assets/index-Bg0ZR7OL.js` | 200, `cache-control: public, max-age=31536000, immutable`, `content-encoding: br` | igual |
+| `/es` | 404, cuerpo `Not found` | 200, la página principal, `cache-control: public, max-age=0, must-revalidate` |
+| `/es/rest/cors` | 404, cuerpo `Not found` | 200, la página principal, misma cabecera |
+| `/assets/no-existe.js` | 404, cuerpo `Not found` | 200, la página principal |
+| `/index.html` | 307 | — |
+
+Producción (`https://br-ai-ngineer.jefryeguevarav.workers.dev`):
+
+| Momento | Script de entrada |
+|---|---|
+| Antes del push de la rama | `/assets/index-DneNDzhk.js` |
+| 17:39, con la rama subida y el pull request #4 ya integrado en `develop` | `/assets/index-DneNDzhk.js` |
+| 17:40:45, al publicarse `main` (pull request #5) | `/assets/index-Bg0ZR7OL.js`, el mismo que da la compilación local |
+
+Las dos primeras filas cubren el escenario "Push a otra rama" para una rama `feature/*` y para `develop`. Tras publicarse `main`: `/`, `/es` y `/es/rest/cors` responden 200 con la página principal y `max-age=0, must-revalidate`, con o sin cabecera de navegación; un archivo de `/assets/` responde 200 con `max-age=31536000, immutable` y `content-encoding: br`.
+
 ## Risks / Trade-offs
 
 - **El panel puede cambiar sin que el repositorio lo note.** Los ajustes se leyeron el 2026-11-13 y coinciden con la decisión 7. → La tarea 1.2 pide al usuario confirmar que siguen igual antes de tocar nada; una discrepancia se lleva a Fable.
 - **El nombre del Worker debe coincidir.** Un `name` distinto rompe la compilación en Cloudflare. → Se comprueba con la vista previa de la rama antes de integrar.
 - **Worker Previews es reciente.** La documentación da la forma de la dirección, pero no cómo se convierte un nombre de rama con barra (`feature/…`) en el nombre de la vista previa. → Los requisitos no fijan la dirección exacta; el usuario la lee en el panel o en el pull request.
-- **La primera vista previa depende de dos cosas nuevas a la vez**, el bloque `previews` y la versión de Wrangler. → Si la compilación de la rama falla, la tarea 4.3 manda anotar el error y detenerse.
+- **La vista previa no responde como producción a lo que no es un navegador.** `curl` sin cabeceras, o un cliente que no envíe `Sec-Fetch-Mode: navigate` (Safari anterior a iOS 16.4), recibe 404 en las direcciones de idioma, pista y tema de una vista previa. No está en la documentación de Worker Previews; se midió (decisión 12) y puede cambiar. → Aceptado por el usuario: las vistas previas se abren en navegadores actuales. Las comprobaciones con `curl` sobre una vista previa envían esa cabecera.
+- **La primera vista previa depende de dos cosas nuevas a la vez**, el bloque `previews` y la versión de Wrangler. → Compiló bien el 2026-11-13 (decisión 12).
 - **Recarga automática sin aviso.** Quien esté a mitad de un ejercicio en otra pestaña del tema pierde ese estado al recargar. Solo ocurre al abrir un tema o una demo nuevos tras una publicación, y la app no guarda progreso. Aceptado por el usuario.
 - **Caché inmutable de un año.** Segura porque los nombres llevan huella del contenido; un archivo que cambia, cambia de nombre.
-- **Publicar `rendimiento-movil` sin su prueba en iPhone.** Si este cambio llega a `main` antes de esa prueba, la versión no probada llega a producción. → El usuario hace la prueba en la vista previa (decisión 10) antes de integrar en `main`.
+- **`rendimiento-movil` está en producción sin su prueba en iPhone.** Ocurrió el 2026-11-13 al integrar este cambio en `main`. → La prueba sigue pendiente en ese cambio; el usuario puede hacerla en producción o en la vista previa. Un "no" se lleva a Fable.
 
 ## Open Questions
 

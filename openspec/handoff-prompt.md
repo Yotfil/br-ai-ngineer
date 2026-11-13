@@ -1,34 +1,26 @@
-# Prompt de arranque — retomar `despliegue-automatico` en las tareas 2.5 y 3.2
-
-> Escrito por Fable 5.2 el 2026-11-13, tras resolver con el usuario el vacío de la tarea 3.2. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer/ai-engineer-path`.
-
----
-
-Vas a retomar la implementación del cambio de OpenSpec `despliegue-automatico`. Respóndeme en español.
+Vas a integrar conmigo el cambio de OpenSpec `despliegue-automatico`, ya archivado. Respóndeme en español.
 
 **Reglas insaltables de este proyecto** (también están en la memoria del proyecto; léela antes de actuar):
 
-1. Eres Opus 5.5: implementas las specs ya definidas. No tomas decisiones de producto ni de diseño. Ante un vacío, una ambigüedad o una contradicción, te detienes, me dices exactamente qué falta (archivo y requisito o tarea) y lo dejas para una sesión con Fable 5.2.
-2. No modificas `proposal.md`, `design.md` ni los archivos de `specs/`. En `tasks.md` solo marcas casillas.
-3. Commits y push, solo cuando yo los pida en la sesión. Sin credenciales de Cloudflare: no ejecutas `wrangler deploy`, `wrangler preview` ni `wrangler login`.
-4. Si te detienes o vamos a cambiar de contexto, actualiza la memoria y sobrescribe este archivo (`openspec/handoff-prompt.md`) con el prompt para la sesión siguiente. Nunca en un `CLAUDE.md`.
+- Eres Opus 5.5: implementas. No modificas las specs de `openspec/specs/` ni el cambio archivado.
+- Ante un vacío, una ambigüedad o una contradicción, no decides: te detienes, me dices exactamente qué falta y lo dejamos para una sesión con Fable 5.2.
+- Commits, push, pull requests y tags, solo cuando yo te los pida en esta sesión. Nunca push a `main` ni a `develop`. Los merges los hago yo en GitHub.
+- No ejecutas `wrangler deploy`, `wrangler preview` ni `wrangler login`, y no tocas `wrangler.jsonc`.
+- Si la sesión se va a retomar en otro contexto, actualiza la memoria y sobrescribe este archivo (`openspec/handoff-prompt.md`) con el prompt siguiente. Nunca en un `CLAUDE.md`.
 
 **Antes de escribir nada:**
 
-- Comprueba la rama con `git branch --show-current`. Debe ser `feature/despliegue-automatico`. Si no lo es, detente y avísame.
-- Lee `openspec/changes/despliegue-automatico/tasks.md`, `design.md` (decisiones 3, 8 y 11, que cambiaron) y `specs/localization/spec.md` (nuevo).
-- En el árbol de trabajo están sin commit los cambios de tu sesión anterior (código, pruebas, configuración, README). Es lo esperado.
+1. Comprueba la rama con `git branch --show-current`. Debe ser `feature/despliegue-automatico`. Si no lo es, detente y avísame.
+2. Lee `openspec/git-workflow.md` y la decisión 10 de `openspec/changes/archive/2026-11-13-despliegue-automatico/design.md`.
 
-**Estado:** 12 de 18 tareas marcadas (1.1, 1.2, 2.1–2.4, 3.1, 3.3–3.5, 4.1, 4.6). El cambio valida con `openspec validate despliegue-automatico --strict`. En tu última ejecución: 258 pruebas en 13 archivos, typecheck, lint y build en verde.
+**Estado.** El código del cambio ya está en `develop`, en `main` (PR #4 y #5) y en producción. El cambio está archivado en `openspec/changes/archive/2026-11-13-despliegue-automatico/` con 18 de 18 tareas; `openspec/specs/deployment/` es nueva y Fable ya escribió su `## Purpose`. `openspec validate --specs --strict` pasa entero. Sin commit en esta rama quedan solo archivos de `openspec/`: el archivado, las specs principales (deployment, app-shell, localization) y este archivo.
 
-**Qué decidió el usuario con Fable el 2026-11-13:**
+**Qué hacer, en este orden:**
 
-- **Tarea 3.2 (el vacío).** La prueba de paridad de textos no existía: ahora hay que crearla. Exige mismas claves en `src/locales/es.json` y `en.json`, todo valor final cadena no vacía y mismos marcadores `{{nombre}}` por clave. El detalle está en design.md decisión 11 y el requisito con sus cuatro escenarios en `specs/localization/spec.md`. Hoy los dos archivos tienen 55 claves y cumplen: la prueba nace en verde. Si falla con los archivos reales, no corrijas el texto: anota la clave y detente. Las claves `reader.loadError` y `reader.retry` ya están añadidas.
-- **Tarea 3.5.** Tu forma de cortar la red (detener el servidor de `npm run preview`) vale; la tarea sigue marcada y `ai-engineer-path-preview` en `.claude/launch.json` se conserva. No hay nada que hacer.
-- **Tarea 2.5 (nueva).** En el `README.md`, el contenido de "Despliegue estático" pasa, con el texto tal cual, a una subsección `### Otro hosting` al final de "Despliegue" (design.md decisión 8).
+1. Comprueba que `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` siguen en verde (última ejecución: 264 pruebas en 14 archivos) y que `openspec validate --specs --strict` pasa.
+2. Cuando yo te lo pida: un commit de tipo `docs` con todo lo pendiente de `openspec/`; push de `feature/despliegue-automatico` (si GitHub borró la rama remota, el push la vuelve a crear); pull request a `develop`, que integro yo con squash.
+3. Cuando yo confirme ese merge: pull request de `develop` a `main`, que integro yo con merge commit.
+4. Cuando yo confirme el merge en `main`: comprueba con `curl` que producción (`https://br-ai-ngineer.jefryeguevarav.workers.dev`) sigue respondiendo 200 con el script `/assets/index-Bg0ZR7OL.js` (no cambia ningún archivo de la app). Si cambió o no responde, detente: es para Fable.
+5. El tag `v0.2.2` va sobre el merge commit de `main` que incluya el archivado, no sobre `f664cce`. Créalo y súbelo solo cuando yo te lo pida, y apunta su commit en la tabla de versiones de `openspec/git-workflow.md` solo si te lo pido también (eso va por rama `chore/*` y pull request, no directo a `develop`).
 
-**Orden de trabajo:** 2.5, 3.2, y después 4.2 a 4.5 (confirmación del panel por mi parte, push cuando yo lo pida, comprobaciones con `curl`). Tras la 3.2, repite typecheck, test y lint y anota el número de pruebas.
-
-**Dato para la tarea 4.5:** antes de cualquier push, producción servía el script de entrada `/assets/index-DneNDzhk.js`.
-
-**Pendientes que no cambian:** `rendimiento-movil` sigue integrado en `develop` sin archivar (faltan mi comparación visual y mi prueba en iPhone, que haré en la vista previa de esta rama). Tag de este cambio: `v0.2.2`. Después: la pista SQL en `feature/pista-sql`.
+**Pendientes que no cambian.** `rendimiento-movil` sigue integrado sin archivar y ya está en producción: faltan mi comparación visual (5.6) y mi prueba en iPhone (6.4), que puedo hacer en producción o en la vista previa; un "no" va a Fable. Después: la pista SQL, que define Fable en `feature/pista-sql`.
