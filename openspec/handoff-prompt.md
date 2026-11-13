@@ -1,10 +1,10 @@
-# Prompt de arranque — implementar `rendimiento-movil`
+# Prompt de arranque — implementar `despliegue-automatico`
 
 > Escrito por Fable 5.2 el 2026-11-13, tras definir el cambio con el usuario. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer/ai-engineer-path`.
 
 ---
 
-Vas a implementar el cambio de OpenSpec `rendimiento-movil` con `/opsx:apply`. Respóndeme en español.
+Vas a implementar el cambio de OpenSpec `despliegue-automatico` con `/opsx:apply`. Respóndeme en español.
 
 **Reglas insaltables de este proyecto** (también están en la memoria del proyecto; léela antes de actuar):
 
@@ -15,30 +15,30 @@ Vas a implementar el cambio de OpenSpec `rendimiento-movil` con `/opsx:apply`. R
 
 **Antes de escribir nada:**
 
-- Comprueba la rama con `git branch --show-current`. Debe ser `feature/rendimiento-movil`. Si no lo es, detente y avísame. El flujo de Git es el de `openspec/git-workflow.md`, que es vinculante: no haces commits, push ni pull requests salvo que te lo pida en esta sesión.
-- Lee completos, en este orden: `openspec/changes/rendimiento-movil/proposal.md`, `design.md`, `specs/app-shell/spec.md`, `specs/concept-graph/spec.md` y `tasks.md`.
-- En el árbol de trabajo encontrarás sin commit los artefactos de este cambio y este archivo, escritos por Fable. Es lo esperado.
+- Comprueba la rama con `git branch --show-current`. Debe ser `feature/despliegue-automatico`. Si no lo es, detente y avísame. El flujo de Git es el de `openspec/git-workflow.md`, que es vinculante: no haces commits, push ni pull requests salvo que te lo pida en esta sesión.
+- Lee completos, en este orden: `openspec/changes/despliegue-automatico/proposal.md`, `design.md`, `specs/deployment/spec.md`, `specs/app-shell/spec.md` y `tasks.md`.
+- En el árbol de trabajo encontrarás sin commit los artefactos de este cambio, `openspec/git-workflow.md` (una fila nueva en la tabla de versiones) y este archivo, escritos por Fable. Es lo esperado.
 
-**De qué va el cambio:** en iPhone el lector no se desplaza con el dedo, el teléfono se calienta y la app va a tirones. El cambio da al lector desplazamiento propio en tableta y teléfono, reduce los modos de fondo del lector de tres a dos, deja el teléfono sin desenfoques y con el fondo completamente quieto mientras se lee, y abarata el dibujo del cerebro sin cambiar su aspecto.
+**De qué va el cambio:** la app ya está publicada en Cloudflare (Worker `br-ai-ngineer`, conectado a GitHub desde el panel), pero la configuración vive solo en el panel. El cambio la lleva al repositorio (`wrangler.jsonc`, `.nvmrc`, `public/_headers`), documenta los ajustes del panel y hace que la app se recupere sola cuando se publica una versión nueva mientras está abierta: se recarga una vez; si la carga falla por otra causa, muestra un aviso con botón de reintentar.
 
 **Puntos donde es fácil equivocarse:**
 
-- La causa del desplazamiento roto no se ha reproducido en un simulador: no hay ninguno en esta máquina. No intentes instalar uno ni des por comprobado en iPhone nada que solo hayas visto en el navegador de escritorio.
-- Los tramos de ancho son los de design.md: teléfono hasta 760 px, tableta de 761 a 1080 px, escritorio a partir de ahí. Tableta y teléfono tienen disposiciones distintas del lector (decisiones 4 y 5).
-- El modo `solid` guardado antes de este cambio no significa lo mismo que el `solid` nuevo. La conversión es la de la decisión 3, con el campo `v: 2`.
-- En teléfono el modo efectivo es Sólido, pero la preferencia guardada no se toca (decisión 2).
-- Con `paused`, el cerebro no programa ningún cuadro; la única excepción es un cuadro al cambiar de tamaño (decisión 6).
-- El token `--glass-strong` no se modifica: lo comprueba una prueba existente de la hoja de temas.
-- La tarea 1.2 (capturas de referencia) va antes de tocar el cerebro o los modos. Sin ellas no se puede hacer la comparación de la tarea 5.6.
-- Los valores marcados en design.md como "de implementación" son los únicos que eliges tú. El resto está fijado.
+- No tienes acceso al panel de Cloudflare ni credenciales, y no las pidas. No ejecutes `wrangler deploy`, `wrangler preview` ni `wrangler login`. Lo único permitido de Wrangler es `npx wrangler deploy --dry-run` (tarea 2.1). Lo único que publica algo es el push que yo te pida en la tarea 4.3.
+- El `name` de `wrangler.jsonc` debe ser exactamente `br-ai-ngineer`; con otro nombre la compilación de Cloudflare falla.
+- La tarea 1.2 va antes de tocar nada: yo te leo los ajustes actuales del panel. Si no encajan con la tabla de la decisión 7 de un modo que la tabla no prevé, te detienes.
+- La recarga automática ocurre como máximo una vez por versión nueva (decisión 2). Sin `sessionStorage` no se recarga. Mientras se comprueba si hay versión nueva se muestra el estado de carga, no el de error.
+- En el modo de aplicación de una sola página, un archivo inexistente de `/assets/` devuelve la página principal con estado 200. Por eso la detección compara el script de entrada y no mira códigos de estado.
+- La regla de caché es solo para `/assets/*`. La página principal no se toca.
+- `rendimiento-movil` está integrado en `develop` pero sigue sin archivar, con dos tareas pendientes que son mías (comparación visual y prueba en iPhone). No lo archives ni marques esas tareas en esta sesión.
 
 **Lo que hago yo, no tú:**
 
-- Tarea 5.6: te confirmo si el cerebro se ve equivalente y si me convencen Cristal y Sólido. Si pido ajustes, te detienes: se deciden con Fable.
-- Tareas 6.3 y 6.4: ejecuto en mi iPhone el guion de 12 puntos de la decisión 15 y te doy las respuestas. Cualquier "no" en los puntos 1 a 11 lo anotas con lo que observé y te detienes; no improvises una corrección fuera de las decisiones del diseño.
+- Tareas 1.2 y 4.2: leer y ajustar el panel de Cloudflare.
+- Tarea 4.3: te pido el commit y el push, y te doy la dirección de la vista previa cuando Cloudflare la genere.
+- Después de integrar en `main`: comprobar que producción muestra la versión nueva (me dejas las instrucciones en la tarea 4.6).
 
-**Al terminar o al detenerte**, dame un resumen con: tareas hechas y pendientes, resultado de `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`, y lo que quede de mi parte. No archives el cambio hasta que las 25 tareas estén marcadas, incluidas las dos que dependen de mi prueba en iPhone.
+**Al terminar o al detenerte**, dame un resumen con: tareas hechas y pendientes, resultado de `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`, las cabeceras que obtuviste en la tarea 4.4 y lo que quede de mi parte. No archives el cambio hasta que las 17 tareas estén marcadas.
 
-**Versión:** este cambio lleva el tag `v0.2.1` (design.md decisión 16 y `openspec/git-workflow.md`). No crees el tag salvo que te lo pida.
+**Versión:** este cambio lleva el tag `v0.2.2` (design.md decisión 9). No crees el tag salvo que te lo pida.
 
-**Qué sigue después:** la definición de la pista SQL, con Fable 5.2, en la rama `feature/pista-sql`.
+**Qué sigue después:** cerrar `rendimiento-movil` (mi prueba en iPhone, que haré en la vista previa de esta rama, y su archivado) y, después, la definición de la pista SQL con Fable 5.2 en la rama `feature/pista-sql`.
