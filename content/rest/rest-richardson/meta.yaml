@@ -1,0 +1,11 @@
+id: rest-richardson
+track: rest
+order: 14
+freq: always
+concepts:
+  - restricciones-rest
+  - modelo-de-richardson
+  - hateoas
+related:
+  - diseno-api-rest
+  - stateless

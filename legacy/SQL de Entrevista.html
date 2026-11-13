@@ -1,0 +1,1171 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SQL de Entrevista</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra lateral de temas (índice tipo \d de psql) + columna de lectura; en móvil la barra se pliega */
+:root{
+  --bg:#f2f5f8; --surface:#ffffff; --sunk:#e9eef3; --ink:#152130; --muted:#586677; --line:#d6dde6;
+  --accent:#2d6491; --accent-ink:#ffffff; --accent-soft:#e1ecf6;
+  --ok:#2c7a4c; --ok-soft:#e1f2e8; --bad:#b0291f; --bad-soft:#fbe5e2; --warn:#a85212; --warn-soft:#fbeedd;
+  --null:#7d4fbf; --null-soft:#efe7fb; --code:#eef2f6; --kw:#2d6491; --str:#2c7a4c; --com:#7a8796;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131a; --surface:#151c25; --sunk:#1b2430; --ink:#e2e8ef; --muted:#93a0b0; --line:#28323f;
+  --accent:#7db0dc; --accent-ink:#0e131a; --accent-soft:#1a2b3c;
+  --ok:#6cc595; --ok-soft:#173225; --bad:#f08b80; --bad-soft:#3a1d1b; --warn:#e3a066; --warn-soft:#38261a;
+  --null:#b99ae8; --null-soft:#2a2140; --code:#10171f; --kw:#86b9e3; --str:#82cfa3; --com:#748293; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131a; --surface:#151c25; --sunk:#1b2430; --ink:#e2e8ef; --muted:#93a0b0; --line:#28323f;
+  --accent:#7db0dc; --accent-ink:#0e131a; --accent-soft:#1a2b3c;
+  --ok:#6cc595; --ok-soft:#173225; --bad:#f08b80; --bad-soft:#3a1d1b; --warn:#e3a066; --warn-soft:#38261a;
+  --null:#b99ae8; --null-soft:#2a2140; --code:#10171f; --kw:#86b9e3; --str:#82cfa3; --com:#748293; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font:700 1.15rem/1 var(--f-display);letter-spacing:-.01em;text-decoration:none;color:var(--ink);display:flex;gap:8px;align-items:baseline}
+.brand small{font:500 .72rem var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.prog{margin-left:auto;display:flex;align-items:center;gap:10px;font:500 .8rem var(--f-mono);color:var(--muted)}
+.bar{width:120px;height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+.navtoggle{display:none;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 10px;font-size:.85rem}
+.layout{display:grid;grid-template-columns:272px minmax(0,1fr);max-width:1240px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));gap:32px}
+nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);align-self:start;max-height:calc(100vh - 70px);overflow:auto;padding-block:20px}
+nav .grp{font:500 .7rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+nav a{display:grid;grid-template-columns:22px 1fr auto;gap:6px;align-items:center;padding:5px 8px;border-radius:6px;text-decoration:none;color:var(--ink);font-size:.88rem;line-height:1.3}
+nav a:hover{background:var(--sunk)}
+nav a.on{background:var(--accent-soft);color:var(--ink);font-weight:600}
+nav a .n{font:500 .72rem var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+nav a .ck{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line)}
+nav a.done .ck{background:var(--ok);border-color:var(--ok)}
+main{min-width:0;padding-block:24px 80px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;letter-spacing:-.015em;line-height:1.15}
+h1{font-size:clamp(1.8rem,3.6vw,2.6rem);margin:.2em 0 .3em}
+h2{font-size:1.25rem;margin:0 0 .5em}
+h3{font-size:1rem;margin:1em 0 .4em}
+p{max-width:68ch;margin:.4em 0}
+.eyebrow{font:500 .75rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 .72rem var(--f-mono);padding:2px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.f3{color:var(--bad)} .f2{color:var(--warn)} .f1{color:var(--muted)}
+.chip .dots{letter-spacing:1px}
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+.sec > .lab{font:500 .72rem var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.def{font-size:1.12rem;max-width:62ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.grid2 > *{min-width:0}
+pre.sql{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:8px 0;overflow-x:auto;font:13px/1.55 var(--f-mono);white-space:pre}
+pre.sql .kw{color:var(--kw);font-weight:500} pre.sql .str{color:var(--str)} pre.sql .com{color:var(--com);font-style:italic}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--code);padding:1px 5px;border-radius:4px}
+.tw{overflow-x:auto;margin:6px 0}
+.tname{font:500 .75rem var(--f-mono);color:var(--muted);margin:8px 0 2px}
+table.t{border-collapse:collapse;font:13px/1.4 var(--f-mono);font-variant-numeric:tabular-nums;background:var(--surface)}
+table.t th,table.t td{border:1px solid var(--line);padding:4px 10px;text-align:left;white-space:nowrap}
+table.t th{background:var(--sunk);font-weight:500}
+table.t tr.hl td{background:var(--accent-soft)}
+table.t tr.out td{opacity:.35;text-decoration:line-through}
+table.t tr.new td{background:var(--ok-soft)}
+.nul{color:var(--null);background:var(--null-soft);padding:0 5px;border-radius:3px;font-weight:500}
+.rows{font:500 .75rem var(--f-mono);color:var(--muted)}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
+.cmp > div{min-width:0;border-radius:8px;padding:10px 12px;border:1px solid var(--line)}
+.cmp .bad{border-left:4px solid var(--bad)} .cmp .good{border-left:4px solid var(--ok)}
+.cmp .tag{font:600 .72rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase}
+.cmp .bad .tag{color:var(--bad)} .cmp .good .tag{color:var(--ok)}
+ul.eng{margin:.3em 0;padding-left:1.1em} ul.eng li{margin:.25em 0;max-width:70ch}
+.answer{border-left:4px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;font-size:1.02rem;max-width:72ch}
+.answer p{margin:.3em 0}
+.demo{border:1.5px dashed var(--accent);border-radius:10px;padding:16px 18px;margin:14px 0;background:var(--surface)}
+.demo .lab{font:500 .72rem var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.ctrls{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 11px;font-size:.86rem;line-height:1.3}
+.btn:hover{border-color:var(--accent)}
+.btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:500}
+.btn.mono{font-family:var(--f-mono);font-size:.8rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.msg{border-radius:6px;padding:8px 12px;margin:8px 0;font-size:.9rem;max-width:72ch}
+.msg.ok{background:var(--ok-soft);color:var(--ok)} .msg.bad{background:var(--bad-soft);color:var(--bad)}
+.msg.info{background:var(--sunk);color:var(--ink)} .msg.warn{background:var(--warn-soft);color:var(--warn)}
+.msg b{font-weight:600}
+.ex{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ex:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.ex .kind{font:500 .7rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ex .q{font-weight:500;margin:4px 0 8px;max-width:72ch}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;font-size:.9rem}
+.opt:hover{border-color:var(--accent)}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)} .opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.cls{display:grid;gap:8px}
+.cls .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.cls .row .it{flex:1 1 220px;font-size:.9rem;min-width:0}
+.bld .zone{min-height:44px;border:1px dashed var(--line);border-radius:8px;padding:6px;display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;background:var(--sunk)}
+.bld .pc{font:13px var(--f-mono);border:1px solid var(--line);background:var(--surface);border-radius:5px;padding:4px 9px}
+.bld .pc:hover{border-color:var(--accent)}
+.pipe{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.pipe span{font:500 .78rem var(--f-mono);padding:4px 10px;border-radius:5px;background:var(--sunk);color:var(--muted)}
+.pipe span.on{background:var(--accent);color:var(--accent-ink)}
+.pipe span.past{background:var(--accent-soft);color:var(--ink)}
+.meter{height:12px;border-radius:6px;background:var(--sunk);overflow:hidden;margin:4px 0 10px}
+.meter i{display:block;height:100%;background:var(--warn);transition:width .5s ease}
+.meter.good i{background:var(--ok)}
+.stat{display:flex;flex-wrap:wrap;gap:18px;margin:8px 0}
+.stat div{font:500 .78rem var(--f-mono);color:var(--muted)}
+.stat b{display:block;font:700 1.4rem var(--f-display);color:var(--ink);font-variant-numeric:tabular-nums}
+.log{font:12px/1.6 var(--f-mono);background:var(--code);border:1px solid var(--line);border-radius:8px;padding:8px 12px;max-height:220px;overflow:auto;white-space:pre}
+.er{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0}
+.er .ent{border:1.5px solid var(--accent);border-radius:8px;padding:6px 12px;font:500 .85rem var(--f-mono);background:var(--surface)}
+.er .ent small{display:block;color:var(--muted);font-size:.72rem}
+.er .rel{font:600 .85rem var(--f-mono);color:var(--accent)}
+.done-btn{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.home-list{display:grid;gap:6px;margin:10px 0}
+.home-list a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);text-decoration:none;color:var(--ink)}
+.home-list a:hover{border-color:var(--accent)}
+.home-list .n{font:500 .8rem var(--f-mono);color:var(--muted)}
+details.oq{border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:8px 0;background:var(--surface)}
+details.oq summary{cursor:pointer;font-weight:500}
+details.oq .answer{margin-top:10px}
+.score{font:700 2rem var(--f-display)}
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0}
+  nav{position:static;max-height:none;padding-block:8px;border-bottom:1px solid var(--line)}
+  nav[data-open="false"]{display:none}
+  .navtoggle{display:inline-block}
+  .bar{width:70px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top">
+  <button class="navtoggle" id="navtoggle" aria-expanded="false">☰ Temas</button>
+  <a class="brand" href="#inicio">SQL de Entrevista <small>PostgreSQL</small></a>
+  <div class="prog"><span id="progtxt">0/14 repasados</span><div class="bar"><i id="progbar"></i></div></div>
+</header>
+<div class="layout">
+  <nav id="nav" data-open="false" aria-label="Temas"></nav>
+  <main id="main"></main>
+</div>
+<script>
+
+// ===== Datos del negocio (mismo esquema en toda la guía) =====
+const CLIENTES=[
+ {id:1,nombre:'Ana',email:'ana@mail.com',ciudad:'Bogotá'},
+ {id:2,nombre:'Luis',email:'luis@mail.com',ciudad:'Ibagué'},
+ {id:3,nombre:'Marta',email:'marta@mail.com',ciudad:'Cali'},
+ {id:4,nombre:'Pedro',email:'pedro@mail.com',ciudad:null}];
+const PEDIDOS=[
+ {id:101,cliente_id:1,fecha:'2026-10-01',total:120000,estado:'pagado'},
+ {id:102,cliente_id:1,fecha:'2026-10-05',total:80000,estado:'pendiente'},
+ {id:103,cliente_id:3,fecha:'2026-10-07',total:200000,estado:'pagado'},
+ {id:104,cliente_id:3,fecha:'2026-10-09',total:80000,estado:'pagado'},
+ {id:105,cliente_id:null,fecha:'2026-10-11',total:50000,estado:'pagado'}];
+const PRODUCTOS=[
+ {id:1,nombre:'Café de origen',precio:45000,stock:30},
+ {id:2,nombre:'Taza',precio:25000,stock:12},
+ {id:3,nombre:'Molino',precio:150000,stock:4},
+ {id:4,nombre:'Filtro',precio:12000,stock:80}];
+const PEDIDO_PRODUCTOS=[
+ {pedido_id:101,producto_id:1,cantidad:2},{pedido_id:101,producto_id:2,cantidad:1},
+ {pedido_id:102,producto_id:4,cantidad:3},{pedido_id:103,producto_id:3,cantidad:1},
+ {pedido_id:103,producto_id:1,cantidad:1}];
+const PAGOS=[
+ {id:1,pedido_id:101,monto:120000,metodo:'tarjeta'},
+ {id:2,pedido_id:103,monto:200000,metodo:'PSE'},
+ {id:3,pedido_id:104,monto:80000,metodo:'efectivo'}];
+
+// ===== Helpers =====
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const money=n=>typeof n==='number'&&n>=1000?n.toLocaleString('es-CO'):n;
+function cell(v){ if(v===null||v===undefined) return '<span class="nul">NULL</span>'; return esc(money(v)); }
+// tbl(nombre, filas, {cols, hl:fn, cls:fn, foot})
+function tbl(name,rows,o={}){
+  const cols=o.cols||(rows[0]?Object.keys(rows[0]):[]);
+  let h=(name?`<div class="tname">${esc(name)}</div>`:'')+'<div class="tw"><table class="t"><thead><tr>'+cols.map(c=>`<th>${esc(c)}</th>`).join('')+'</tr></thead><tbody>';
+  if(!rows.length) h+=`<tr><td colspan="${cols.length||1}" style="color:var(--muted)">(sin filas)</td></tr>`;
+  rows.forEach((r,i)=>{const c=o.cls?o.cls(r,i):''; h+=`<tr class="${c||''}">`+cols.map(k=>`<td>${cell(r[k])}</td>`).join('')+'</tr>';});
+  h+='</tbody></table></div>';
+  if(o.foot!==false){const n=o.count!==undefined?o.count:rows.length; h+=`<div class="rows">(${n} ${n===1?'fila':'filas'})</div>`;}
+  return h;
+}
+const KW=/\b(SELECT|FROM|WHERE|AND|OR|NOT|NULL|IS|IN|AS|ON|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|GROUP|BY|HAVING|ORDER|LIMIT|OFFSET|ASC|DESC|INSERT|INTO|VALUES|UPDATE|SET|DELETE|TRUNCATE|DROP|TABLE|CREATE|ALTER|ADD|PRIMARY|KEY|FOREIGN|REFERENCES|UNIQUE|CHECK|DEFAULT|CONSTRAINT|INDEX|WITH|RECURSIVE|UNION|ALL|DISTINCT|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MIN|MAX|COALESCE|BEGIN|COMMIT|ROLLBACK|EXPLAIN|ANALYZE|OVER|PARTITION|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|EXISTS|LIKE|ILIKE|BETWEEN|SERIAL|INTEGER|INT|BIGINT|NUMERIC|VARCHAR|TEXT|BOOLEAN|DATE|TIMESTAMPTZ|TIMESTAMP|UUID|JSONB|CASCADE|TRANSACTION|ISOLATION|LEVEL|READ|COMMITTED|SERIALIZABLE|RESTART|IDENTITY|GENERATED|ALWAYS|USING|LOWER|NOW|INTERVAL)\b/g;
+function hl(sql){
+  return sql.trim().split(/('(?:[^']|'')*'|--[^\n]*)/).map(p=>{
+    if(p.startsWith("'")) return `<span class="str">${esc(p)}</span>`;
+    if(p.startsWith('--')) return `<span class="com">${esc(p)}</span>`;
+    return esc(p).replace(KW,'<span class="kw">$1</span>');
+  }).join('');
+}
+const sql=s=>`<pre class="sql">${hl(s)}</pre>`;
+const code=s=>`<pre class="sql">${esc(s.trim())}</pre>`;
+function pair(bad,good,badNote,goodNote,isSql=true){
+  const f=isSql?sql:code;
+  return `<div class="cmp"><div class="bad"><div class="tag">✗ Así no</div>${f(bad)}${badNote?`<p>${badNote}</p>`:''}</div><div class="good"><div class="tag">✓ Así sí</div>${f(good)}${goodNote?`<p>${goodNote}</p>`:''}</div></div>`;
+}
+
+// ===== Ejercicios: registro + componentes =====
+const REG={}; let RID=0;
+function mcq(it,kind){ const id='x'+(RID++); REG[id]=it;
+  return `<div class="ex" data-ex="${id}"><div class="kind">${kind||'Opción múltiple'}</div>${it.sql?sql(it.sql):''}<div class="q">${it.q}</div><div class="opts">`+
+  it.o.map((t,i)=>`<button class="opt" data-mcq="${id}" data-i="${i}">${t}</button>`).join('')+`</div><div class="fb"></div></div>`; }
+function classify(it){ const id='x'+(RID++); REG[id]=it;
+  return `<div class="ex" data-ex="${id}"><div class="kind">Clasifica</div><div class="q">${it.q}</div><div class="cls">`+
+  it.items.map((x,i)=>`<div class="row"><div class="it">${x[0]}</div><div class="ctrls" style="margin:0">`+it.cats.map((c,j)=>`<button class="btn" data-cls="${id}" data-i="${i}" data-j="${j}">${c}</button>`).join('')+`</div><div class="fb" style="flex-basis:100%"></div></div>`).join('')+`</div></div>`; }
+function builder(it){ const id='x'+(RID++); REG[id]={...it,picked:[]};
+  return `<div class="ex bld" data-ex="${id}"><div class="kind">Arma la query</div><div class="q">${it.q}</div>
+  <div class="tname">Tu query (clic en una pieza para quitarla)</div><div class="zone" data-zone="ans"></div>
+  <div class="tname">Piezas disponibles</div><div class="zone" data-zone="pool"></div>
+  <div class="ctrls"><button class="btn pri" data-bchk="${id}">Comprobar</button><button class="btn" data-brst="${id}">Reiniciar</button></div><div class="fb"></div></div>`; }
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function initBuilders(root){ $$('.bld',root).forEach(b=>{const it=REG[b.dataset.ex]; it.picked=[]; it.pool=shuffle(it.pieces.map((_,i)=>i)); drawB(b);}); }
+function drawB(b){ const it=REG[b.dataset.ex];
+  $('[data-zone=ans]',b).innerHTML=it.picked.map(i=>`<button class="pc" data-bout="${i}">${esc(it.pieces[i])}</button>`).join('')||'<span class="rows" style="padding:6px">Vacío</span>';
+  $('[data-zone=pool]',b).innerHTML=it.pool.filter(i=>!it.picked.includes(i)).map(i=>`<button class="pc" data-bin="${i}">${esc(it.pieces[i])}</button>`).join(''); }
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  if(t.dataset.mcq){ const it=REG[t.dataset.mcq], ex=t.closest('.ex'), i=+t.dataset.i;
+    $$('.opt',ex).forEach(b=>b.classList.remove('right','wrong'));
+    t.classList.add(i===it.a?'right':'wrong'); if(i!==it.a) $$('.opt',ex)[it.a].classList.add('right');
+    $('.fb',ex).innerHTML=`<div class="msg ${i===it.a?'ok':'bad'}"><b>${i===it.a?'Correcto.':'No es esa.'}</b> ${it.e}</div>`;
+    if(t.dataset.test!==undefined) testAnswer(t.dataset.test,i===it.a);
+  }
+  if(t.dataset.cls){ const it=REG[t.dataset.cls], i=+t.dataset.i, j=+t.dataset.j, row=t.closest('.row'), ok=it.items[i][1]===j;
+    $$('.btn',row).forEach(b=>b.classList.remove('on')); t.classList.add('on');
+    $('.fb',row).innerHTML=`<div class="msg ${ok?'ok':'bad'}" style="margin:2px 0"><b>${ok?'Bien.':'Es '+it.cats[it.items[i][1]]+'.'}</b> ${it.items[i][2]}</div>`; }
+  if(t.dataset.bin!==undefined){ const b=t.closest('.bld'); REG[b.dataset.ex].picked.push(+t.dataset.bin); drawB(b); $('.fb',b).innerHTML=''; }
+  if(t.dataset.bout!==undefined){ const b=t.closest('.bld'), it=REG[b.dataset.ex]; it.picked=it.picked.filter(x=>x!==+t.dataset.bout); drawB(b); }
+  if(t.dataset.brst){ const b=t.closest('.bld'); REG[b.dataset.ex].picked=[]; drawB(b); $('.fb',b).innerHTML=''; }
+  if(t.dataset.bchk){ const b=t.closest('.bld'), it=REG[b.dataset.ex];
+    const got=it.picked.map(i=>it.pieces[i]).join(' '), want=it.answer.map(i=>it.pieces[i]).join(' ');
+    const ok=got===want;
+    $('.fb',b).innerHTML=`<div class="msg ${ok?'ok':'bad'}"><b>${ok?'Correcto.':'Todavía no.'}</b> ${ok?it.e:(it.picked.length?'Revisa el orden de escritura y que no sobren piezas: hay distractores que no van.':'Elige piezas del bloque de abajo.')}</div>${ok?'':`<details style="margin-top:6px"><summary class="rows" style="cursor:pointer">Ver solución</summary>${sql(want)}<p>${it.e}</p></details>`}`; }
+});
+
+// ===== Progreso (solo en este navegador) =====
+let DONE=new Set();
+try{ DONE=new Set(JSON.parse(localStorage.getItem('sqlguia-done')||'[]')); }catch(e){}
+function saveDone(){ try{ localStorage.setItem('sqlguia-done',JSON.stringify([...DONE])); }catch(e){} drawProgress(); }
+function drawProgress(){ const n=[...DONE].filter(x=>/^t\d+$/.test(x)).length;
+  $('#progtxt').textContent=`${n}/14 repasados`; $('#progbar').style.width=(n/14*100)+'%';
+  $$('#nav a').forEach(a=>a.classList.toggle('done',DONE.has(a.dataset.k))); }
+
+const FREQ={3:['casi siempre','●●●','f3'],2:['seguido','●●○','f2'],1:['a veces','●○○','f1']};
+const freqChip=f=>`<span class="chip ${FREQ[f][2]}"><span class="dots">${FREQ[f][1]}</span>${FREQ[f][0]}</span>`;
+const TOPICS=[]; const DEMOS={};
+
+// ===== Temas 1–5 =====
+TOPICS.push({n:1,title:'Tablas, filas, columnas, tipos y NULL',f:2,
+def:'Una tabla guarda un tipo de cosa (clientes); cada <b>fila</b> es un registro y cada <b>columna</b> un atributo con un <b>tipo de dato</b> fijo. <code>NULL</code> significa "valor desconocido o ausente", no cero ni texto vacío.',
+analog:'Una hoja de cálculo con reglas estrictas: cada columna solo acepta un tipo de valor, y una celda vacía (NULL) significa "no lo sabemos", no "0".',
+ex:sql(`CREATE TABLE clientes (
+  id      INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  nombre  VARCHAR(100) NOT NULL,
+  email   VARCHAR(150) NOT NULL UNIQUE,
+  ciudad  VARCHAR(50)              -- puede ser NULL
+);
+
+SELECT * FROM clientes WHERE ciudad IS NULL;`)+`<div class="grid2"><div>${tbl('clientes (entrada)',CLIENTES)}</div><div>${tbl('resultado',CLIENTES.filter(c=>c.ciudad===null))}</div></div>`,
+prob:`<p>Los tipos protegen la calidad del dato: la base rechaza <code>'abc'</code> en una columna numérica, y <code>NUMERIC</code> evita los errores de redondeo que da <code>FLOAT</code> con dinero. El error clásico con NULL es compararlo con <code>=</code>: cualquier comparación con NULL da <i>desconocido</i>, así que la fila nunca pasa el filtro.</p>`+
+pair(`SELECT * FROM clientes WHERE ciudad = NULL;
+-- 0 filas, siempre`,`SELECT * FROM clientes WHERE ciudad IS NULL;
+-- Pedro`,'<code>= NULL</code> nunca es verdadero.','Para NULL se usa <code>IS NULL</code> / <code>IS NOT NULL</code>.')+
+`<h3>Tipos más usados en PostgreSQL</h3>`+tbl(null,[
+ {tipo:'INTEGER / BIGINT',uso:'enteros, ids',ojo:'BIGINT si la tabla puede pasar de 2 mil millones de filas'},
+ {tipo:'NUMERIC(12,2)',uso:'dinero',ojo:'nunca FLOAT/REAL para dinero'},
+ {tipo:'VARCHAR(n) / TEXT',uso:'texto',ojo:'en PG rinden igual; VARCHAR(n) solo añade un límite'},
+ {tipo:'BOOLEAN',uso:'sí/no',ojo:'acepta true, false y NULL'},
+ {tipo:'DATE / TIMESTAMPTZ',uso:'fechas',ojo:'TIMESTAMPTZ guarda en UTC; úsalo para eventos'},
+ {tipo:'UUID',uso:'ids públicos',ojo:'no revela cuántos registros hay'},
+ {tipo:'JSONB',uso:'datos flexibles',ojo:'indexable con GIN; no reemplaza columnas normales'}],{foot:false}),
+puente:`<p>Una tabla se parece a un <code>interface Cliente</code> de TypeScript, pero la base <b>obliga</b> a cumplirla en tiempo de ejecución. <code>NULL</code> se parece a <code>null</code>, con una diferencia importante: en TS <code>null === null</code> es <code>true</code>; en SQL <code>NULL = NULL</code> es <i>desconocido</i>.</p>`,
+motores:['MySQL no tiene BOOLEAN real: es <code>TINYINT(1)</code>. SQL Server usa <code>BIT</code>.','Autoincremento: PG usa <code>SERIAL</code> o el estándar <code>GENERATED ... AS IDENTITY</code>; MySQL usa <code>AUTO_INCREMENT</code>; SQL Server <code>IDENTITY(1,1)</code>.','En Oracle el texto vacío <code>\'\'</code> se trata como NULL; en PG son cosas distintas.','<code>JSONB</code>, <code>UUID</code> nativo y arrays son puntos fuertes de PostgreSQL.'],
+answer:'<p>"Una tabla representa una entidad; cada fila es un registro y cada columna un atributo con un tipo fijo, que la base hace cumplir. Elijo tipos precisos: NUMERIC para dinero, TIMESTAMPTZ para fechas de eventos, BIGINT si el volumen puede crecer mucho."</p><p>"NULL significa valor desconocido. Por eso no se compara con igual, sino con IS NULL, y hay que cuidarlo en filtros con <code>&lt;&gt;</code> y en agregaciones, porque las filas con NULL suelen quedar fuera sin avisar."</p>',
+demoTitle:'Filtra la tabla y mira qué pasa con Pedro (ciudad NULL)',
+ex2:()=>classify({q:'¿Qué tipo de dato usarías en PostgreSQL?',cats:['NUMERIC','TIMESTAMPTZ','BOOLEAN','TEXT'],items:[
+ ['Precio de un producto',0,'Dinero exige decimales exactos.'],['Momento en que se creó un pedido',1,'Guarda la zona horaria y evita líos entre servidores.'],
+ ['¿El cliente aceptó el newsletter?',2,'Sí/no es un booleano.'],['Comentario libre del cliente',3,'Texto sin límite claro: TEXT.']]})+
+ mcq({q:'¿Qué devuelve esta query sobre la tabla clientes del ejemplo?',sql:"SELECT nombre FROM clientes WHERE ciudad <> 'Cali';",o:['Ana, Luis y Pedro','Ana y Luis','Ana, Luis, Marta y Pedro','Solo Pedro'],a:1,e:"Pedro tiene ciudad NULL. <code>NULL &lt;&gt; 'Cali'</code> da desconocido, así que Pedro queda fuera. Para incluirlo: <code>WHERE ciudad &lt;&gt; 'Cali' OR ciudad IS NULL</code>."},'¿Qué devuelve?')});
+
+TOPICS.push({n:2,title:'SELECT, WHERE, ORDER BY, LIMIT y orden de ejecución',f:3,
+def:'<code>SELECT</code> elige columnas, <code>WHERE</code> filtra filas, <code>ORDER BY</code> ordena y <code>LIMIT</code> recorta. Se escriben en ese orden, pero la base las <b>ejecuta</b> en otro: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.',
+analog:'Una receta: primero sacas los ingredientes de la nevera (FROM), descartas los dañados (WHERE), picas solo lo que usarás (SELECT), los ordenas en el plato (ORDER BY) y sirves dos porciones (LIMIT). El menú se lee en otro orden.',
+ex:sql(`SELECT nombre, ciudad
+FROM clientes
+WHERE ciudad IS NOT NULL
+ORDER BY nombre DESC
+LIMIT 2;`)+`<div class="grid2"><div>${tbl('clientes (entrada)',CLIENTES,{cols:['id','nombre','ciudad']})}</div><div>${tbl('resultado',[{nombre:'Marta',ciudad:'Cali'},{nombre:'Luis',ciudad:'Ibagué'}])}</div></div>`,
+prob:`<p>Conocer el orden real explica dos errores frecuentes: usar en <code>WHERE</code> un alias definido en el <code>SELECT</code> (todavía no existe) y paginar sin <code>ORDER BY</code> (sin orden explícito la base no garantiza cuál fila sale primero, y las páginas pueden repetir o saltar registros).</p>`+
+pair(`SELECT total * 1.19 AS con_iva
+FROM pedidos
+WHERE con_iva > 100000;
+-- ERROR: column "con_iva" does not exist`,`SELECT total * 1.19 AS con_iva
+FROM pedidos
+WHERE total * 1.19 > 100000;`,'WHERE corre antes que SELECT.','Repite la expresión (o usa una CTE). En ORDER BY sí puedes usar el alias, porque corre después.')+
+pair(`SELECT * FROM pedidos
+LIMIT 10 OFFSET 20;`,`SELECT id, total FROM pedidos
+ORDER BY id
+LIMIT 10 OFFSET 20;`,'Página impredecible y trae columnas de más.','Orden estable y solo las columnas necesarias.'),
+puente:`<p><code>WHERE</code> es <code>filter()</code>, <code>SELECT</code> es <code>map()</code>, <code>ORDER BY</code> es <code>sort()</code> y <code>LIMIT/OFFSET</code> es <code>slice()</code>. La query del ejemplo en TS: <code>clientes.filter(c =&gt; c.ciudad !== null).map(({nombre, ciudad}) =&gt; ({nombre, ciudad})).sort(...).slice(0, 2)</code>. La diferencia es que en SQL tú declaras <i>qué</i> quieres y el motor decide <i>cómo</i> hacerlo.</p>`,
+motores:['Recortar filas: PG y MySQL usan <code>LIMIT</code>; SQL Server usa <code>TOP</code> u <code>OFFSET … FETCH</code>; Oracle <code>FETCH FIRST n ROWS ONLY</code>.','En PG los NULL van <b>al final</b> en orden ascendente; en MySQL van al principio. PG permite controlarlo con <code>NULLS FIRST / NULLS LAST</code>.','<code>ILIKE</code> (LIKE sin distinguir mayúsculas) existe solo en PostgreSQL.'],
+answer:'<p>"Aunque escribo SELECT primero, el motor procesa FROM y JOIN, luego WHERE, GROUP BY, HAVING, después SELECT, ORDER BY y al final LIMIT. Por eso no puedo usar en WHERE un alias del SELECT, pero sí en ORDER BY."</p><p>"Para paginar siempre pongo ORDER BY con una columna única; y si la tabla es muy grande, prefiero paginación por cursor (WHERE id &gt; último_id) en lugar de OFFSET grandes."</p>',
+demoTitle:'Ejecuta la query paso a paso, en el orden en que la corre PostgreSQL',
+ex2:()=>builder({q:'Arma: los 3 pedidos pagados de mayor total, mostrando id y total.',
+ pieces:['SELECT id, total','FROM pedidos',"WHERE estado = 'pagado'",'ORDER BY total DESC','LIMIT 3','HAVING total > 0','ORDER BY total ASC'],answer:[0,1,2,3,4],
+ e:'Orden de escritura: SELECT, FROM, WHERE, ORDER BY, LIMIT. HAVING sobra (no hay GROUP BY) y el orden debe ser DESC para obtener los mayores.'})+
+ mcq({q:'¿En qué paso de la ejecución ya existe el alias <code>con_iva</code>?',o:['En WHERE','En GROUP BY','En ORDER BY','En FROM'],a:2,e:'El alias nace en SELECT, que corre después de WHERE y GROUP BY. ORDER BY corre después de SELECT, así que ahí ya se puede usar.'})});
+
+TOPICS.push({n:3,title:'JOINs: INNER, LEFT, RIGHT, FULL, CROSS y self join',f:3,
+def:'Un JOIN combina filas de dos tablas según una condición, normalmente <b>llave foránea = llave primaria</b>. El tipo de JOIN decide qué pasa con las filas que no encuentran pareja.',
+analog:'Una lista de invitados y la lista de quienes llegaron. INNER: los que estaban invitados <i>y</i> llegaron. LEFT: todos los invitados, con marca de si vinieron. FULL: todos, incluidos los colados.',
+ex:sql(`SELECT c.nombre, p.id AS pedido, p.total
+FROM clientes c
+INNER JOIN pedidos p ON p.cliente_id = c.id;`)+`<div class="grid2"><div>${tbl('clientes',CLIENTES,{cols:['id','nombre']})}${tbl('pedidos',PEDIDOS,{cols:['id','cliente_id','total']})}</div><div>${tbl('resultado (INNER)',[{nombre:'Ana',pedido:101,total:120000},{nombre:'Ana',pedido:102,total:80000},{nombre:'Marta',pedido:103,total:200000},{nombre:'Marta',pedido:104,total:80000}])}<p class="rows">Luis y Pedro no tienen pedidos; el pedido 105 no tiene cliente. INNER deja fuera a los tres.</p></div></div>`,
+prob:`<p>Elegir mal el JOIN hace que desaparezcan filas sin error. El caso típico de entrevista: "clientes sin pedidos". Con INNER es imposible; con LEFT + <code>IS NULL</code> sale directo. Otro error frecuente: filtrar la tabla derecha en el <code>WHERE</code>, lo que convierte el LEFT en INNER.</p>`+
+pair(`SELECT c.nombre, p.id
+FROM clientes c
+LEFT JOIN pedidos p ON p.cliente_id = c.id
+WHERE p.estado = 'pagado';
+-- Luis y Pedro desaparecen`,`SELECT c.nombre, p.id
+FROM clientes c
+LEFT JOIN pedidos p
+  ON p.cliente_id = c.id
+ AND p.estado = 'pagado';`,'El WHERE descarta las filas con p NULL: es un INNER disfrazado.','La condición va en el ON y se conservan todos los clientes.')+
+`<h3>Los seis tipos de un vistazo</h3>`+tbl(null,[
+ {tipo:'INNER JOIN',devuelve:'solo filas con pareja en ambas tablas',uso:'pedidos con su cliente'},
+ {tipo:'LEFT JOIN',devuelve:'todo lo de la izquierda + parejas (o NULL)',uso:'clientes con o sin pedidos'},
+ {tipo:'RIGHT JOIN',devuelve:'todo lo de la derecha + parejas (o NULL)',uso:'poco usado: se reescribe como LEFT'},
+ {tipo:'FULL OUTER JOIN',devuelve:'todo de ambas, NULL donde falte',uso:'conciliar o auditar datos'},
+ {tipo:'CROSS JOIN',devuelve:'todas las combinaciones (n × m)',uso:'tallas × colores, calendarios'},
+ {tipo:'Self join',devuelve:'una tabla unida consigo misma',uso:'empleado y su jefe, referidos'}],{foot:false}),
+puente:`<p>Un INNER JOIN equivale a cruzar dos arrays: <code>pedidos.flatMap(p =&gt; { const c = clientes.find(c =&gt; c.id === p.cliente_id); return c ? [{...c, ...p}] : []; })</code>. Un LEFT JOIN es el mismo cruce pero devolviendo el cliente con <code>null</code> cuando no hay pedido. La base lo hace mucho más rápido con índices en vez de un <code>find</code> por fila.</p>`,
+motores:['<b>MySQL no tiene FULL OUTER JOIN</b>: se emula con un LEFT JOIN UNION un RIGHT JOIN. Es pregunta habitual.','PG permite <code>JOIN … USING (columna)</code> cuando la columna se llama igual en ambas tablas, y <code>LATERAL</code> para joins que dependen de la fila anterior.','<code>NATURAL JOIN</code> existe, pero se evita: une por nombres de columna y se rompe si alguien agrega una columna.'],
+answer:'<p>"Un JOIN combina tablas por una condición, normalmente FK igual a PK. INNER devuelve solo coincidencias; LEFT conserva todas las filas de la izquierda y pone NULL donde no hay pareja; RIGHT es el espejo, y casi siempre lo reescribo como LEFT; FULL conserva todo de ambos lados."</p><p>"Para encontrar registros sin relación, como clientes sin pedidos, uso LEFT JOIN con WHERE p.id IS NULL. Y tengo cuidado de no filtrar la tabla derecha en el WHERE, porque convierte el LEFT en INNER."</p>',
+demoTitle:'Cambia el tipo de JOIN y mira qué filas entran y cuáles quedan en NULL',
+ex2:()=>mcq({q:'¿Cuántas filas devuelve?',sql:`SELECT c.nombre, p.id
+FROM clientes c
+LEFT JOIN pedidos p ON p.cliente_id = c.id;`,o:['4','5','6','7'],a:2,e:'4 filas con pareja (Ana×2, Marta×2) + Luis y Pedro con NULL = 6. El pedido 105 no entra porque no tiene cliente a la izquierda.'},'¿Qué devuelve?')+
+ mcq({q:'Necesitas todas las combinaciones de 4 tallas y 5 colores. ¿Qué JOIN usas?',o:['FULL OUTER JOIN','CROSS JOIN','INNER JOIN con ON 1=1 es incorrecto','Self join'],a:1,e:'CROSS JOIN produce el producto cartesiano: 4 × 5 = 20 filas, sin condición de unión.'})+
+ mcq({q:'Tabla <code>empleados(id, nombre, jefe_id)</code>. ¿Cómo listas cada empleado con el nombre de su jefe?',o:['Un self join: empleados e JOIN empleados j ON e.jefe_id = j.id','Un CROSS JOIN de empleados consigo misma','Un GROUP BY jefe_id','No se puede sin otra tabla'],a:0,e:'Es un self join: la misma tabla con dos alias. Usa LEFT JOIN si quieres incluir al jefe máximo, que no tiene jefe.'})});
+
+TOPICS.push({n:4,title:'Agregaciones: GROUP BY, HAVING y WHERE vs. HAVING',f:3,
+def:'Las funciones de agregación (<code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, <code>MAX</code>) resumen muchas filas en un valor. <code>GROUP BY</code> las aplica por grupo y <code>HAVING</code> filtra los grupos ya calculados.',
+analog:'Contar votos: separas las papeletas por mesa (GROUP BY), cuentas cada montón (COUNT) y luego descartas las mesas con menos de 50 votos (HAVING). Anular papeletas rotas antes de contar es el WHERE.',
+ex:sql(`SELECT cliente_id, COUNT(*) AS pedidos, SUM(total) AS gastado
+FROM pedidos
+WHERE estado = 'pagado'          -- filtra FILAS
+GROUP BY cliente_id
+HAVING SUM(total) > 100000;      -- filtra GRUPOS`)+`<div class="grid2"><div>${tbl('pedidos (entrada)',PEDIDOS,{cols:['id','cliente_id','total','estado'],cls:r=>r.estado!=='pagado'?'out':''})}</div><div>${tbl('resultado',[{cliente_id:1,pedidos:1,gastado:120000},{cliente_id:3,pedidos:2,gastado:280000}])}<p class="rows">El 102 cae por el WHERE. El grupo NULL (pedido 105, 50.000) cae por el HAVING.</p></div></div>`,
+prob:`<p>Sin agregaciones tendrías que traer todas las filas al backend y sumarlas en código: más red, más memoria y más lento. Los errores típicos: poner en el SELECT una columna que no está agrupada ni agregada, y usar <code>SUM()</code> en el WHERE.</p>`+
+pair(`SELECT cliente_id, SUM(total)
+FROM pedidos
+WHERE SUM(total) > 100000
+GROUP BY cliente_id;
+-- ERROR: aggregate functions are not allowed in WHERE`,`SELECT cliente_id, SUM(total)
+FROM pedidos
+GROUP BY cliente_id
+HAVING SUM(total) > 100000;`,'WHERE corre antes de agrupar: el SUM todavía no existe.','HAVING corre después de GROUP BY.')+
+`<p>Detalle que preguntan: <code>COUNT(*)</code> cuenta filas; <code>COUNT(columna)</code> cuenta solo valores no NULL; <code>COUNT(DISTINCT columna)</code> cuenta valores distintos. <code>AVG</code> y <code>SUM</code> ignoran los NULL.</p>`,
+puente:`<p><code>GROUP BY</code> + <code>SUM</code> es un <code>reduce</code> que acumula en un objeto por clave:</p>`+code(`const gastado = pedidos
+  .filter(p => p.estado === 'pagado')                       // WHERE
+  .reduce((acc, p) => {                                     // GROUP BY + SUM
+    acc[p.cliente_id] = (acc[p.cliente_id] ?? 0) + p.total;
+    return acc;
+  }, {} as Record<string, number>);
+// HAVING sería filtrar las entradas de "gastado" después`),
+motores:['PG es estricto: toda columna del SELECT debe estar en GROUP BY o en una agregación (salvo que agrupes por la PK de esa tabla). MySQL antiguo lo permitía y devolvía valores arbitrarios; desde 5.7 activa <code>ONLY_FULL_GROUP_BY</code> por defecto.','Concatenar textos de un grupo: <code>string_agg()</code> en PG, <code>GROUP_CONCAT()</code> en MySQL, <code>STRING_AGG()</code> en SQL Server.','PG tiene <code>FILTER</code>: <code>COUNT(*) FILTER (WHERE estado = \'pagado\')</code>, para varias métricas condicionales en una sola query.'],
+answer:'<p>"GROUP BY agrupa filas que comparten un valor y las funciones de agregación calculan un resultado por grupo. La diferencia entre WHERE y HAVING está en el momento: WHERE filtra filas antes de agrupar y no puede usar agregaciones; HAVING filtra los grupos después de agrupar."</p><p>"Si puedo filtrar con WHERE, lo hago ahí, porque reduce las filas antes del trabajo pesado de agrupar. Y recuerdo que COUNT(columna) no cuenta los NULL, a diferencia de COUNT(*)."</p>',
+demoTitle:'Combina WHERE, la función de agregación y el umbral del HAVING',
+ex2:()=>builder({q:'Arma: ciudades con más de 1 cliente, mostrando la ciudad y cuántos clientes tiene.',
+ pieces:['SELECT ciudad, COUNT(*) AS clientes','FROM clientes','GROUP BY ciudad','HAVING COUNT(*) > 1','WHERE COUNT(*) > 1','ORDER BY ciudad','GROUP BY clientes'],answer:[0,1,2,3],
+ e:'El filtro sobre el conteo va en HAVING, después de GROUP BY. WHERE COUNT(*) da error. (Con los datos de ejemplo devolvería 0 filas: cada ciudad tiene un solo cliente.)'})+
+ mcq({q:'¿Qué devuelve?',sql:'SELECT COUNT(*), COUNT(cliente_id) FROM pedidos;',o:['5 y 5','5 y 4','4 y 4','5 y 3'],a:1,e:'COUNT(*) cuenta las 5 filas. COUNT(cliente_id) ignora el NULL del pedido 105: 4.'},'¿Qué devuelve?')});
+
+TOPICS.push({n:5,title:'Subqueries y CTEs (WITH)',f:2,
+def:'Una <b>subquery</b> es una query dentro de otra. Una <b>CTE</b> (<code>WITH nombre AS (...)</code>) es una subquery con nombre, declarada al inicio, que puedes usar como si fuera una tabla temporal dentro de esa query.',
+analog:'La subquery es hacer una cuenta en el margen de la hoja; la CTE es escribirla primero con un título ("gasto por cliente") y luego referirte a ella por su nombre.',
+ex:sql(`WITH gasto AS (
+  SELECT cliente_id, SUM(total) AS total_gastado
+  FROM pedidos
+  WHERE cliente_id IS NOT NULL
+  GROUP BY cliente_id
+)
+SELECT c.nombre, g.total_gastado
+FROM gasto g
+JOIN clientes c ON c.id = g.cliente_id
+WHERE g.total_gastado > (SELECT AVG(total_gastado) FROM gasto);`)+`<div class="grid2"><div>${tbl('CTE gasto',[{cliente_id:1,total_gastado:200000},{cliente_id:3,total_gastado:280000}])}<p class="rows">Promedio = 240.000</p></div><div>${tbl('resultado',[{nombre:'Marta',total_gastado:280000}])}</div></div>`,
+prob:`<p>Resuelven preguntas en dos pasos ("los que están por encima del promedio"). Sin ellas terminas con lógica duplicada o con varias idas y vueltas desde el backend. Mal usadas, sobre todo una subquery <b>correlacionada</b> (que se ejecuta una vez por fila) puede ser lenta; muchas veces un JOIN o una CTE es más claro.</p>`+
+pair(`SELECT c.nombre,
+  (SELECT SUM(total) FROM pedidos p
+   WHERE p.cliente_id = c.id) AS gastado
+FROM clientes c;
+-- correlacionada: se evalúa por cada cliente`,`SELECT c.nombre, SUM(p.total) AS gastado
+FROM clientes c
+LEFT JOIN pedidos p ON p.cliente_id = c.id
+GROUP BY c.id, c.nombre;`,'Funciona, pero conceptualmente corre una vez por cliente.','Una sola pasada con JOIN + GROUP BY.')+
+`<h3>¿Cuál usar?</h3>`+tbl(null,[
+ {caso:'Un valor simple en un filtro (WHERE x > (SELECT AVG…))',usa:'Subquery'},
+ {caso:'¿Existe algo relacionado? (WHERE EXISTS …)',usa:'Subquery con EXISTS'},
+ {caso:'Varios pasos o reutilizar el mismo resultado',usa:'CTE'},
+ {caso:'Jerarquías (categorías, organigramas)',usa:'CTE recursiva (WITH RECURSIVE)'}],{foot:false}),
+puente:`<p>Una CTE es como extraer una variable con nombre en vez de anidar llamadas: <code>const gasto = calcularGasto(pedidos); const promedio = avg(gasto); return gasto.filter(g =&gt; g.total &gt; promedio);</code> en lugar de una sola línea con todo anidado. Mejora la lectura y el code review.</p>`,
+motores:['Desde <b>PostgreSQL 12</b> el planificador puede "integrar" una CTE en la query principal y optimizarla; antes siempre se materializaba (barrera de optimización). Puedes forzarlo con <code>AS MATERIALIZED</code> / <code>NOT MATERIALIZED</code>.','MySQL soporta CTEs desde la versión 8.0.','<code>WITH RECURSIVE</code> es estándar y existe en PG, MySQL 8, SQL Server (sin la palabra RECURSIVE) y Oracle.'],
+answer:'<p>"Ambas permiten resolver una consulta en pasos. Uso subqueries para algo puntual, como comparar contra un promedio o un EXISTS. Uso CTEs cuando hay varios pasos o necesito reutilizar un resultado, porque se leen de arriba hacia abajo y se revisan mejor."</p><p>"En PostgreSQL 12 en adelante las CTEs no materializadas se optimizan como subqueries, así que el rendimiento suele ser similar. Lo que vigilo son las subqueries correlacionadas, que muchas veces conviene reescribir como JOIN."</p>',
+demoTitle:'Mira el mismo problema resuelto con subquery y con CTE, paso a paso',
+ex2:()=>mcq({q:'¿Qué hace esta query?',sql:`SELECT nombre FROM clientes c
+WHERE NOT EXISTS (
+  SELECT 1 FROM pedidos p WHERE p.cliente_id = c.id
+);`,o:['Clientes con al menos un pedido','Clientes sin pedidos: Luis y Pedro','Pedidos sin cliente','Da error por el SELECT 1'],a:1,e:'NOT EXISTS es verdadero cuando la subquery no devuelve filas. Es una alternativa al LEFT JOIN … IS NULL. El SELECT 1 es habitual: solo importa si hay filas.'},'¿Qué devuelve?')+
+ mcq({q:'Necesitas listar una categoría y todas sus subcategorías a cualquier profundidad. ¿Qué usas?',o:['Un GROUP BY','Una subquery correlacionada','Una CTE recursiva (WITH RECURSIVE)','Un CROSS JOIN'],a:2,e:'Las jerarquías de profundidad variable se recorren con WITH RECURSIVE: una parte base y una parte que se une consigo misma hasta que no hay más filas.'})});
+
+// ===== Temas 6–10 =====
+TOPICS.push({n:6,title:'Claves primarias, foráneas y constraints',f:2,
+def:'Los <b>constraints</b> son reglas que la base hace cumplir siempre: <code>PRIMARY KEY</code> (identifica cada fila, única y no nula), <code>FOREIGN KEY</code> (el valor debe existir en otra tabla), <code>UNIQUE</code>, <code>NOT NULL</code> y <code>CHECK</code> (una condición propia).',
+analog:'Las reglas de un registro civil: cada persona tiene un número único (PK), un hijo solo se inscribe con padres que ya existen (FK), dos personas no comparten documento (UNIQUE) y la fecha de nacimiento no puede ser futura (CHECK).',
+ex:sql(`CREATE TABLE productos (
+  id      INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  nombre  TEXT NOT NULL,
+  precio  NUMERIC(12,2) NOT NULL CHECK (precio > 0),
+  stock   INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0)
+);
+
+CREATE TABLE pedidos (
+  id          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  cliente_id  INTEGER REFERENCES clientes(id) ON DELETE RESTRICT,
+  total       NUMERIC(12,2) NOT NULL CHECK (total >= 0),
+  estado      TEXT NOT NULL CHECK (estado IN ('pendiente','pagado','anulado'))
+);
+
+INSERT INTO productos (nombre, precio) VALUES ('Molino', -5);
+-- ERROR: new row for relation "productos" violates check constraint "productos_precio_check"`),
+prob:`<p>Validar en el frontend o en la API no basta: hay scripts, migraciones, otros servicios y condiciones de carrera (dos requests a la vez pueden pasar la validación "¿existe este email?"). El constraint es la última línea de defensa y la única que no se puede saltar. Sin FK aparecen <b>registros huérfanos</b>: pedidos que apuntan a clientes borrados.</p>`+
+pair(`-- Validar unicidad solo en código
+if not existe_email(email):
+    insertar_cliente(email)
+# dos requests simultáneas => duplicado`,`-- La base lo garantiza
+ALTER TABLE clientes
+  ADD CONSTRAINT clientes_email_key UNIQUE (email);
+-- el segundo INSERT falla y la API responde 409`,'Condición de carrera: ambos ven "no existe".','El constraint es atómico; la API traduce el error a un 409 Conflict.',false)+
+`<h3>¿Qué pasa al borrar un cliente con pedidos?</h3>`+tbl(null,[
+ {regla:'ON DELETE RESTRICT / NO ACTION',efecto:'Impide el borrado (comportamiento por defecto)'},
+ {regla:'ON DELETE CASCADE',efecto:'Borra también sus pedidos'},
+ {regla:'ON DELETE SET NULL',efecto:'Deja los pedidos con cliente_id NULL'}],{foot:false}),
+puente:`<p>Es la diferencia entre los validadores de un formulario reactivo de Angular (<code>Validators.required</code>, <code>Validators.min(0)</code>) y una regla de negocio en el servidor: los primeros mejoran la experiencia, pero el dato solo está protegido si la base lo impone. En la práctica conviene tener las dos capas.</p>`,
+motores:['<b>PostgreSQL no crea índice automático en las FK</b> (sí en PK y UNIQUE). MySQL/InnoDB sí lo crea. Pregunta frecuente: conviene indexar las FK que usas en JOINs.','MySQL ignoraba los <code>CHECK</code> antes de la versión 8.0.16; PG siempre los ha aplicado.','PG permite constraints <code>DEFERRABLE</code>: se validan al COMMIT y no en cada sentencia.'],
+answer:'<p>"Los constraints son reglas de integridad que la base hace cumplir sin importar quién escriba los datos. La PK identifica cada fila de forma única y no nula; la FK garantiza que una relación apunte a algo que existe y evita huérfanos; UNIQUE, NOT NULL y CHECK validan reglas de negocio."</p><p>"Valido en el frontend y en la API por experiencia de usuario, pero el constraint es la garantía real, porque resiste condiciones de carrera y escrituras que no pasan por mi código. En PostgreSQL además indexo manualmente las FK que uso en JOINs."</p>',
+demoTitle:'Intenta insertar datos y mira qué constraint los rechaza',
+ex2:()=>classify({q:'¿Qué constraint protege cada regla?',cats:['PRIMARY KEY','FOREIGN KEY','UNIQUE','CHECK'],items:[
+ ['Dos clientes no pueden tener el mismo email',2,'Unicidad sin ser la llave principal.'],['Un pago debe pertenecer a un pedido existente',1,'pagos.pedido_id REFERENCES pedidos(id).'],
+ ['El stock nunca es negativo',3,'CHECK (stock >= 0).'],['Cada pedido tiene un identificador propio que nunca se repite',0,'PK = UNIQUE + NOT NULL, y solo hay una por tabla.']]})+
+ mcq({q:'¿Cuál es la diferencia entre PRIMARY KEY y UNIQUE?',o:['Ninguna','La PK no admite NULL y solo hay una por tabla; puede haber varios UNIQUE y admiten NULL','UNIQUE es más rápido','La PK solo sirve para números'],a:1,e:'Una tabla tiene una sola PK, que implica UNIQUE + NOT NULL. Puedes tener varios UNIQUE; en PG un UNIQUE permite múltiples NULL (salvo NULLS NOT DISTINCT, desde PG 15).'})});
+
+TOPICS.push({n:7,title:'Relaciones 1:1, 1:N y N:M',f:3,
+def:'Describen cuántas filas de una tabla se relacionan con otra. <b>1:N</b> se modela con una FK en el lado "muchos"; <b>1:1</b> con una FK que además es UNIQUE; <b>N:M</b> con una <b>tabla intermedia</b> que tiene dos FK.',
+analog:'1:1 es persona y pasaporte. 1:N es madre e hijos. N:M es estudiantes y cursos: necesitas una lista de inscripciones que diga quién está en qué curso.',
+ex:sql(`-- N:M: un pedido tiene muchos productos; un producto está en muchos pedidos
+CREATE TABLE pedido_productos (
+  pedido_id   INTEGER REFERENCES pedidos(id) ON DELETE CASCADE,
+  producto_id INTEGER REFERENCES productos(id),
+  cantidad    INTEGER NOT NULL CHECK (cantidad > 0),
+  PRIMARY KEY (pedido_id, producto_id)     -- llave compuesta
+);
+
+SELECT pp.pedido_id, pr.nombre, pp.cantidad
+FROM pedido_productos pp
+JOIN productos pr ON pr.id = pp.producto_id
+WHERE pp.pedido_id = 101;`)+`<div class="grid2"><div>${tbl('pedido_productos',PEDIDO_PRODUCTOS)}</div><div>${tbl('resultado',[{pedido_id:101,nombre:'Café de origen',cantidad:2},{pedido_id:101,nombre:'Taza',cantidad:1}])}</div></div>`,
+prob:`<p>Modelar mal una relación obliga a hacks. El error más común en N:M es guardar una lista dentro de una columna (<code>productos = '1,2,4'</code>): no puedes poner FK, ni indexar, ni hacer JOIN, ni guardar la cantidad de cada producto.</p>`+
+pair(`CREATE TABLE pedidos (
+  id INTEGER PRIMARY KEY,
+  productos TEXT  -- '1,2,4'
+);`,`CREATE TABLE pedido_productos (
+  pedido_id   INTEGER REFERENCES pedidos(id),
+  producto_id INTEGER REFERENCES productos(id),
+  cantidad    INTEGER NOT NULL,
+  PRIMARY KEY (pedido_id, producto_id)
+);`,'Sin integridad, sin JOIN, sin lugar para la cantidad.','Tabla intermedia: cada relación es una fila, y la relación puede tener sus propios datos.'),
+puente:`<p>En el frontend lo ves como objetos anidados: <code>cliente.pedidos[]</code> (1:N) o <code>pedido.productos[]</code> (N:M). En la base de datos no hay arrays de objetos: las relaciones se guardan "planas" con FKs, y el anidamiento lo reconstruye tu API o el ORM al serializar el JSON.</p>`,
+motores:['El modelado es igual en todos los motores relacionales.','PG tiene arrays nativos (<code>INTEGER[]</code>) y JSONB, pero usarlos para relaciones pierde las FK; en entrevista se considera mala práctica salvo casos muy concretos.','En MongoDB (documental) se suele embeber el 1:N; si te preguntan SQL vs NoSQL, esta es la diferencia de fondo.'],
+answer:'<p>"En 1:N pongo la llave foránea en el lado de muchos: pedidos.cliente_id. En 1:1 uso una FK con UNIQUE, por ejemplo perfiles.cliente_id. En N:M creo una tabla intermedia con dos FK y una llave primaria compuesta por ambas, y ahí mismo guardo los datos de la relación, como la cantidad o el precio al momento de la compra."</p><p>"Evito guardar listas en una columna porque se pierde integridad referencial y no se puede indexar ni unir bien."</p>',
+demoTitle:'Elige el tipo de relación y mira cómo se modela',
+ex2:()=>classify({q:'¿Qué tipo de relación es?',cats:['1:1','1:N','N:M'],items:[
+ ['Cliente y sus pedidos',1,'Un cliente, muchos pedidos; la FK va en pedidos.'],['Pedido y productos',2,'Necesita la tabla pedido_productos.'],
+ ['Cliente y su perfil de facturación único',0,'FK con UNIQUE en perfiles.'],['Pedido y sus pagos (se permite pagar en cuotas)',1,'Un pedido, varios pagos; la FK va en pagos.']]})+
+ mcq({q:'En la tabla intermedia <code>pedido_productos</code>, ¿por qué la PK es <code>(pedido_id, producto_id)</code>?',o:['Por estética','Para impedir que el mismo producto aparezca dos veces en el mismo pedido','Porque PostgreSQL lo exige','Para que no se pueda borrar'],a:1,e:'La llave compuesta garantiza que cada par pedido–producto sea único. Si compras 3 unidades se guarda cantidad = 3, no tres filas.'})});
+
+TOPICS.push({n:8,title:'Normalización (1FN, 2FN, 3FN) y cuándo desnormalizar',f:2,
+def:'Normalizar es dividir los datos en tablas para que cada dato viva en <b>un solo lugar</b>. <b>1FN</b>: valores atómicos, sin listas en una celda. <b>2FN</b>: cada columna depende de toda la llave. <b>3FN</b>: ninguna columna depende de otra columna que no sea llave.',
+analog:'Una agenda donde anotas la dirección de tu mamá en cada cita con ella. Si se muda, tienes que corregir 40 citas y seguro se te escapa una. Normalizar es tener su dirección en un solo contacto y que las citas apunten al contacto.',
+ex:`<p>La regla mnemotécnica clásica: cada columna depende <i>de la llave, de toda la llave y de nada más que la llave</i>. La demo de abajo aplica las tres formas sobre una tabla plana de pedidos.</p>`+sql(`-- Ya normalizado (3FN): cada dato en un solo lugar
+clientes(id, nombre, ciudad)
+pedidos(id, cliente_id, fecha)
+productos(id, nombre, precio)
+pedido_productos(pedido_id, producto_id, cantidad)`),
+prob:`<p>Los datos duplicados generan <b>anomalías</b>: de actualización (cambias la ciudad de Ana en una fila y no en otra), de inserción (no puedes registrar un producto que nadie ha comprado) y de borrado (al borrar el único pedido de un producto pierdes su precio).</p>
+<p><b>Desnormalizar</b> a propósito es válido cuando la lectura domina y está medido: un contador <code>total_pedidos</code> en clientes, una tabla para reportes, una vista materializada, o copiar el <code>precio_unitario</code> en pedido_productos (eso no es duplicar: es el precio histórico al momento de la compra).</p>`,
+puente:`<p>Es el mismo principio que la "fuente única de verdad" en un store de NgRx o Redux: normalizas entidades por id (<code>{ entities: {1: {...}}, ids: [1] }</code>) para no tener el mismo cliente copiado en cinco componentes. La desnormalización equivale a un selector memoizado: una copia derivada para leer rápido.</p>`,
+motores:['La teoría es la misma en todos los motores.','PG tiene <code>MATERIALIZED VIEW</code> (se refresca con <code>REFRESH MATERIALIZED VIEW</code>); MySQL no la tiene de forma nativa.','JSONB en PG permite guardar datos semiestructurados sin crear tablas, lo que es una forma controlada de desnormalizar.'],
+answer:'<p>"Normalizar es organizar las tablas para que cada dato viva en un solo lugar y evitar anomalías de actualización, inserción y borrado. 1FN pide valores atómicos; 2FN, que las columnas dependan de toda la llave compuesta; 3FN, que no haya dependencias transitivas, como la ciudad del cliente guardada en el pedido."</p><p>"En sistemas transaccionales apunto a 3FN. Desnormalizo solo cuando hay un problema de lectura medido, con mecanismos como vistas materializadas o columnas calculadas, y asumo el costo de mantenerlas sincronizadas."</p>',
+demoTitle:'Normaliza una tabla plana en tres pasos',
+ex2:()=>classify({q:'¿Qué forma normal se viola?',cats:['1FN','2FN','3FN'],items:[
+ ["Columna telefonos = '310…, 320…'",0,'Hay una lista dentro de una celda: el valor no es atómico.'],
+ ['En pedido_productos(pedido_id, producto_id, cantidad, nombre_producto), nombre_producto depende solo de producto_id',1,'Depende de una parte de la llave compuesta.'],
+ ['En pedidos(id, cliente_id, ciudad_cliente), la ciudad depende del cliente, no del pedido',2,'Dependencia transitiva: id → cliente_id → ciudad.']]})+
+ mcq({q:'¿Cuál de estos es un caso razonable para desnormalizar?',o:['Copiar el email del cliente en cada pedido "por si acaso"','Un dashboard que suma millones de pedidos por día y tarda 20 s; se crea una tabla de resumen diaria','Guardar los productos como texto separado por comas','Nunca se debe desnormalizar'],a:1,e:'Desnormalizar se justifica con un problema de rendimiento medido y un mecanismo claro para mantener la copia actualizada.'})});
+
+TOPICS.push({n:9,title:'Índices y EXPLAIN',f:3,
+def:'Un índice es una estructura aparte (por defecto un <b>B-tree</b>) que permite encontrar filas sin recorrer toda la tabla. Acelera lecturas a cambio de espacio y de escrituras más lentas. <code>EXPLAIN</code> muestra el plan que eligió el motor.',
+analog:'El índice al final de un libro: para buscar "transacciones" no lees 600 páginas, vas al índice y saltas a la página 412. Pero cada vez que el autor agrega un capítulo, hay que actualizar el índice.',
+ex:sql(`CREATE INDEX idx_pedidos_cliente_id ON pedidos (cliente_id);
+
+EXPLAIN ANALYZE
+SELECT * FROM pedidos WHERE cliente_id = 42;`)+code(`-- Sin índice
+Seq Scan on pedidos  (actual time=0.02..98.1 rows=10 loops=1)
+  Filter: (cliente_id = 42)
+  Rows Removed by Filter: 999990
+
+-- Con índice
+Index Scan using idx_pedidos_cliente_id on pedidos  (actual time=0.03..0.06 rows=10 loops=1)
+  Index Cond: (cliente_id = 42)`),
+prob:`<p><b>Cuándo ayudan:</b> columnas en <code>WHERE</code>, <code>JOIN</code> y <code>ORDER BY</code> de tablas grandes, con valores muy variados (alta selectividad), y las FK.</p>
+<p><b>Cuándo estorban o no sirven:</b> tablas pequeñas; columnas con pocos valores distintos (estado, booleanos); tablas con muchísimas escrituras; y queries que envuelven la columna en una función, porque el índice no aplica.</p>`+
+pair(`CREATE INDEX idx_email ON clientes (email);
+
+SELECT * FROM clientes
+WHERE LOWER(email) = 'ana@mail.com';
+-- Seq Scan: el índice es sobre email, no sobre LOWER(email)`,`CREATE INDEX idx_email_lower
+  ON clientes (LOWER(email));
+
+SELECT * FROM clientes
+WHERE LOWER(email) = 'ana@mail.com';
+-- Index Scan`,'La función oculta la columna al índice.','Índice de expresión: indexa exactamente lo que filtras.')+
+`<p><b>Índices compuestos:</b> <code>(cliente_id, fecha)</code> sirve para filtrar por <code>cliente_id</code> o por <code>cliente_id + fecha</code>, pero no solo por <code>fecha</code>. El orden de las columnas importa (regla del prefijo izquierdo).</p>`,
+puente:`<p>Sin índice, la base hace un <code>array.find()</code>: O(n). Con un B-tree es O(log n), parecido a buscar en un <code>Map</code> por clave. Y el costo en escrituras es como mantener un <code>Map</code> sincronizado a mano cada vez que haces <code>push</code> al array.</p>`,
+motores:['Tipos de índice en PG: B-tree (por defecto), Hash, <b>GIN</b> (JSONB, arrays, texto completo), GiST (geometría, rangos) y BRIN (tablas enormes ordenadas por tiempo).','PG tiene <b>índices parciales</b> (<code>WHERE estado = \'pendiente\'</code>) y de expresión, y <code>CREATE INDEX CONCURRENTLY</code> para no bloquear escrituras en producción.','En MySQL/InnoDB y en SQL Server la PK es un índice <b>clustered</b> (la tabla se guarda ordenada por ella). En PG las tablas son heap y no hay clustered permanente.'],
+answer:'<p>"Un índice es una estructura adicional, normalmente un B-tree, que permite al motor llegar a las filas sin recorrer toda la tabla. Acelera las lecturas en WHERE, JOIN y ORDER BY, pero ocupa espacio y hace más lentos los INSERT, UPDATE y DELETE, porque cada índice también se actualiza."</p><p>"No indexo por intuición: miro el plan con EXPLAIN ANALYZE, busco Seq Scans sobre tablas grandes con filtros selectivos y ahí creo el índice. En PostgreSQL además indexo las FK, porque no se indexan solas."</p>',
+demoTitle:'Activa o desactiva el índice y mira cuántas filas recorre el motor',
+ex2:()=>classify({q:'Tabla pedidos con 10 millones de filas. ¿Un índice B-tree ayudaría?',cats:['Ayuda','No ayuda'],items:[
+ ['WHERE id = 948211',0,'Alta selectividad; además la PK ya tiene índice.'],['WHERE estado = \'pagado\' (el 90% de las filas)',1,'Devuelve casi toda la tabla: un Seq Scan es más barato.'],
+ ['JOIN clientes ON clientes.id = pedidos.cliente_id, filtrando un cliente',0,'Indexar la FK es clave para los JOINs.'],['WHERE fecha::text LIKE \'%-10-%\'',1,'El cast y el comodín inicial impiden usar el índice; mejor un rango de fechas.']]})+
+ mcq({q:'Tienes un índice en <code>(cliente_id, fecha)</code>. ¿Cuál query NO puede aprovecharlo bien?',o:['WHERE cliente_id = 3','WHERE cliente_id = 3 AND fecha > \'2026-10-01\'','WHERE fecha > \'2026-10-01\'','WHERE cliente_id = 3 ORDER BY fecha'],a:2,e:'Un índice compuesto se usa desde la columna de la izquierda. Filtrar solo por fecha salta la primera columna.'})});
+
+TOPICS.push({n:10,title:'Transacciones, ACID y niveles de aislamiento',f:3,
+def:'Una transacción agrupa varias operaciones que se aplican <b>todas o ninguna</b> (<code>BEGIN</code> … <code>COMMIT</code> o <code>ROLLBACK</code>). <b>ACID</b>: Atomicidad, Consistencia, Aislamiento (Isolation) y Durabilidad.',
+analog:'Una transferencia bancaria: si te descuentan el dinero pero no le llega al otro, es un desastre. O se hacen las dos cosas o ninguna. El aislamiento es que nadie vea la transferencia a medio hacer.',
+ex:sql(`BEGIN;
+UPDATE cuentas SET saldo = saldo - 200000 WHERE titular = 'Ana';
+UPDATE cuentas SET saldo = saldo + 200000 WHERE titular = 'Luis';
+COMMIT;      -- si algo falla antes: ROLLBACK`)+tbl(null,[
+ {letra:'A — Atomicidad',significa:'Todo o nada'},{letra:'C — Consistencia',significa:'Se pasa de un estado válido a otro válido (constraints)'},
+ {letra:'I — Aislamiento',significa:'Las transacciones concurrentes no se pisan'},{letra:'D — Durabilidad',significa:'Tras el COMMIT, el dato sobrevive a una caída (WAL)'}],{foot:false}),
+prob:`<p>Sin transacción, si el servidor cae entre los dos UPDATE, el dinero desaparece. Otro error clásico es el <i>lost update</i>: dos requests leen el stock (5), restan 1 en memoria y guardan 4 las dos. La solución: actualizar de forma atómica en SQL o bloquear la fila con <code>SELECT … FOR UPDATE</code>.</p>`+
+pair(`stock = SELECT stock FROM productos WHERE id = 3;
+-- (otra request lee el mismo valor)
+UPDATE productos SET stock = :stock - 1 WHERE id = 3;`,`UPDATE productos
+SET stock = stock - 1
+WHERE id = 3 AND stock > 0
+RETURNING stock;`,'Leer, calcular en el backend y escribir pierde actualizaciones.','Atómico: la base resuelve la concurrencia y el CHECK impide negativos.')+
+`<h3>Niveles de aislamiento y anomalías</h3>`+tbl(null,[
+ {nivel:'Read Uncommitted',sucia:'posible*',no_repetible:'posible',fantasma:'posible'},
+ {nivel:'Read Committed (default PG)',sucia:'no',no_repetible:'posible',fantasma:'posible'},
+ {nivel:'Repeatable Read',sucia:'no',no_repetible:'no',fantasma:'no en PG**'},
+ {nivel:'Serializable',sucia:'no',no_repetible:'no',fantasma:'no'}],{cols:['nivel','sucia','no_repetible','fantasma'],foot:false})+
+`<p class="rows">* En PG, Read Uncommitted se comporta como Read Committed: nunca hay lecturas sucias. ** El estándar SQL lo permite; la implementación de PG lo evita.</p><p><b>Lectura sucia:</b> ver datos sin COMMIT de otra transacción. <b>No repetible:</b> leer la misma fila dos veces y obtener valores distintos. <b>Fantasma:</b> repetir una consulta y que aparezcan filas nuevas. Más aislamiento = más seguridad, pero más bloqueos o reintentos.</p>`,
+puente:`<p>Piensa en <code>Promise.all</code> sin rollback: si una promesa falla, las otras ya hicieron su efecto. Una transacción es como un <code>Promise.all</code> que deshace todo si algo falla. En Python con SQLAlchemy: <code>with session.begin(): ...</code> hace COMMIT al salir del bloque y ROLLBACK si hay una excepción.</p>`,
+motores:['Nivel por defecto: <b>PG = Read Committed</b>; <b>MySQL/InnoDB = Repeatable Read</b>; SQL Server = Read Committed.','PG usa <b>MVCC</b>: los lectores no bloquean a los escritores, cada transacción ve una "foto" de los datos.','En PG el DDL es transaccional: puedes hacer <code>BEGIN; CREATE TABLE …; ROLLBACK;</code>. En MySQL el DDL hace commit implícito.'],
+answer:'<p>"Una transacción agrupa operaciones que deben aplicarse juntas: o todas con COMMIT, o ninguna con ROLLBACK. ACID significa atomicidad, consistencia, aislamiento y durabilidad."</p><p>"El aislamiento define qué ve una transacción de las demás. PostgreSQL usa Read Committed por defecto, que evita lecturas sucias pero permite lecturas no repetibles. Para operaciones críticas como descontar stock, actualizo de forma atómica en SQL o uso SELECT FOR UPDATE, y subo a Serializable solo si el caso lo exige, manejando los reintentos."</p>',
+demoTitle:'Ejecuta una transferencia paso a paso y decide COMMIT o ROLLBACK',
+ex2:()=>mcq({q:'Hiciste BEGIN, descontaste 200.000 a Ana y el servidor se reinicia antes del COMMIT. ¿Qué saldo tiene Ana después?',o:['El saldo con el descuento','El saldo original: la transacción nunca se confirmó','Depende del frontend','Queda en NULL'],a:1,e:'Atomicidad: sin COMMIT, la transacción se descarta al recuperar la base. Nada a medias queda guardado.'})+
+ classify({q:'¿Qué letra de ACID protege cada situación?',cats:['A','C','I','D'],items:[
+ ['El servidor se apaga justo después del COMMIT y el pedido sigue ahí',3,'Durabilidad: el WAL se escribió a disco antes de confirmar.'],['Un reporte no ve una transferencia a medio hacer',2,'Aislamiento.'],
+ ['No se puede guardar un stock negativo porque viola un CHECK',1,'Consistencia: la transacción no deja la base en un estado inválido.'],['Si falla el segundo UPDATE, el primero se deshace',0,'Atomicidad: todo o nada.']]})});
+
+// ===== Temas 11–14 =====
+TOPICS.push({n:11,title:'Window functions: ROW_NUMBER, RANK, LAG/LEAD',f:2,
+def:'Una window function calcula un valor <b>por fila</b> mirando un grupo de filas relacionadas (la "ventana"), <b>sin colapsarlas</b> como hace GROUP BY. Se escriben con <code>OVER (PARTITION BY … ORDER BY …)</code>.',
+analog:'La tabla de posiciones de una liga: cada equipo conserva su fila, pero ves su puesto dentro de su grupo (PARTITION BY grupo, ORDER BY puntos) y cuántos puntos saca al anterior (LAG).',
+ex:sql(`-- Clásico de entrevista: el último pedido de cada cliente
+WITH ordenados AS (
+  SELECT id, cliente_id, fecha, total,
+         ROW_NUMBER() OVER (PARTITION BY cliente_id ORDER BY fecha DESC) AS rn
+  FROM pedidos
+  WHERE cliente_id IS NOT NULL
+)
+SELECT id, cliente_id, fecha, total
+FROM ordenados
+WHERE rn = 1;`)+`<div class="grid2"><div>${tbl('ordenados (paso intermedio)',[{id:102,cliente_id:1,fecha:'2026-10-05',rn:1},{id:101,cliente_id:1,fecha:'2026-10-01',rn:2},{id:104,cliente_id:3,fecha:'2026-10-09',rn:1},{id:103,cliente_id:3,fecha:'2026-10-07',rn:2}],{cls:r=>r.rn===1?'hl':''})}</div><div>${tbl('resultado',[{id:102,cliente_id:1,fecha:'2026-10-05',total:80000},{id:104,cliente_id:3,fecha:'2026-10-09',total:80000}])}</div></div>`,
+prob:`<p>Resuelven "top N por grupo", rankings, acumulados y comparaciones con la fila anterior, que con GROUP BY obligan a self joins o subqueries complicadas. No se pueden usar directamente en <code>WHERE</code> (se calculan después), por eso se envuelven en una CTE o subquery.</p>`+
+pair(`SELECT id, ROW_NUMBER() OVER (ORDER BY total DESC) AS rn
+FROM pedidos
+WHERE rn <= 3;
+-- ERROR: column "rn" does not exist`,`SELECT * FROM (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY total DESC) AS rn
+  FROM pedidos
+) t
+WHERE rn <= 3;`,'Las window functions se calculan en el SELECT, después del WHERE.','Calcúlala en una subquery o CTE y filtra afuera.')+
+`<h3>ROW_NUMBER vs. RANK vs. DENSE_RANK con empates</h3>`+tbl(null,[
+ {total:200000,row_number:1,rank:1,dense_rank:1},{total:120000,row_number:2,rank:2,dense_rank:2},{total:80000,row_number:3,rank:3,dense_rank:3},
+ {total:80000,row_number:4,rank:3,dense_rank:3},{total:50000,row_number:5,rank:5,dense_rank:4}],{foot:false}),
+puente:`<p>Es como un <code>map</code> que recibe el array completo: <code>pedidos.map((p, i, arr) =&gt; ({...p, anterior: arr[i-1]?.total ?? null}))</code> es <code>LAG(total)</code>. Con PARTITION BY, es hacer ese map dentro de cada grupo por separado, sin perder filas.</p>`,
+motores:['MySQL soporta window functions solo desde la 8.0; MySQL 5.7 no las tiene.','PG permite definir el marco: <code>ROWS BETWEEN 2 PRECEDING AND CURRENT ROW</code> para promedios móviles, y acumulados con <code>SUM(total) OVER (ORDER BY fecha)</code>.','PG permite nombrar ventanas reutilizables con la cláusula <code>WINDOW w AS (…)</code>.'],
+answer:'<p>"Las window functions calculan un valor por fila sobre un conjunto de filas relacionadas, sin colapsarlas como GROUP BY. PARTITION BY define los grupos y ORDER BY el orden dentro de cada uno."</p><p>"ROW_NUMBER numera sin empates; RANK da el mismo puesto a los empates y salta números; DENSE_RANK no salta. LAG y LEAD miran la fila anterior o siguiente, útil para variaciones mes a mes. Para un top N por grupo calculo ROW_NUMBER en una CTE y filtro rn ≤ N afuera, porque no se pueden usar en el WHERE."</p>',
+demoTitle:'Cambia la función y activa PARTITION BY para ver el cálculo fila por fila',
+ex2:()=>mcq({q:'Totales ordenados: 300, 200, 200, 100. ¿Qué devuelve <code>DENSE_RANK()</code> para el 100?',o:['3','4','2','5'],a:0,e:'DENSE_RANK no deja huecos: 300→1, 200→2, 200→2, 100→3. RANK daría 4.'},'¿Qué devuelve?')+
+ mcq({q:'¿Qué función usas para calcular cuánto cambió el total respecto al pedido anterior del mismo cliente?',o:['ROW_NUMBER() OVER (PARTITION BY cliente_id)','total - LAG(total) OVER (PARTITION BY cliente_id ORDER BY fecha)','SUM(total) GROUP BY cliente_id','LEAD(total) sin OVER'],a:1,e:'LAG trae el valor de la fila anterior dentro de la partición, en el orden indicado.'})});
+
+TOPICS.push({n:12,title:'Comparaciones clásicas de entrevista',f:3,
+def:'Pares que se parecen pero no son iguales, y que se preguntan casi siempre: <b>DELETE vs. TRUNCATE vs. DROP</b>, <b>UNION vs. UNION ALL</b>, WHERE vs. HAVING, IN vs. EXISTS y CHAR vs. VARCHAR.',
+analog:'Con un archivador: DELETE es sacar algunas hojas (puedes elegir cuáles); TRUNCATE es vaciar el cajón de golpe; DROP es tirar el archivador completo.',
+ex:sql(`SELECT ciudad FROM clientes
+UNION                 -- quita duplicados (ordena o hashea)
+SELECT ciudad FROM tiendas;
+
+SELECT ciudad FROM clientes
+UNION ALL             -- conserva todo, más rápido
+SELECT ciudad FROM tiendas;`)+tbl(null,[
+ {'':'Qué borra',DELETE:'filas (con WHERE)',TRUNCATE:'todas las filas',DROP:'la tabla entera'},
+ {'':'Estructura',DELETE:'se conserva',TRUNCATE:'se conserva',DROP:'desaparece'},
+ {'':'WHERE',DELETE:'sí',TRUNCATE:'no',DROP:'no'},
+ {'':'Velocidad',DELETE:'lento en tablas grandes',TRUNCATE:'muy rápido',DROP:'muy rápido'},
+ {'':'Triggers ON DELETE',DELETE:'se disparan',TRUNCATE:'no',DROP:'no'},
+ {'':'ROLLBACK en PG',DELETE:'sí',TRUNCATE:'sí (en PG)',DROP:'sí (en PG)'}],{foot:false}),
+prob:`<p>Usar <code>UNION</code> cuando no hay duplicados posibles cuesta un paso extra de deduplicación. Usar <code>DELETE</code> sin WHERE para vaciar una tabla grande es lento y llena el log; <code>TRUNCATE</code> es la herramienta correcta. Y un <code>DROP</code> en producción sin backup no tiene vuelta atrás.</p>`+
+pair(`SELECT id FROM pedidos WHERE estado = 'pagado'
+UNION
+SELECT id FROM pedidos WHERE estado = 'pendiente';
+-- deduplica sin necesidad`,`SELECT id FROM pedidos WHERE estado = 'pagado'
+UNION ALL
+SELECT id FROM pedidos WHERE estado = 'pendiente';
+-- o mejor: WHERE estado IN ('pagado','pendiente')`,'Los conjuntos son disjuntos: deduplicar es trabajo inútil.','UNION ALL, o una sola query con IN.')+
+`<h3>Otras que preguntan</h3>`+tbl(null,[
+ {par:'IN vs. EXISTS',diferencia:'IN compara contra una lista; EXISTS solo pregunta si hay filas. Ojo: NOT IN con un NULL en la lista devuelve 0 filas; NOT EXISTS no tiene ese problema.'},
+ {par:'CHAR(n) vs. VARCHAR(n)',diferencia:'CHAR rellena con espacios hasta n; VARCHAR guarda lo justo. En PG casi siempre se usa TEXT o VARCHAR.'},
+ {par:'COUNT(*) vs. COUNT(col)',diferencia:'Filas totales vs. valores no NULL.'},
+ {par:'Vista vs. vista materializada',diferencia:'La vista es una query guardada que se ejecuta cada vez; la materializada guarda el resultado y se refresca.'},
+ {par:'DISTINCT vs. GROUP BY',diferencia:'Ambos quitan duplicados; GROUP BY además permite agregar.'}],{foot:false}),
+puente:`<p><code>UNION</code> es <code>[...new Set([...a, ...b])]</code>; <code>UNION ALL</code> es <code>[...a, ...b]</code>. Ambos exigen el mismo número de columnas con tipos compatibles, como concatenar arrays del mismo tipo.</p>`,
+motores:['<b>TRUNCATE en MySQL hace commit implícito</b> y no se puede deshacer; en PG sí está dentro de la transacción.','En PG, TRUNCATE <b>no</b> reinicia la secuencia del id por defecto: se usa <code>TRUNCATE pedidos RESTART IDENTITY</code>. En MySQL, TRUNCATE reinicia el AUTO_INCREMENT.','TRUNCATE falla si otras tablas tienen FK hacia la tabla, salvo con <code>CASCADE</code>.'],
+answer:'<p>"DELETE borra filas, acepta WHERE, dispara triggers y en tablas grandes es lento. TRUNCATE vacía la tabla completa muy rápido conservando la estructura; DROP elimina la tabla con su estructura. En PostgreSQL los tres se pueden deshacer dentro de una transacción, a diferencia de MySQL con TRUNCATE."</p><p>"UNION combina resultados quitando duplicados, lo que tiene un costo; UNION ALL los conserva y es más rápido. Uso UNION ALL salvo que necesite deduplicar."</p>',
+demoTitle:'Prueba UNION vs. UNION ALL y los tres tipos de borrado',
+ex2:()=>classify({q:'¿Qué sentencia usas?',cats:['DELETE','TRUNCATE','DROP'],items:[
+ ['Borrar los pedidos anulados hace más de un año',0,'Necesitas WHERE.'],['Vaciar una tabla de logs de 50 millones de filas, conservando la tabla',1,'Rápido y sin recorrer fila a fila.'],
+ ['Eliminar una tabla que ya no se usa en el modelo',2,'Se va la estructura también.'],['Borrar un cliente y que se dispare el trigger de auditoría',0,'TRUNCATE no dispara los triggers ON DELETE.']]})+
+ mcq({q:'¿Qué devuelve?',sql:`SELECT nombre FROM clientes
+WHERE id NOT IN (SELECT cliente_id FROM pedidos);`,o:['Luis y Pedro','0 filas','Ana y Marta','Error de sintaxis'],a:1,e:'pedidos.cliente_id contiene un NULL (pedido 105). <code>x NOT IN (1, 3, NULL)</code> nunca es verdadero, así que no sale nada. Con NOT EXISTS sí obtendrías a Luis y Pedro. Es una trampa clásica.'},'¿Qué devuelve?')});
+
+TOPICS.push({n:13,title:'Inyección SQL y queries parametrizadas',f:3,
+def:'La <b>inyección SQL</b> ocurre cuando un dato del usuario se concatena dentro del texto de la query y termina ejecutándose como código. Se previene con <b>queries parametrizadas</b>: la query y los valores viajan por separado y el valor nunca se interpreta como SQL.',
+analog:'Un formulario impreso con la casilla "Nombre: ____". Si alguien escribe "Juan. Además, transfiera todo a mi cuenta" y un empleado lee el formulario completo como instrucciones, hay un problema. La parametrización es que el empleado solo copie lo que está dentro de la casilla.',
+ex:code(`# Python + psycopg (driver de PostgreSQL)
+email = request.query_params["email"]
+
+# ✗ Vulnerable: f-string arma el SQL con el dato
+cur.execute(f"SELECT * FROM clientes WHERE email = '{email}'")
+
+# ✓ Parametrizada: el driver envía el valor aparte
+cur.execute("SELECT * FROM clientes WHERE email = %s", (email,))`),
+prob:`<p>Con el input <code>' OR '1'='1</code>, la versión concatenada queda <code>WHERE email = '' OR '1'='1'</code> y devuelve todos los clientes. Con inputs más agresivos se pueden leer otras tablas, saltarse un login o borrar datos. Escapar comillas a mano no es suficiente.</p>`+
+pair(`query = "SELECT * FROM pedidos ORDER BY " + campo
+# "campo" viene del frontend`,`PERMITIDOS = {"fecha", "total"}
+if campo not in PERMITIDOS:
+    raise ValueError("Campo no permitido")
+query = sql.SQL("SELECT * FROM pedidos ORDER BY {}").format(
+    sql.Identifier(campo))`,'Los nombres de columna no se pueden pasar como parámetro.','Para identificadores: lista blanca + sql.Identifier de psycopg.',false)+
+`<p>Defensa en capas: parametrizar siempre, usar un usuario de base con permisos mínimos (la app no necesita <code>DROP</code>), validar el input y no mostrar errores de SQL al cliente.</p>`,
+puente:`<p>Es el mismo concepto que el XSS en el frontend: Angular sanitiza por defecto lo que pintas con interpolación <code>{{ }}</code> y te obliga a usar <code>bypassSecurityTrustHtml</code> para insertar HTML crudo. En SQL, el placeholder es la interpolación segura y la concatenación es el <code>innerHTML</code>.</p>`,
+motores:['Sintaxis del placeholder: PG nativo <code>$1, $2</code>; psycopg y asyncpg en Python <code>%s</code> / <code>$1</code>; MySQL <code>?</code>; SQL Server <code>@p1</code>.','Los ORMs (SQLAlchemy, Django, TypeORM, Hibernate) parametrizan por defecto, pero vuelves a ser vulnerable si usas <code>text()</code> o queries crudas con concatenación.','Ningún motor permite parametrizar nombres de tabla o de columna: siempre lista blanca.'],
+answer:'<p>"La inyección SQL ocurre cuando concateno input del usuario dentro del SQL y ese input termina interpretado como código. La defensa principal es usar queries parametrizadas: el driver envía la sentencia y los valores por separado, así que el valor nunca se ejecuta."</p><p>"Para lo que no se puede parametrizar, como el nombre de una columna en un ORDER BY dinámico, uso una lista blanca. Y aplico defensa en profundidad: usuario de base con permisos mínimos, validación de entrada y errores genéricos hacia el cliente."</p>',
+demoTitle:'Elige un input y compara la query concatenada con la parametrizada',
+ex2:()=>mcq({q:'¿Cuál de estas es segura en Python con psycopg?',o:['cur.execute(f"... WHERE id = {id}")','cur.execute("... WHERE id = " + str(id))','cur.execute("... WHERE id = %s", (id,))','cur.execute("... WHERE id = %s" % id)'],a:2,e:'Solo la tercera pasa el valor como parámetro. La cuarta parece igual, pero el operador <code>%</code> de Python formatea el texto antes de llegar al driver: sigue siendo concatenación.'})+
+ mcq({q:'¿Por qué no basta con reemplazar las comillas simples del input?',o:['Sí basta siempre','Porque hay inputs numéricos sin comillas, codificaciones y casos borde; la separación de código y datos es la única garantía','Porque PostgreSQL no usa comillas','Porque ralentiza la query'],a:1,e:'En <code>WHERE id = </code> + input, un ataque ni siquiera necesita comillas: <code>1 OR 1=1</code>. Escapar es frágil; parametrizar elimina la clase de error.'})});
+
+TOPICS.push({n:14,title:'El problema N+1 y SQL frente a un ORM',f:2,
+def:'Un <b>ORM</b> mapea tablas a clases y filas a objetos. El problema <b>N+1</b> aparece cuando haces 1 query para traer N registros y luego 1 query extra por cada uno para traer su relación: N+1 viajes a la base en vez de 1 o 2.',
+analog:'Ir al supermercado por la lista de 20 ingredientes y volver a casa después de comprar cada uno. Llegas igual, pero haces 20 viajes.',
+ex:code(`# SQLAlchemy 2.x — carga perezosa (lazy) por defecto
+clientes = session.scalars(select(Cliente)).all()        # 1 query
+for c in clientes:
+    print(c.nombre, len(c.pedidos))                      # +1 query POR cliente
+
+# Carga anticipada (eager): 2 queries en total
+clientes = session.scalars(
+    select(Cliente).options(selectinload(Cliente.pedidos))
+).all()`)+sql(`-- Lo que genera selectinload
+SELECT * FROM clientes;
+SELECT * FROM pedidos WHERE cliente_id IN (1, 2, 3, 4);`),
+prob:`<p>Con 10 clientes no se nota; con 1.000 son 1.001 queries y la página tarda segundos. Es fácil de introducir porque el código del ORM parece inocente (un simple acceso a <code>c.pedidos</code>). Se detecta activando el log de SQL (<code>echo=True</code> en SQLAlchemy) o con herramientas como <code>pg_stat_statements</code>.</p>`+
+tbl(null,[{estrategia:'Lazy (por defecto)',queries:'1 + N',cuando:'Rara vez accedes a la relación'},{estrategia:'JOIN (joinedload)',queries:'1',cuando:'Relaciones 1:1 o N:1; con 1:N duplica filas del padre'},{estrategia:'selectinload / IN',queries:'2',cuando:'Colecciones 1:N: suele ser la mejor opción'}],{foot:false})+
+`<p><b>¿SQL o ORM?</b> El ORM acelera el CRUD, las migraciones y la seguridad (parametriza por ti). SQL escrito a mano conviene en reportes, agregaciones complejas, window functions y operaciones masivas. Un senior usa el ORM por defecto, sabe leer el SQL que genera y baja a SQL cuando lo necesita.</p>`,
+puente:`<p>Ya conoces este problema en el frontend: un <code>*ngFor</code> de 50 tarjetas donde cada componente hace su propio <code>http.get('/clientes/:id/pedidos')</code> genera 51 requests. La solución es la misma idea: pedir todo en una llamada (un endpoint que traiga la relación) o agrupar los ids, como hace un DataLoader en GraphQL.</p>`,
+motores:['El N+1 no depende del motor sino del código de acceso a datos.','Equivalentes por ORM: Django <code>select_related</code> (JOIN) y <code>prefetch_related</code> (IN); TypeORM <code>relations</code> o <code>leftJoinAndSelect</code>; Hibernate <code>JOIN FETCH</code>; Entity Framework <code>Include()</code>.','En SQLAlchemy puedes poner <code>lazy="raise"</code> en una relación para que falle si alguien la carga sin pedirlo explícitamente.'],
+answer:'<p>"El N+1 ocurre cuando traigo una lista con una query y luego el ORM dispara una query adicional por cada elemento al acceder a una relación. Con mil registros son mil y una idas a la base."</p><p>"Lo detecto revisando el log de SQL y lo resuelvo con carga anticipada: un JOIN para relaciones uno a uno, o una segunda query con IN para colecciones, como selectinload en SQLAlchemy o prefetch_related en Django. Uso el ORM para el día a día, pero siempre reviso el SQL que genera y bajo a SQL directo para reportes y agregaciones."</p>',
+demoTitle:'Cambia la estrategia de carga y el número de clientes; mira el log de queries',
+ex2:()=>mcq({q:'Una pantalla lista 200 clientes con su número de pedidos y está lenta. El log muestra 201 queries. ¿Qué haces?',o:['Agregar un índice a clientes.nombre','Usar carga anticipada (selectinload) o una query con JOIN + GROUP BY','Paginar a 10 clientes y no tocar nada más','Cambiar a MySQL'],a:1,e:'Es un N+1. Si solo necesitas el conteo, lo más eficiente es una sola query con LEFT JOIN + COUNT + GROUP BY.'})+
+ mcq({q:'¿Cuál es una desventaja real de joinedload para una colección 1:N grande?',o:['No funciona en PostgreSQL','Duplica los datos del padre en cada fila del resultado y puede inflar la respuesta','Hace N+1 queries','No permite filtrar'],a:1,e:'Un JOIN 1:N repite las columnas del cliente por cada pedido. Para colecciones, selectinload (dos queries con IN) suele ser más eficiente.'})});
+
+// ===== Demos 1–7 =====
+function btns(list,cur,attr){ return list.map((x,i)=>`<button class="btn mono ${i===cur?'on':''}" data-${attr}="${i}">${esc(x)}</button>`).join(''); }
+
+DEMOS[1]=el=>{
+  const F=[
+    ["ciudad = 'Cali'",c=>c.ciudad==='Cali',"Solo Marta cumple. Para Pedro, NULL = 'Cali' da desconocido y queda fuera."],
+    ["ciudad <> 'Cali'",c=>c.ciudad!==null&&c.ciudad!=='Cali',"Sorpresa típica: Pedro no aparece. NULL <> 'Cali' tampoco es verdadero: es desconocido."],
+    ['ciudad = NULL',c=>false,'Nunca devuelve filas. Ni siquiera NULL = NULL es verdadero.'],
+    ['ciudad IS NULL',c=>c.ciudad===null,'La forma correcta de preguntar por NULL.'],
+    ["ciudad <> 'Cali' OR ciudad IS NULL",c=>c.ciudad!=='Cali','Así incluyes a Pedro de forma explícita.']];
+  let k=1, coal=false;
+  const draw=()=>{
+    const f=F[k], rows=CLIENTES.map(c=>({...c,ciudad:coal&&c.ciudad===null?'Sin ciudad':c.ciudad}));
+    el.innerHTML=`<div class="lab">Demo · NULL en filtros</div><div class="ctrls">${btns(F.map(x=>'WHERE '+x[0]),k,'f')}</div>
+    <div class="ctrls"><button class="btn ${coal?'on':''}" data-coal>${coal?'✓ ':''}Mostrar con COALESCE(ciudad, 'Sin ciudad')</button></div>
+    ${sql(`SELECT id, nombre, ${coal?"COALESCE(ciudad, 'Sin ciudad') AS ciudad":'ciudad'}\nFROM clientes\nWHERE ${f[0]};`)}
+    <div class="grid2"><div>${tbl('evaluación fila a fila',CLIENTES,{cols:['id','nombre','ciudad'],cls:c=>f[1](c)?'hl':'out',foot:false})}</div>
+    <div>${tbl('resultado',rows.filter((_,i)=>f[1](CLIENTES[i])),{cols:['id','nombre','ciudad']})}</div></div>
+    <div class="msg info">${f[2]}${coal?' COALESCE solo cambia cómo se muestra el valor; el filtro sigue evaluando el NULL original.':''}</div>`;
+    $$('[data-f]',el).forEach(b=>b.onclick=()=>{k=+b.dataset.f;draw();});
+    $('[data-coal]',el).onclick=()=>{coal=!coal;draw();};
+  }; draw();
+};
+
+DEMOS[2]=el=>{
+  const base=CLIENTES.map(c=>({id:c.id,nombre:c.nombre,ciudad:c.ciudad}));
+  const w=base.filter(c=>c.ciudad!==null);
+  const s=w.map(({nombre,ciudad})=>({nombre,ciudad}));
+  const o=[...s].sort((a,b)=>b.nombre.localeCompare(a.nombre));
+  const ST=[
+    ['FROM clientes','Se cargan todas las filas de la tabla.',tbl('',base)],
+    ['WHERE ciudad IS NOT NULL','Se descartan filas. Pedro sale porque su ciudad es NULL.',tbl('',base,{cls:r=>r.ciudad===null?'out':'',count:w.length})],
+    ['SELECT nombre, ciudad','Recién aquí se eligen columnas y nacen los alias.',tbl('',s)],
+    ['ORDER BY nombre DESC','Se ordena. Aquí ya puedes usar alias del SELECT.',tbl('',o)],
+    ['LIMIT 2','Se recortan las filas finales.',tbl('',o,{cls:(r,i)=>i>=2?'out':'hl',count:2})]];
+  let k=0;
+  const draw=()=>{
+    el.innerHTML=`<div class="lab">Demo · orden real de ejecución</div>
+    ${sql(`SELECT nombre, ciudad\nFROM clientes\nWHERE ciudad IS NOT NULL\nORDER BY nombre DESC\nLIMIT 2;`)}
+    <div class="tname">Orden en que PostgreSQL la ejecuta</div>
+    <div class="pipe">${ST.map((x,i)=>`<span class="${i===k?'on':i<k?'past':''}">${i+1}. ${x[0].split(' ')[0]}${x[0].startsWith('ORDER')?' BY':''}</span>`).join('')}</div>
+    <div class="msg info"><b>${ST[k][0]}</b> — ${ST[k][1]}</div>${ST[k][2]}
+    <div class="ctrls"><button class="btn" data-p ${k===0?'disabled':''}>← Paso anterior</button><button class="btn pri" data-n ${k===ST.length-1?'disabled':''}>Siguiente paso →</button></div>`;
+    const p=$('[data-p]',el), n=$('[data-n]',el);
+    p.onclick=()=>{k--;draw();}; n.onclick=()=>{k++;draw();};
+  }; draw();
+};
+
+DEMOS[3]=el=>{
+  const T=['INNER','LEFT','RIGHT','FULL','CROSS','SELF'];
+  const REF=[{id:1,nombre:'Ana',referido_por:null},{id:2,nombre:'Luis',referido_por:1},{id:3,nombre:'Marta',referido_por:1},{id:4,nombre:'Pedro',referido_por:3}];
+  const NOTE={INNER:'Solo parejas completas: 4 filas. Luis, Pedro y el pedido 105 quedan fuera.',
+    LEFT:'Todos los clientes. Luis y Pedro aparecen con NULL en las columnas del pedido.',
+    RIGHT:'Todos los pedidos. El 105 (pedido de invitado) aparece con NULL en el cliente.',
+    FULL:'Todo de ambos lados: los clientes sin pedido y el pedido sin cliente. 7 filas.',
+    CROSS:'Todas las combinaciones, sin condición: 4 clientes × 5 pedidos = 20 filas.',
+    SELF:'La tabla clientes unida consigo misma para ver quién refirió a quién (LEFT para incluir a Ana).'};
+  const SQLS={INNER:'INNER JOIN',LEFT:'LEFT JOIN',RIGHT:'RIGHT JOIN',FULL:'FULL OUTER JOIN'};
+  let k=0;
+  const rowsFor=t=>{const out=[];
+    if(t==='CROSS'){CLIENTES.forEach(c=>PEDIDOS.forEach(p=>out.push({nombre:c.nombre,pedido:p.id,total:p.total})));return out;}
+    CLIENTES.forEach(c=>{const ps=PEDIDOS.filter(p=>p.cliente_id===c.id);
+      if(ps.length) ps.forEach(p=>out.push({nombre:c.nombre,pedido:p.id,total:p.total}));
+      else if(t==='LEFT'||t==='FULL') out.push({nombre:c.nombre,pedido:null,total:null,_n:1});});
+    if(t==='RIGHT'||t==='FULL') PEDIDOS.filter(p=>!CLIENTES.some(c=>c.id===p.cliente_id)).forEach(p=>out.push({nombre:null,pedido:p.id,total:p.total,_n:1}));
+    return out;};
+  const draw=()=>{const t=T[k]; let q,res;
+    if(t==='SELF'){q=`SELECT c.nombre, r.nombre AS referido_por\nFROM clientes c\nLEFT JOIN clientes r ON r.id = c.referido_por;`;
+      res=`<div class="grid2"><div>${tbl('clientes (con referido_por)',REF)}</div><div>${tbl('resultado',REF.map(c=>({nombre:c.nombre,referido_por:c.referido_por?REF.find(r=>r.id===c.referido_por).nombre:null})),{cls:r=>r.referido_por===null?'new':''})}</div></div>`;}
+    else{ q=t==='CROSS'?`SELECT c.nombre, p.id AS pedido, p.total\nFROM clientes c\nCROSS JOIN pedidos p;`:`SELECT c.nombre, p.id AS pedido, p.total\nFROM clientes c\n${SQLS[t]} pedidos p ON p.cliente_id = c.id;`;
+      const r=rowsFor(t);
+      res=`<div class="grid2"><div>${tbl('clientes',CLIENTES,{cols:['id','nombre'],foot:false})}${tbl('pedidos',PEDIDOS,{cols:['id','cliente_id','total'],foot:false})}</div><div>${tbl('resultado',r,{cols:['nombre','pedido','total'],cls:x=>x._n?'new':''})}</div></div>`;}
+    el.innerHTML=`<div class="lab">Demo · tipos de JOIN</div><div class="ctrls">${btns(T.map(x=>x==='SELF'?'SELF JOIN':x+' JOIN'),k,'j')}</div>${sql(q)}<div class="msg info">${NOTE[t]} <span class="rows">Filas en verde: completadas con NULL.</span></div>${res}`;
+    $$('[data-j]',el).forEach(b=>b.onclick=()=>{k=+b.dataset.j;draw();});
+  }; draw();
+};
+
+DEMOS[4]=el=>{
+  const FN=['COUNT(*)','SUM(total)','AVG(total)','MAX(total)'];
+  let f=1, w=true, h=1;
+  const draw=()=>{
+    const src=w?PEDIDOS.filter(p=>p.estado==='pagado'):PEDIDOS;
+    const keys=[...new Set(src.map(p=>p.cliente_id))];
+    const calc=ps=>[ps.length,ps.reduce((a,p)=>a+p.total,0),Math.round(ps.reduce((a,p)=>a+p.total,0)/ps.length),Math.max(...ps.map(p=>p.total))][f];
+    const umbral=f===0?1:100000;
+    const groups=keys.map(k=>({cliente_id:k,valor:calc(src.filter(p=>p.cliente_id===k))}));
+    const pass=g=>!h||g.valor>umbral;
+    const hs=f===0?'COUNT(*) > 1':FN[f]+' > 100000';
+    el.innerHTML=`<div class="lab">Demo · agrupar y filtrar</div>
+    <div class="ctrls"><button class="btn ${w?'on':''}" data-w>${w?'✓ ':''}WHERE estado = 'pagado'</button></div>
+    <div class="ctrls">${btns(FN,f,'fn')}</div>
+    <div class="ctrls"><button class="btn ${h?'on':''}" data-h>${h?'✓ ':''}HAVING ${esc(hs)}</button></div>
+    ${sql(`SELECT cliente_id, ${FN[f]} AS valor\nFROM pedidos\n${w?"WHERE estado = 'pagado'\n":''}GROUP BY cliente_id${h?'\nHAVING '+hs:''};`)}
+    <div class="grid2"><div>${tbl('1. filas tras el WHERE',PEDIDOS,{cols:['id','cliente_id','total','estado'],cls:p=>src.includes(p)?'':'out',count:src.length})}</div>
+    <div>${tbl('2. grupos (tachados: los descarta HAVING)',groups,{cls:g=>pass(g)?'hl':'out',count:groups.filter(pass).length})}</div></div>
+    <div class="msg info">Fíjate en el grupo <span class="nul">NULL</span>: GROUP BY junta todos los NULL en un solo grupo. ${w?'':'Sin el WHERE, el pedido pendiente 102 entra en el grupo de Ana.'}</div>`;
+    $('[data-w]',el).onclick=()=>{w=!w;draw();}; $('[data-h]',el).onclick=()=>{h=h?0:1;draw();};
+    $$('[data-fn]',el).forEach(b=>b.onclick=()=>{f=+b.dataset.fn;draw();});
+  }; draw();
+};
+
+DEMOS[5]=el=>{
+  let mode=1, k=0;
+  const gasto=[{cliente_id:1,total_gastado:200000},{cliente_id:3,total_gastado:280000}];
+  const ST=[['Calcular el gasto por cliente',tbl('gasto',gasto)],['Calcular el promedio de ese gasto',tbl('promedio',[{avg:240000}])],
+    ['Unir con clientes y filtrar los que superan el promedio',tbl('resultado',[{nombre:'Marta',total_gastado:280000}])]];
+  const Q=[`SELECT c.nombre, g.total_gastado
+FROM (
+  SELECT cliente_id, SUM(total) AS total_gastado
+  FROM pedidos WHERE cliente_id IS NOT NULL
+  GROUP BY cliente_id
+) g
+JOIN clientes c ON c.id = g.cliente_id
+WHERE g.total_gastado > (
+  SELECT AVG(total_gastado) FROM (
+    SELECT SUM(total) AS total_gastado
+    FROM pedidos WHERE cliente_id IS NOT NULL
+    GROUP BY cliente_id
+  ) x
+);   -- la misma lógica escrita dos veces`,`WITH gasto AS (
+  SELECT cliente_id, SUM(total) AS total_gastado
+  FROM pedidos WHERE cliente_id IS NOT NULL
+  GROUP BY cliente_id
+)
+SELECT c.nombre, g.total_gastado
+FROM gasto g
+JOIN clientes c ON c.id = g.cliente_id
+WHERE g.total_gastado > (SELECT AVG(total_gastado) FROM gasto);`];
+  const draw=()=>{
+    el.innerHTML=`<div class="lab">Demo · subquery vs. CTE</div><div class="ctrls">${btns(['Con subqueries','Con CTE'],mode,'m')}</div>${sql(Q[mode])}
+    <div class="msg ${mode?'ok':'warn'}">${mode?'La CTE se define una vez y se reutiliza dos veces. Se lee de arriba hacia abajo.':'Funciona, pero el cálculo del gasto se repite y se lee de adentro hacia afuera.'}</div>
+    <div class="pipe">${ST.map((s,i)=>`<span class="${i===k?'on':i<k?'past':''}">Paso ${i+1}</span>`).join('')}</div>
+    <div class="msg info"><b>Paso ${k+1}:</b> ${ST[k][0]}</div>${ST[k][1]}
+    <div class="ctrls"><button class="btn" data-p ${k?'':'disabled'}>← Anterior</button><button class="btn pri" data-n ${k<2?'':'disabled'}>Siguiente →</button></div>`;
+    $$('[data-m]',el).forEach(b=>b.onclick=()=>{mode=+b.dataset.m;draw();});
+    $('[data-p]',el).onclick=()=>{k--;draw();}; $('[data-n]',el).onclick=()=>{k++;draw();};
+  }; draw();
+};
+
+DEMOS[6]=el=>{
+  let cli, last=null;
+  const reset=()=>{cli=CLIENTES.map(c=>({...c}));last=null;};
+  const A=[
+    {l:'Insertar a Sofía',q:"INSERT INTO clientes (nombre, email, ciudad)\nVALUES ('Sofía', 'sofia@mail.com', 'Neiva');",run:()=>{
+      if(cli.some(c=>c.email==='sofia@mail.com')) return {err:'ERROR:  duplicate key value violates unique constraint "clientes_email_key"\nDETAIL:  Key (email)=(sofia@mail.com) already exists.',c:'UNIQUE',api:'409 Conflict'};
+      cli.push({id:Math.max(...cli.map(c=>c.id))+1,nombre:'Sofía',email:'sofia@mail.com',ciudad:'Neiva',_new:1}); return {ok:'INSERT 0 1'};}},
+    {l:'Email repetido',q:"INSERT INTO clientes (nombre, email)\nVALUES ('Otra Ana', 'ana@mail.com');",run:()=>({err:'ERROR:  duplicate key value violates unique constraint "clientes_email_key"\nDETAIL:  Key (email)=(ana@mail.com) already exists.',c:'UNIQUE',api:'409 Conflict'})},
+    {l:'Nombre vacío',q:"INSERT INTO clientes (nombre, email)\nVALUES (NULL, 'x@mail.com');",run:()=>({err:'ERROR:  null value in column "nombre" of relation "clientes" violates not-null constraint',c:'NOT NULL',api:'400 Bad Request'})},
+    {l:'Precio negativo',q:"INSERT INTO productos (nombre, precio)\nVALUES ('Molino', -5);",run:()=>({err:'ERROR:  new row for relation "productos" violates check constraint "productos_precio_check"',c:'CHECK',api:'400 Bad Request'})},
+    {l:'Estado inventado',q:"INSERT INTO pedidos (cliente_id, total, estado)\nVALUES (2, 45000, 'enviado');",run:()=>({err:'ERROR:  new row for relation "pedidos" violates check constraint "pedidos_estado_check"',c:'CHECK',api:'400 Bad Request'})},
+    {l:'Cliente que no existe',q:"INSERT INTO pedidos (cliente_id, total, estado)\nVALUES (99, 50000, 'pagado');",run:()=>({err:'ERROR:  insert or update on table "pedidos" violates foreign key constraint "pedidos_cliente_id_fkey"\nDETAIL:  Key (cliente_id)=(99) is not present in table "clientes".',c:'FOREIGN KEY',api:'422 / 400'})},
+    {l:'Borrar a Ana (tiene pedidos)',q:'DELETE FROM clientes WHERE id = 1;',run:()=>({err:'ERROR:  update or delete on table "clientes" violates foreign key constraint "pedidos_cliente_id_fkey" on table "pedidos"\nDETAIL:  Key (id)=(1) is still referenced from table "pedidos".',c:'FOREIGN KEY (ON DELETE RESTRICT)',api:'409 Conflict'})},
+    {l:'Borrar a Luis (sin pedidos)',q:'DELETE FROM clientes WHERE id = 2;',run:()=>{ if(!cli.some(c=>c.id===2)) return {ok:'DELETE 0  (ya no existía)'}; cli=cli.filter(c=>c.id!==2); return {ok:'DELETE 1'};}}];
+  reset();
+  const draw=()=>{
+    el.innerHTML=`<div class="lab">Demo · constraints en acción</div><div class="ctrls">${A.map((a,i)=>`<button class="btn" data-a="${i}">${a.l}</button>`).join('')}<button class="btn" data-r>↺ Reiniciar datos</button></div>
+    ${last?sql(last.q)+(last.r.ok?`<div class="msg ok"><b>${esc(last.r.ok)}</b> — la operación respeta todas las reglas.</div>`:`<pre class="sql" style="color:var(--bad)">${esc(last.r.err)}</pre><div class="msg bad">Lo detuvo: <b>${last.r.c}</b>. Tu API debería traducirlo a <b>${last.r.api}</b> con un mensaje claro, sin mostrar el error crudo.</div>`):'<div class="msg info">Elige una operación. Algunas pasan y otras chocan con una regla.</div>'}
+    ${tbl('clientes (estado actual)',cli,{cls:c=>c._new?'new':''})}`;
+    $$('[data-a]',el).forEach(b=>b.onclick=()=>{const a=A[+b.dataset.a]; last={q:a.q,r:a.run()}; draw();});
+    $('[data-r]',el).onclick=()=>{reset();draw();};
+  }; draw();
+};
+
+DEMOS[7]=el=>{
+  const R=[
+    {l:'1:1',er:['clientes','id (PK)','1 ── 1','perfiles','cliente_id (FK, UNIQUE)'],q:`CREATE TABLE perfiles (
+  id          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  cliente_id  INTEGER NOT NULL UNIQUE REFERENCES clientes(id),
+  nit         TEXT NOT NULL
+);`,t:tbl('perfiles',[{id:1,cliente_id:1,nit:'900123456'},{id:2,cliente_id:3,nit:'800456789'}]),n:'El UNIQUE en cliente_id es lo que convierte la FK en 1:1: un cliente no puede tener dos perfiles. Se usa para separar datos opcionales o sensibles.'},
+    {l:'1:N',er:['clientes','id (PK)','1 ── N','pedidos','cliente_id (FK)'],q:`CREATE TABLE pedidos (
+  id          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  cliente_id  INTEGER REFERENCES clientes(id),
+  total       NUMERIC(12,2) NOT NULL
+);`,t:tbl('pedidos',PEDIDOS,{cols:['id','cliente_id','total']}),n:'La FK va siempre en el lado "muchos". Ana (id 1) aparece en dos filas de pedidos. Es la relación más común.'},
+    {l:'N:M',er:['pedidos','id (PK)','1 ── N','pedido_productos','pedido_id + producto_id (PK)','N ── 1','productos','id (PK)'],q:`CREATE TABLE pedido_productos (
+  pedido_id   INTEGER REFERENCES pedidos(id),
+  producto_id INTEGER REFERENCES productos(id),
+  cantidad    INTEGER NOT NULL CHECK (cantidad > 0),
+  PRIMARY KEY (pedido_id, producto_id)
+);`,t:`<div class="grid2"><div>${tbl('pedido_productos',PEDIDO_PRODUCTOS)}</div><div>${tbl('productos',PRODUCTOS,{cols:['id','nombre']})}</div></div>`,n:'Una N:M es en realidad dos 1:N contra una tabla intermedia. El café (id 1) está en los pedidos 101 y 103; el pedido 101 tiene café y taza.'}];
+  let k=1;
+  const ent=(a,b)=>`<div class="ent">${a}<small>${b}</small></div>`;
+  const draw=()=>{const r=R[k], e=r.er;
+    const er=e.length===5?ent(e[0],e[1])+`<span class="rel">${e[2]}</span>`+ent(e[3],e[4]):ent(e[0],e[1])+`<span class="rel">${e[2]}</span>`+ent(e[3],e[4])+`<span class="rel">${e[5]}</span>`+ent(e[6],e[7]);
+    el.innerHTML=`<div class="lab">Demo · tipos de relación</div><div class="ctrls">${btns(R.map(x=>x.l),k,'r')}</div><div class="er">${er}</div>${sql(r.q)}<div class="msg info">${r.n}</div>${r.t}`;
+    $$('[data-r]',el).forEach(b=>b.onclick=()=>{k=+b.dataset.r;draw();});
+  }; draw();
+};
+
+// ===== Demos 8–14 =====
+DEMOS[8]=el=>{
+  const ST=[
+    {t:'Tabla plana (sin normalizar)',m:'warn',n:'Una celda guarda una lista de productos y otra la lista de precios. No puedes filtrar "pedidos con Taza" sin trucos de texto, ni poner FK.',
+     h:tbl('pedidos_planos',[{pedido_id:101,fecha:'2026-10-01',cliente:'Ana',ciudad:'Bogotá',productos:'Café de origen, Taza',precios:'45000, 25000'},{pedido_id:102,fecha:'2026-10-05',cliente:'Ana',ciudad:'Bogotá',productos:'Filtro',precios:'12000'},{pedido_id:103,fecha:'2026-10-07',cliente:'Marta',ciudad:'Cali',productos:'Molino, Café de origen',precios:'150000, 45000'}])},
+    {t:'1FN: valores atómicos',m:'warn',n:'Una fila por producto de cada pedido; la llave es (pedido_id, producto). Ya no hay listas, pero "Ana, Bogotá" se repite 3 veces y el precio del café 2 veces. Si Ana se muda, hay que actualizar varias filas y es fácil dejar una mal (anomalía de actualización).',
+     h:tbl('pedidos_1fn',[{pedido_id:101,producto:'Café de origen',fecha:'2026-10-01',cliente:'Ana',ciudad:'Bogotá',precio:45000,cantidad:2},{pedido_id:101,producto:'Taza',fecha:'2026-10-01',cliente:'Ana',ciudad:'Bogotá',precio:25000,cantidad:1},{pedido_id:102,producto:'Filtro',fecha:'2026-10-05',cliente:'Ana',ciudad:'Bogotá',precio:12000,cantidad:3},{pedido_id:103,producto:'Molino',fecha:'2026-10-07',cliente:'Marta',ciudad:'Cali',precio:150000,cantidad:1},{pedido_id:103,producto:'Café de origen',fecha:'2026-10-07',cliente:'Marta',ciudad:'Cali',precio:45000,cantidad:1}],{cls:r=>r.cliente==='Ana'?'hl':''})},
+    {t:'2FN: todo depende de toda la llave',m:'warn',n:'fecha, cliente y ciudad dependen solo de pedido_id; precio depende solo del producto. Cada grupo sale a su tabla. Queda un problema: la ciudad depende del cliente, no del pedido.',
+     h:`<div class="grid2"><div>${tbl('pedidos',[{id:101,fecha:'2026-10-01',cliente:'Ana',ciudad:'Bogotá'},{id:102,fecha:'2026-10-05',cliente:'Ana',ciudad:'Bogotá'},{id:103,fecha:'2026-10-07',cliente:'Marta',ciudad:'Cali'}],{cls:r=>r.cliente==='Ana'?'hl':''})}${tbl('productos',PRODUCTOS,{cols:['id','nombre','precio']})}</div><div>${tbl('pedido_productos',PEDIDO_PRODUCTOS)}</div></div>`},
+    {t:'3FN: sin dependencias transitivas',m:'ok',n:'La ciudad pasa a clientes. Ahora cada dato vive en un solo lugar: si Ana se muda, se cambia una fila. Este es el esquema que usa toda la guía.',
+     h:`<div class="grid2"><div>${tbl('clientes',CLIENTES,{cols:['id','nombre','ciudad']})}${tbl('pedidos',PEDIDOS.slice(0,3),{cols:['id','cliente_id','fecha']})}</div><div>${tbl('productos',PRODUCTOS,{cols:['id','nombre','precio']})}${tbl('pedido_productos',PEDIDO_PRODUCTOS)}</div></div>`}];
+  let k=0;
+  const draw=()=>{const s=ST[k];
+    el.innerHTML=`<div class="lab">Demo · normalizar en pasos</div><div class="pipe">${ST.map((x,i)=>`<span class="${i===k?'on':i<k?'past':''}">${['Plana','1FN','2FN','3FN'][i]}</span>`).join('')}</div>
+    <h3>${s.t}</h3><div class="msg ${s.m}">${s.n}</div>${s.h}
+    <div class="ctrls"><button class="btn" data-p ${k?'':'disabled'}>← Anterior</button><button class="btn pri" data-n ${k<3?'':'disabled'}>Normalizar un paso más →</button></div>`;
+    $('[data-p]',el).onclick=()=>{k--;draw();}; $('[data-n]',el).onclick=()=>{k++;draw();};
+  }; draw();
+};
+
+DEMOS[9]=el=>{
+  const N=1000000;
+  const Q=[
+    {q:'WHERE id = 500000',col:'id (PK)',ret:1,pk:true,n:'La PK siempre tiene índice: el motor baja 3 o 4 niveles del B-tree y llega a la fila.'},
+    {q:'WHERE cliente_id = 42',col:'cliente_id',ret:10,n:'Filtro muy selectivo (10 de un millón): el caso ideal para un índice.'},
+    {q:"WHERE estado = 'pagado'",col:'estado',ret:700000,low:true,n:'Devuelve el 70% de la tabla. Aunque exista el índice, el planificador prefiere leer la tabla completa: saltar por el índice a 700.000 filas sería más caro.'},
+    {q:"WHERE cliente_id::text = '42'",col:'cliente_id',ret:10,fn:true,n:'El índice es sobre cliente_id, no sobre cliente_id::text. Al transformar la columna, el índice no aplica. Solución: comparar con el tipo correcto o crear un índice de expresión.'}];
+  let k=1, idx=false, ni=1;
+  const draw=()=>{const q=Q[k]; const uses=q.pk||(idx&&!q.low&&!q.fn);
+    const read=uses?Math.max(q.ret,1):N; const pct=Math.max(read/N*100,0.6);
+    const plan=uses?`Index Scan using ${q.pk?'pedidos_pkey':'idx_pedidos_cliente_id'} on pedidos\n  Index Cond: (${q.q.replace('WHERE ','')})\n  rows=${q.ret.toLocaleString('es-CO')}  ~0.05 ms`:`Seq Scan on pedidos\n  Filter: (${q.q.replace('WHERE ','')})\n  Rows Removed by Filter: ${(N-q.ret).toLocaleString('es-CO')}  ~${q.low?'140':'95'} ms`;
+    el.innerHTML=`<div class="lab">Demo · índice sí / índice no <span class="rows">(simulación ilustrativa, tabla de 1.000.000 de pedidos)</span></div>
+    <div class="ctrls">${btns(Q.map(x=>x.q),k,'q')}</div>
+    <div class="ctrls"><button class="btn ${idx?'on':''}" data-idx ${q.pk?'disabled':''}>${idx?'✓ Índice creado en '+q.col:'Crear índice en '+q.col}</button></div>
+    ${sql(`EXPLAIN ANALYZE\nSELECT * FROM pedidos ${q.q};`)}
+    <div class="stat"><div>Filas leídas<b>${read.toLocaleString('es-CO')}</b></div><div>Filas devueltas<b>${q.ret.toLocaleString('es-CO')}</b></div><div>Estrategia<b>${uses?'Index Scan':'Seq Scan'}</b></div></div>
+    <div class="meter ${uses?'good':''}"><i style="width:${pct}%"></i></div>
+    <pre class="sql">${esc(plan)}</pre><div class="msg ${uses?'ok':q.low||q.fn?'warn':'info'}">${q.n}</div>
+    <h3>El costo en escrituras</h3><p>Cada índice se actualiza en cada INSERT, UPDATE o DELETE. Elige cuántos índices tiene la tabla:</p>
+    <div class="ctrls">${[0,1,2,4,8].map(x=>`<button class="btn mono ${x===ni?'on':''}" data-ni="${x}">${x} índices</button>`).join('')}</div>
+    <div class="stat"><div>Estructuras que toca un INSERT<b>${1+ni}</b></div><div>Costo relativo de escritura<b>×${(1+ni*0.6).toFixed(1)}</b></div></div>
+    <div class="meter"><i style="width:${Math.min(100,(1+ni*0.6)/5.8*100)}%"></i></div>`;
+    $$('[data-q]',el).forEach(b=>b.onclick=()=>{k=+b.dataset.q;draw();});
+    $$('[data-ni]',el).forEach(b=>b.onclick=()=>{ni=+b.dataset.ni;draw();});
+    const bi=$('[data-idx]',el); bi.onclick=()=>{idx=!idx;draw();};
+  }; draw();
+};
+
+DEMOS[10]=el=>{
+  let S;
+  const reset=()=>{S={db:{Ana:500000,Luis:100000},tx:null,deb:false,cre:false,log:['-- Cuentas iniciales confirmadas'],msg:null};};
+  reset();
+  const act={
+    begin:()=>{S.tx={...S.db};S.deb=S.cre=false;S.log.push('BEGIN;');S.msg=['info','Transacción abierta. Los cambios solo los ves tú hasta el COMMIT.'];},
+    deb:()=>{S.tx.Ana-=200000;S.deb=true;S.log.push("UPDATE cuentas SET saldo = saldo - 200000 WHERE titular = 'Ana';");S.msg=['warn','Ana ya tiene 200.000 menos en tu sesión. La otra sesión todavía ve el saldo original (no hay lecturas sucias).'];},
+    cre:()=>{S.tx.Luis+=200000;S.cre=true;S.log.push("UPDATE cuentas SET saldo = saldo + 200000 WHERE titular = 'Luis';");S.msg=['info','Las dos operaciones están hechas, pero nada es definitivo todavía.'];},
+    commit:()=>{const partial=S.deb!==S.cre;S.db={...S.tx};S.tx=null;S.log.push('COMMIT;');
+      S.msg=partial?['bad','Confirmaste una transferencia a medias. La base cumplió su parte (atomicidad de lo que pusiste en la transacción), pero tu código definió mal el límite: el dinero no cuadra.']:['ok','COMMIT: los cambios son definitivos y ya los ve cualquier sesión. La suma total sigue en 600.000.'];},
+    rollback:()=>{S.tx=null;S.log.push('ROLLBACK;');S.msg=['ok','ROLLBACK: todo lo hecho desde BEGIN se descartó. Los saldos vuelven a como estaban.'];},
+    crash:()=>{S.tx=null;S.log.push('-- 💥 el servidor se reinicia antes del COMMIT');S.msg=['ok','La transacción nunca se confirmó, así que al recuperarse la base la descarta. Nadie pierde dinero: eso es atomicidad y durabilidad trabajando juntas.'];}};
+  const sum=o=>o.Ana+o.Luis;
+  const card=(t,o,note)=>`<div>${tbl(t,[{titular:'Ana',saldo:o.Ana},{titular:'Luis',saldo:o.Luis}],{foot:false})}<div class="rows">Suma: ${money(sum(o))} ${note||''}</div></div>`;
+  const draw=()=>{const tx=!!S.tx;
+    el.innerHTML=`<div class="lab">Demo · transferencia de 200.000 de Ana a Luis</div>
+    <div class="ctrls"><button class="btn mono" data-k="begin" ${tx?'disabled':''}>BEGIN</button><button class="btn mono" data-k="deb" ${!tx||S.deb?'disabled':''}>UPDATE Ana −200.000</button><button class="btn mono" data-k="cre" ${!tx||S.cre?'disabled':''}>UPDATE Luis +200.000</button>
+    <button class="btn mono pri" data-k="commit" ${tx?'':'disabled'}>COMMIT</button><button class="btn mono" data-k="rollback" ${tx?'':'disabled'}>ROLLBACK</button><button class="btn" data-k="crash" ${tx?'':'disabled'}>Simular caída del servidor</button><button class="btn" data-r>↺ Reiniciar</button></div>
+    <div class="grid2">${card('Tu sesión'+(tx?' (dentro de la transacción)':''),S.tx||S.db,tx&&sum(S.tx)!==600000?'⚠ estado intermedio':'')}${card('Otra sesión (READ COMMITTED)',S.db,sum(S.db)!==600000?'⚠ no cuadra':'')}</div>
+    ${S.msg?`<div class="msg ${S.msg[0]}">${S.msg[1]}</div>`:'<div class="msg info">Empieza con BEGIN. Prueba también hacer COMMIT después de un solo UPDATE.</div>'}
+    <div class="tname">Log de la sesión</div><div class="log">${S.log.map(esc).join('\n')}</div>`;
+    $$('[data-k]',el).forEach(b=>b.onclick=()=>{act[b.dataset.k]();draw();});
+    $('[data-r]',el).onclick=()=>{reset();draw();};
+  }; draw();
+};
+
+DEMOS[11]=el=>{
+  const FN=['ROW_NUMBER()','RANK()','DENSE_RANK()','LAG(total)','LEAD(total)','SUM(total)'];
+  let f=1, part=false;
+  const draw=()=>{const byTotal=f<3, ord=byTotal?'total DESC':'fecha';
+    const groups=part?[...new Set(PEDIDOS.map(p=>p.cliente_id))].map(k=>PEDIDOS.filter(p=>p.cliente_id===k)):[PEDIDOS];
+    const out=[];
+    groups.forEach(g=>{const s=[...g].sort((a,b)=>byTotal?b.total-a.total:a.fecha.localeCompare(b.fecha));
+      let rank=0,dense=0,prev=null,acc=0;
+      s.forEach((p,i)=>{let v;
+        if(p.total!==prev){rank=i+1;dense++;} prev=p.total; acc+=p.total;
+        v=[i+1,rank,dense,i?s[i-1].total:null,i<s.length-1?s[i+1].total:null,acc][f];
+        out.push({id:p.id,cliente_id:p.cliente_id,fecha:p.fecha,total:p.total,resultado:v});});});
+    const ties=byTotal&&!part;
+    el.innerHTML=`<div class="lab">Demo · window functions</div><div class="ctrls">${btns(FN,f,'w')}</div>
+    <div class="ctrls"><button class="btn ${part?'on':''}" data-part>${part?'✓ ':''}PARTITION BY cliente_id</button></div>
+    ${sql(`SELECT id, cliente_id, fecha, total,\n       ${FN[f]} OVER (${part?'PARTITION BY cliente_id ':''}ORDER BY ${ord}) AS resultado\nFROM pedidos;`)}
+    ${tbl('resultado',out,{cls:r=>ties&&r.total===80000?'hl':''})}
+    <div class="msg info">${[
+      'Numera 1, 2, 3… sin repetir, aunque haya empates (los dos pedidos de 80.000 reciben números distintos).',
+      'Los empates comparten puesto y el siguiente salta: 3, 3, 5.',
+      'Los empates comparten puesto sin saltar: 3, 3, 4.',
+      'Trae el total de la fila anterior según el orden. La primera fila de cada partición recibe NULL.',
+      'Trae el total de la fila siguiente. La última de cada partición recibe NULL.',
+      'Con ORDER BY dentro de OVER, SUM se vuelve un acumulado (running total).'][f]} ${part?'Con PARTITION BY el cálculo se reinicia en cada cliente, y las filas no se colapsan.':''}</div>`;
+    $$('[data-w]',el).forEach(b=>b.onclick=()=>{f=+b.dataset.w;draw();});
+    $('[data-part]',el).onclick=()=>{part=!part;draw();};
+  }; draw();
+};
+
+DEMOS[12]=el=>{
+  const A=CLIENTES.map(c=>({ciudad:c.ciudad,origen:'clientes'})), B=['Bogotá','Medellín','Cali'].map(c=>({ciudad:c,origen:'tiendas'}));
+  let u=0, S;
+  const reset=()=>{S={exists:true,rows:PEDIDOS.map(p=>({...p})),seq:106,trig:0,msg:null};};
+  reset();
+  const ops={
+    del1:()=>{if(!S.exists)return err();const n=S.rows.filter(r=>r.estado==='pendiente').length;S.rows=S.rows.filter(r=>r.estado!=='pendiente');S.trig+=n;S.msg=['ok',`DELETE ${n}. Se borraron solo las filas del WHERE y se disparó el trigger de auditoría ${n} ${n===1?'vez':'veces'}.`];},
+    delall:()=>{if(!S.exists)return err();const n=S.rows.length;S.rows=[];S.trig+=n;S.msg=['warn',`DELETE ${n}. Sin WHERE borra todo, fila por fila: en una tabla de millones es lento y genera mucho log. La secuencia del id sigue en ${S.seq}.`];},
+    trunc:()=>{if(!S.exists)return err();S.rows=[];S.msg=['ok',`TRUNCATE. Vacía la tabla de golpe, sin recorrer filas ni disparar triggers ON DELETE. En PG la secuencia NO se reinicia (sigue en ${S.seq}) salvo con RESTART IDENTITY.`];},
+    truncr:()=>{if(!S.exists)return err();S.rows=[];S.seq=1;S.msg=['ok','TRUNCATE … RESTART IDENTITY. Vacía la tabla y reinicia el contador: el próximo pedido tendrá id 1.'];},
+    drop:()=>{if(!S.exists)return err();S.exists=false;S.rows=[];S.msg=['bad','DROP TABLE. Desaparecen las filas, las columnas, los índices y los constraints. Cualquier query a pedidos ahora falla.'];}};
+  function err(){S.msg=['bad','ERROR:  relation "pedidos" does not exist'];}
+  const draw=()=>{const res=u?[...A,...B]:[...A,...B].filter((r,i,arr)=>arr.findIndex(x=>x.ciudad===r.ciudad)===i);
+    el.innerHTML=`<div class="lab">Demo · UNION vs. UNION ALL</div><div class="ctrls">${btns(['UNION','UNION ALL'],u,'u')}</div>
+    ${sql(`SELECT ciudad FROM clientes\n${u?'UNION ALL':'UNION'}\nSELECT ciudad FROM tiendas;`)}
+    <div class="grid2"><div>${tbl('clientes.ciudad',A,{cols:['ciudad'],foot:false})}${tbl('tiendas.ciudad',B,{cols:['ciudad'],foot:false})}</div><div>${tbl('resultado',res,{cols:['ciudad','origen']})}</div></div>
+    <div class="msg info">${u?'Conserva las 7 filas, con Bogotá y Cali repetidas. No necesita deduplicar, por eso es más rápido.':'Quita duplicados: Bogotá y Cali aparecen una vez. Para deduplicar, UNION trata dos NULL como iguales.'}</div>
+    <div class="lab" style="margin-top:18px">Demo · DELETE vs. TRUNCATE vs. DROP</div>
+    <div class="ctrls"><button class="btn mono" data-o="del1">DELETE … WHERE estado = 'pendiente'</button><button class="btn mono" data-o="delall">DELETE FROM pedidos</button><button class="btn mono" data-o="trunc">TRUNCATE pedidos</button><button class="btn mono" data-o="truncr">TRUNCATE … RESTART IDENTITY</button><button class="btn mono" data-o="drop">DROP TABLE pedidos</button><button class="btn" data-r>↺ Reiniciar</button></div>
+    <div class="stat"><div>¿Existe la tabla?<b>${S.exists?'Sí':'No'}</b></div><div>Filas<b>${S.rows.length}</b></div><div>Próximo id<b>${S.exists?S.seq:'—'}</b></div><div>Triggers disparados<b>${S.trig}</b></div></div>
+    ${S.msg?`<div class="msg ${S.msg[0]}">${S.msg[1]}</div>`:''}
+    ${S.exists?tbl('pedidos',S.rows,{cols:['id','cliente_id','total','estado']}):'<div class="msg bad">La tabla pedidos ya no existe.</div>'}`;
+    $$('[data-u]',el).forEach(b=>b.onclick=()=>{u=+b.dataset.u;draw();});
+    $$('[data-o]',el).forEach(b=>b.onclick=()=>{ops[b.dataset.o]();draw();});
+    $('[data-r]',el).onclick=()=>{reset();draw();};
+  }; draw();
+};
+
+DEMOS[13]=el=>{
+  const IN=['ana@mail.com',"' OR '1'='1","'; DROP TABLE clientes; --"];
+  let k=1, par=false;
+  const draw=()=>{const v=IN[k]; let q,res,m;
+    if(par){ q=`-- La sentencia viaja sola:\nSELECT * FROM clientes WHERE email = $1;\n-- Y el valor viaja aparte: $1 = ${JSON.stringify(v)}`;
+      res=k===0?CLIENTES.filter(c=>c.email===v):[];
+      m=k===0?['ok','Encuentra a Ana. El comportamiento normal no cambia.']:['ok','0 filas. El motor buscó un email que sea literalmente ese texto, comillas incluidas. El input nunca se ejecutó como SQL.'];}
+    else{ q=`SELECT * FROM clientes WHERE email = '${v}';`;
+      if(k===0){res=CLIENTES.filter(c=>c.email===v);m=['info','Con un input normal funciona, y por eso el error pasa desapercibido en las pruebas.'];}
+      else if(k===1){res=CLIENTES;m=['bad',"La comilla del input cerró el texto y <code>OR '1'='1'</code> es siempre verdadero: devuelve todos los clientes. En un login, esto permite entrar sin contraseña."];}
+      else{res=null;m=['bad','El input cerró la sentencia y agregó otra. Con un driver que acepta varias sentencias por llamada, la tabla clientes se borra. El <code>--</code> comenta el resto de la query original.'];}}
+    el.innerHTML=`<div class="lab">Demo · inyección SQL</div><div class="tname">Input que escribe el usuario en el buscador</div><div class="ctrls">${btns(IN,k,'i')}</div>
+    <div class="ctrls">${btns(['Concatenación (f-string)','Query parametrizada'],par?1:0,'m')}</div>
+    ${sql(q)}<div class="msg ${m[0]}">${m[1]}</div>${res?tbl('resultado',res,{cols:['id','nombre','email']}):'<div class="msg bad">ERROR:  relation "clientes" does not exist  (la tabla fue eliminada)</div>'}`;
+    $$('[data-i]',el).forEach(b=>b.onclick=()=>{k=+b.dataset.i;draw();});
+    $$('[data-m]',el).forEach(b=>b.onclick=()=>{par=b.dataset.m==='1';draw();});
+  }; draw();
+};
+
+DEMOS[14]=el=>{
+  const NS=[4,50,1000], ST=['Lazy (por defecto)','joinedload (JOIN)','selectinload (IN)'];
+  let n=1, s=0;
+  const draw=()=>{const N=NS[n]; let lines, qn;
+    if(s===0){qn=N+1; lines=['SELECT * FROM clientes;']; for(let i=1;i<=Math.min(N,6);i++) lines.push(`SELECT * FROM pedidos WHERE cliente_id = ${i};`); if(N>6) lines.push(`… ${N-6} queries más, una por cliente`);}
+    else if(s===1){qn=1; lines=['SELECT clientes.*, pedidos.*','FROM clientes LEFT JOIN pedidos ON pedidos.cliente_id = clientes.id;'];}
+    else {qn=2; const ids=Array.from({length:Math.min(N,8)},(_,i)=>i+1).join(', ')+(N>8?', …':''); lines=['SELECT * FROM clientes;',`SELECT * FROM pedidos WHERE cliente_id IN (${ids});`];}
+    const ms=qn*2;
+    el.innerHTML=`<div class="lab">Demo · problema N+1 <span class="rows">(estimación con 2 ms de latencia por consulta)</span></div>
+    <div class="ctrls">${btns(ST,s,'s')}</div><div class="ctrls">${NS.map((x,i)=>`<button class="btn mono ${i===n?'on':''}" data-n="${i}">${x.toLocaleString('es-CO')} clientes</button>`).join('')}</div>
+    ${code(s===0?`for c in session.scalars(select(Cliente)):\n    total = len(c.pedidos)      # dispara una query aquí`:`stmt = select(Cliente).options(${s===1?'joinedload':'selectinload'}(Cliente.pedidos))\nfor c in session.scalars(stmt).unique():\n    total = len(c.pedidos)      # ya está en memoria`)}
+    <div class="stat"><div>Queries a la base<b>${qn.toLocaleString('es-CO')}</b></div><div>Tiempo solo en viajes<b>~${ms.toLocaleString('es-CO')} ms</b></div></div>
+    <div class="meter ${qn<=2?'good':''}"><i style="width:${Math.min(100,Math.max(1,qn/1001*100))}%"></i></div>
+    <div class="tname">Log de SQL (echo=True)</div><div class="log">${lines.map(esc).join('\n')}</div>
+    <div class="msg ${s===0?'bad':'ok'}">${s===0?'Cada acceso a c.pedidos dispara otra query. Con pocos datos no se nota; en producción crece de forma lineal.':s===1?'Una sola query. Ojo: en un 1:N los datos del cliente se repiten por cada pedido.':'Dos queries, sin importar cuántos clientes haya. Suele ser la mejor opción para colecciones.'}</div>`;
+    $$('[data-s]',el).forEach(b=>b.onclick=()=>{s=+b.dataset.s;draw();});
+    $$('[data-n]',el).forEach(b=>b.onclick=()=>{n=+b.dataset.n;draw();});
+  }; draw();
+};
+
+// ===== Simulacro =====
+const OPEN=[
+ ['¿Cuál es la diferencia entre WHERE y HAVING?','WHERE filtra filas antes de agrupar y no puede usar funciones de agregación. HAVING filtra grupos después del GROUP BY y sí puede usarlas. Si un filtro se puede hacer en WHERE, lo pongo ahí porque reduce el trabajo antes de agrupar.'],
+ ['Explica los tipos de JOIN.','INNER devuelve solo filas con coincidencia en ambas tablas. LEFT conserva todas las de la izquierda y completa con NULL; RIGHT es el espejo. FULL conserva todo de ambos lados. CROSS genera todas las combinaciones. Un self join une una tabla consigo misma, por ejemplo empleado y jefe.'],
+ ['¿Cómo encontrarías los clientes que nunca han hecho un pedido?','Con LEFT JOIN de clientes a pedidos y WHERE pedidos.id IS NULL, o con NOT EXISTS. Evito NOT IN si la subquery puede devolver NULL, porque devuelve cero filas.'],
+ ['¿Qué es un índice y cuándo NO lo crearías?','Es una estructura, normalmente un B-tree, que permite encontrar filas sin leer toda la tabla. No lo crearía en tablas pequeñas, en columnas con pocos valores distintos o en tablas con escrituras muy intensas, porque cada índice encarece los INSERT y UPDATE. Decido con EXPLAIN ANALYZE.'],
+ ['¿Qué significa ACID?','Atomicidad: todo o nada. Consistencia: se pasa de un estado válido a otro respetando las reglas. Aislamiento: las transacciones concurrentes no se pisan. Durabilidad: lo confirmado sobrevive a una caída.'],
+ ['¿Cuál es el nivel de aislamiento por defecto de PostgreSQL y qué permite?','Read Committed. Evita lecturas sucias, pero permite lecturas no repetibles y fantasmas, porque cada sentencia ve los datos confirmados al momento de ejecutarse. MySQL InnoDB usa Repeatable Read por defecto.'],
+ ['¿Cómo modelas una relación muchos a muchos?','Con una tabla intermedia que tiene una FK a cada tabla y una llave primaria compuesta por ambas. Ahí guardo los atributos de la relación, como la cantidad o el precio al momento de la compra.'],
+ ['¿Qué es la normalización y cuándo desnormalizarías?','Organizar las tablas para que cada dato viva en un solo lugar y evitar anomalías. Apunto a 3FN en sistemas transaccionales. Desnormalizo cuando hay un problema de lectura medido, con vistas materializadas o tablas de resumen, asumiendo el costo de sincronizarlas.'],
+ ['¿Cómo previenes la inyección SQL?','Con queries parametrizadas: la sentencia y los valores viajan por separado y el valor nunca se ejecuta como código. Para nombres de columnas dinámicos uso listas blancas. Además, un usuario de base con permisos mínimos y errores genéricos hacia el cliente.'],
+ ['¿Qué es el problema N+1 y cómo lo resuelves?','Traer una lista con una query y luego una query más por cada elemento al acceder a una relación. Lo detecto en el log de SQL y lo resuelvo con carga anticipada: JOIN para relaciones a uno, o una segunda query con IN (selectinload, prefetch_related) para colecciones.'],
+ ['Diferencia entre DELETE, TRUNCATE y DROP.','DELETE borra filas, acepta WHERE y dispara triggers. TRUNCATE vacía la tabla completa muy rápido conservando la estructura. DROP elimina la tabla entera. En PostgreSQL los tres son transaccionales; en MySQL TRUNCATE hace commit implícito.'],
+ ['¿Para qué sirven las window functions? Da un ejemplo.','Calculan un valor por fila sobre un grupo de filas sin colapsarlas. Ejemplo: el último pedido de cada cliente con ROW_NUMBER() OVER (PARTITION BY cliente_id ORDER BY fecha DESC) en una CTE, filtrando rn = 1.']];
+const TEST=[
+ {q:'¿En qué orden ejecuta PostgreSQL estas cláusulas?',o:['SELECT, FROM, WHERE, ORDER BY','FROM, WHERE, SELECT, ORDER BY','FROM, SELECT, WHERE, ORDER BY','WHERE, FROM, SELECT, ORDER BY'],a:1,e:'FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.'},
+ {q:'<code>SELECT * FROM clientes WHERE ciudad = NULL;</code> devuelve…',o:['Los clientes sin ciudad','Ninguna fila','Error de sintaxis','Todos los clientes'],a:1,e:'Comparar con NULL usando = da desconocido. Se usa IS NULL.'},
+ {q:'¿Qué JOIN NO existe en MySQL?',o:['LEFT JOIN','CROSS JOIN','FULL OUTER JOIN','INNER JOIN'],a:2,e:'MySQL no tiene FULL OUTER JOIN; se emula con LEFT JOIN UNION RIGHT JOIN.'},
+ {q:'¿Qué cuenta <code>COUNT(email)</code>?',o:['Todas las filas','Las filas con email no NULL','Los emails distintos','Solo los emails válidos'],a:1,e:'COUNT(columna) ignora los NULL. COUNT(DISTINCT email) contaría distintos.'},
+ {q:'¿Dónde va la FK en una relación 1:N entre clientes y pedidos?',o:['En clientes','En pedidos','En una tabla intermedia','En ambas'],a:1,e:'En el lado "muchos": pedidos.cliente_id.'},
+ {q:'¿Qué hace PostgreSQL automáticamente al crear una FK?',o:['Crea un índice en la columna FK','Nada respecto a índices: debes crearlo tú','Crea un trigger de auditoría','Bloquea la tabla para siempre'],a:1,e:'PG indexa PK y UNIQUE, pero no las FK. MySQL InnoDB sí las indexa.'},
+ {q:'¿Qué anomalía evita Read Committed?',o:['Lectura sucia','Lectura no repetible','Fantasmas','Ninguna'],a:0,e:'Read Committed nunca muestra datos sin confirmar; sí permite no repetibles y fantasmas.'},
+ {q:'Con totales 90, 80, 80, 70, ¿qué da <code>RANK()</code> para el 70?',o:['3','4','5','2'],a:1,e:'RANK salta después de un empate: 1, 2, 2, 4.'},
+ {q:'¿Cuál es la diferencia entre UNION y UNION ALL?',o:['UNION ALL quita duplicados','UNION quita duplicados y por eso cuesta más','Son iguales en PostgreSQL','UNION solo une dos tablas'],a:1,e:'UNION deduplica; UNION ALL conserva todo y es más rápido.'},
+ {q:'Tienes un índice en <code>email</code>. ¿Qué filtro lo desaprovecha?',o:["WHERE email = 'a@b.com'","WHERE LOWER(email) = 'a@b.com'","WHERE email IN ('a@b.com')","WHERE email LIKE 'ana%'"],a:1,e:'Envolver la columna en una función impide usar el índice; se necesita un índice sobre LOWER(email).'},
+ {q:'¿Qué principio viola guardar <code>productos = \'1,2,4\'</code> en una columna?',o:['1FN','2FN','3FN','ACID'],a:0,e:'1FN exige valores atómicos.'},
+ {q:'La forma más segura de pasar un valor a una query en Python con psycopg es…',o:['f-string','Concatenar con +','cur.execute("… = %s", (valor,))','Escapar comillas a mano'],a:2,e:'Pasar los valores como parámetros separados del SQL.'}];
+const TS={ans:{}};
+function testAnswer(i,ok){ if(TS.ans[i]!==undefined) return; TS.ans[i]=ok;
+  const n=Object.keys(TS.ans).length, s=Object.values(TS.ans).filter(Boolean).length;
+  $('#score').innerHTML=`<span class="score">${s}/${TEST.length}</span> <span class="rows">${n<TEST.length?`(${n} de ${TEST.length} respondidas; cuenta tu primera respuesta)`:s>=10?'Listo para la entrevista en estos temas.':s>=7?'Buen nivel. Repasa los temas de las que fallaste.':'Vuelve a los temas con más fallos y repite el test.'}</span>`; }
+
+function renderSimulacro(){ TS.ans={};
+  return `<div class="eyebrow">Cierre</div><h1>Simulacro de entrevista</h1>
+  <p>Dos partes. Primero responde en voz alta, como si estuvieras frente al entrevistador, y solo después abre la respuesta modelo para comparar. Luego haz el test con puntaje.</p>
+  <div class="sec"><div class="lab">Parte 1 · Preguntas abiertas</div>${OPEN.map((q,i)=>`<details class="oq"><summary>${i+1}. ${q[0]}</summary><div class="answer"><p>${q[1]}</p></div></details>`).join('')}</div>
+  <div class="sec"><div class="lab">Parte 2 · Test de opción múltiple</div><div id="score" style="margin-bottom:10px"><span class="score">0/${TEST.length}</span> <span class="rows">(cuenta tu primera respuesta en cada pregunta)</span></div>
+  ${TEST.map((t,i)=>{const id='x'+(RID++); REG[id]=t; return `<div class="ex" data-ex="${id}"><div class="kind">Pregunta ${i+1}</div><div class="q">${t.q}</div><div class="opts">${t.o.map((o,j)=>`<button class="opt" data-mcq="${id}" data-i="${j}" data-test="${i}">${o}</button>`).join('')}</div><div class="fb"></div></div>`;}).join('')}
+  <div class="ctrls"><button class="btn" id="retest">↺ Reiniciar test</button></div></div>
+  <div class="done-btn"><button class="btn ${DONE.has('sim')?'on':''}" id="markdone" data-k="sim">${DONE.has('sim')?'✓ Simulacro hecho':'Marcar simulacro como hecho'}</button></div>`; }
+
+// ===== Render de temas =====
+function renderTopic(t){
+  const i=t.n;
+  return `<div class="eyebrow">Tema ${i} de 14</div><h1>${t.title}</h1><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${freqChip(t.f)}<span class="rows">frecuencia en entrevistas</span></div>
+  <div class="sec"><div class="lab">Definición</div><p class="def">${t.def}</p></div>
+  <div class="sec"><div class="lab">Analogía</div><p>${t.analog}</p></div>
+  <div class="sec"><div class="lab">Ejemplo</div>${t.ex}</div>
+  <div class="sec"><div class="lab">Qué resuelve y cómo se usa mal</div>${t.prob}</div>
+  <div class="demo" data-demo><div class="lab">Demo</div></div>
+  ${t.puente?`<div class="sec"><div class="lab">Puente con TypeScript / frontend</div>${t.puente}</div>`:''}
+  <div class="sec"><div class="lab">PostgreSQL frente a otros motores</div><ul class="eng">${t.motores.map(m=>`<li>${m}</li>`).join('')}</ul></div>
+  <div class="sec"><div class="lab">Ejercicios</div>${t.ex2()}</div>
+  <div class="sec"><div class="lab">Respuesta modelo para la entrevista</div><div class="answer">${t.answer}</div></div>
+  <div class="done-btn"><button class="btn ${DONE.has('t'+i)?'on':''}" id="markdone" data-k="t${i}">${DONE.has('t'+i)?'✓ Repasado':'Marcar como repasado'}</button></div>
+  <div class="pager">${i>1?`<a class="btn" href="#t${i-1}">← ${i-1}. ${TOPICS[i-2].title}</a>`:'<span></span>'}${i<14?`<a class="btn pri" href="#t${i+1}">${i+1}. ${TOPICS[i].title} →</a>`:'<a class="btn pri" href="#simulacro">Ir al simulacro →</a>'}</div>`; }
+
+function renderHome(){
+  return `<div class="eyebrow">Guía de estudio · PostgreSQL</div><h1>SQL para entrevistas de backend</h1>
+  <p>14 temas en orden de aprendizaje, desde la tabla hasta el ORM. Cada uno trae definición, analogía, ejemplo con tablas de entrada y resultado, el error típico frente a la forma correcta, una demo para manipular con clics, ejercicios con feedback y la respuesta modelo para decir en voz alta.</p>
+  <p>La etiqueta de frecuencia indica qué tanto aparece el tema en entrevistas técnicas de backend: ${freqChip(3)} ${freqChip(2)}</p>
+  <div class="sec"><div class="lab">El negocio de toda la guía: una tienda de café</div>
+  <p>Todos los ejemplos usan estas cuatro tablas. Fíjate en dos detalles que reaparecen: Pedro no tiene ciudad (NULL) y el pedido 105 es de un invitado, sin cliente.</p>
+  <div class="grid2"><div>${tbl('clientes',CLIENTES)}</div><div>${tbl('pedidos',PEDIDOS)}</div><div>${tbl('productos',PRODUCTOS)}</div><div>${tbl('pagos',PAGOS)}</div></div></div>
+  <div class="sec"><div class="lab">Temas</div><div class="home-list">${TOPICS.map(t=>`<a href="#t${t.n}"><span class="n">${String(t.n).padStart(2,'0')}</span><span>${t.title}</span>${freqChip(t.f)}</a>`).join('')}
+  <a href="#simulacro"><span class="n">▶</span><span><b>Simulacro final</b>: preguntas abiertas + test con puntaje</span><span></span></a></div></div>
+  <p class="rows">El progreso ("repasado") se guarda solo en este navegador.</p>`; }
+
+const GROUPS=[['Consultas',[1,2,3,4,5]],['Diseño de tablas',[6,7,8]],['Rendimiento y concurrencia',[9,10,11]],['Para la entrevista',[12,13,14]]];
+function drawNav(cur){
+  $('#nav').innerHTML=`<a href="#inicio" class="${cur==='inicio'?'on':''}" data-k="inicio"><span class="n">⌂</span><span>Inicio y esquema</span><span></span></a>`+
+  GROUPS.map(g=>`<div class="grp">${g[0]}</div>`+g[1].map(n=>{const t=TOPICS[n-1];return `<a href="#t${n}" data-k="t${n}" class="${cur==='t'+n?'on':''}"><span class="n">${String(n).padStart(2,'0')}</span><span>${t.title}</span><span class="ck" title="Repasado"></span></a>`;}).join('')).join('')+
+  `<div class="grp">Cierre</div><a href="#simulacro" data-k="sim" class="${cur==='simulacro'?'on':''}"><span class="n">▶</span><span>Simulacro</span><span class="ck"></span></a>`;
+  drawProgress(); }
+
+function route(){
+  const h=(location.hash||'#inicio').slice(1), m=$('#main');
+  const t=/^t(\d+)$/.exec(h), n=t?+t[1]:0;
+  if(n>=1&&n<=14){ const tp=TOPICS[n-1]; m.innerHTML=renderTopic(tp); const d=$('[data-demo]',m); DEMOS[n](d); }
+  else if(h==='simulacro') m.innerHTML=renderSimulacro();
+  else m.innerHTML=renderHome();
+  initBuilders(m);
+  const md=$('#markdone',m); if(md) md.onclick=()=>{const k=md.dataset.k; DONE.has(k)?DONE.delete(k):DONE.add(k); saveDone();
+    md.classList.toggle('on',DONE.has(k)); md.textContent=DONE.has(k)?(k==='sim'?'✓ Simulacro hecho':'✓ Repasado'):(k==='sim'?'Marcar simulacro como hecho':'Marcar como repasado');};
+  const rt=$('#retest',m); if(rt) rt.onclick=()=>route();
+  drawNav(n?'t'+n:h==='simulacro'?'simulacro':'inicio');
+  $('#nav').dataset.open='false'; $('#navtoggle').setAttribute('aria-expanded','false');
+  window.scrollTo(0,0);
+}
+$('#navtoggle').onclick=()=>{const o=$('#nav').dataset.open!=='true'; $('#nav').dataset.open=String(o); $('#navtoggle').setAttribute('aria-expanded',String(o));};
+window.addEventListener('hashchange',route);
+route();
+</script>
+
+</body></html>

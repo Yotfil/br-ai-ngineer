@@ -1,0 +1,12 @@
+id: seguridad-api
+track: rest
+order: 20
+freq: often
+concepts:
+  - almacenamiento-del-token
+  - xss
+  - csrf
+related:
+  - autenticacion-autorizacion
+  - cors
+  - https-tls

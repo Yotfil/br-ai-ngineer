@@ -1,0 +1,138 @@
+/**
+ * Tipos y constantes compartidos entre la compilación de contenido (scripts/) y la aplicación (src/).
+ * Este archivo no debe importar nada del navegador ni de Node.
+ */
+
+export const LOCALES = ['es', 'en'] as const
+export type Locale = (typeof LOCALES)[number]
+export const DEFAULT_LOCALE: Locale = 'es'
+
+export const FREQS = ['always', 'often', 'sometimes'] as const
+export type Freq = (typeof FREQS)[number]
+
+/** Tipos de `code:<tipo>` registrados. Añadir uno exige su rótulo en `src/locales/*.json`. */
+export const CODE_KINDS = ['wire', 'server'] as const
+/** Tecnologías de `bridge:<tecnología>` admitidas. */
+export const BRIDGE_TECHS = ['typescript'] as const
+
+/** Claves de sección en el orden de design.md decisión 2. */
+export const SECTION_KEYS = [
+  'definition',
+  'analogy',
+  'problem',
+  'code:wire',
+  'code:server',
+  'bad',
+  'good',
+  'bridge:typescript',
+  'interview',
+  'myths',
+] as const
+export type SectionKey = (typeof SECTION_KEYS)[number]
+
+export const REQUIRED_SECTIONS: readonly SectionKey[] = ['definition', 'analogy', 'problem', 'interview', 'myths']
+
+export type Tab = 'understand' | 'code' | 'practice' | 'interview'
+
+/** Pestaña de cada sección. */
+export const SECTION_TAB: Record<SectionKey, Exclude<Tab, 'practice'>> = {
+  definition: 'understand',
+  analogy: 'understand',
+  problem: 'understand',
+  'code:wire': 'code',
+  'code:server': 'code',
+  bad: 'code',
+  good: 'code',
+  'bridge:typescript': 'code',
+  interview: 'interview',
+  myths: 'interview',
+}
+
+// ---------- Salida generada (src/generated) ----------
+
+export interface TrackInfo {
+  id: string
+  abbr: string
+  color: string
+  order: number
+  name: Record<Locale, string>
+  /** Pista declarada sin temas ("Próximamente"). */
+  empty: boolean
+}
+
+export type NodeType = 'track' | 'topic' | 'concept'
+
+export interface GraphNode {
+  id: string
+  type: NodeType
+  track: string
+  /** Tema hogar (conceptos) o pista (temas). */
+  parent?: string
+  freq?: Freq
+  /** Orden del tema dentro de su pista. */
+  order?: number
+  /** Pista sin temas. */
+  empty?: boolean
+  x: number
+  y: number
+  z: number
+}
+
+export type LinkKind = 'hierarchy' | 'related' | 'mention'
+
+export interface GraphLink {
+  source: string
+  target: string
+  kind: LinkKind
+}
+
+export interface GraphData {
+  tracks: TrackInfo[]
+  nodes: GraphNode[]
+  links: GraphLink[]
+}
+
+export interface SearchDoc {
+  id: string
+  type: 'topic' | 'concept'
+  track: string
+  name: string
+  aliases: string[]
+  /** Solo en temas. */
+  summary?: string
+  /** Tema hogar (para conceptos, el tema al que pertenecen; para temas, el propio). */
+  topic: string
+  /** Nombre del tema hogar (solo en conceptos). */
+  topicName?: string
+}
+
+export interface ChoiceItem {
+  q: string
+  options: string[]
+  answer: number
+  why: string
+}
+
+export interface VerdictItem {
+  statement: string
+  ok: boolean
+  why: string
+}
+
+export type ExerciseGroup =
+  | { type: 'choice'; prompt: string; items: ChoiceItem[] }
+  | { type: 'verdict'; prompt: string; items: VerdictItem[] }
+
+export interface TopicContent {
+  id: string
+  track: string
+  order: number
+  freq: Freq
+  demo?: string
+  title: string
+  summary: string
+  /** HTML ya saneado y resaltado, por clave de sección. */
+  sections: Partial<Record<SectionKey, string>>
+  /** Campos de texto en HTML inline saneado. */
+  exercises: ExerciseGroup[]
+}

@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python y FastAPI para entrevistas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: barra lateral fija con bloques y temas + columna de lectura de ~70ch; código siempre en panel oscuro */
+:root{
+  --bg:#f2f4f3; --surface:#ffffff; --ink:#15201c; --muted:#56665f; --line:#d6dedb;
+  --accent:#0d6b5e; --accent-soft:#e1efeb; --amber:#b76a12; --amber-soft:#f8ecd9;
+  --bad:#b0362a; --bad-soft:#f8e3e0; --good:#2c7a46; --good-soft:#e2f1e6;
+  --code-bg:#101a17; --code-ink:#dfe8e4; --code-line:#1e2b27;
+  --c-kw:#7fd4c1; --c-str:#e9c27a; --c-com:#73867f; --c-num:#f0a07a; --c-deco:#c9a4f5; --c-fn:#9cc8f7;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r:10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1311; --surface:#141c19; --ink:#e2eae6; --muted:#93a49d; --line:#25312d;
+    --accent:#4fbfa8; --accent-soft:#16302a; --amber:#e3a04a; --amber-soft:#33260f;
+    --bad:#ea7a68; --bad-soft:#3a1c18; --good:#6cc28a; --good-soft:#15301f;
+    --code-bg:#0a100e; --code-line:#18231f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --ink:#e2eae6; --muted:#93a49d; --line:#25312d;
+  --accent:#4fbfa8; --accent-soft:#16302a; --amber:#e3a04a; --amber-soft:#33260f;
+  --bad:#ea7a68; --bad-soft:#3a1c18; --good:#6cc28a; --good-soft:#15301f;
+  --code-bg:#0a100e; --code-line:#18231f;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--accent-soft);padding:.08em .35em;border-radius:4px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100%}
+.side{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:var(--surface);padding:20px 14px 40px;display:flex;flex-direction:column;gap:16px}
+.brand{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.brand b{font-family:var(--f-display);font-size:1.15rem}
+.brand span{color:var(--muted);font-size:.82rem}
+.prog{padding:0 8px;display:flex;flex-direction:column;gap:6px;font-size:.82rem;color:var(--muted)}
+.bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.filters{display:flex;flex-wrap:wrap;gap:6px;padding:0 8px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:99px;padding:3px 10px;font-size:.78rem;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.navgroup{display:flex;flex-direction:column;gap:2px}
+.navgroup h4{margin:6px 8px 4px;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.navlink{display:grid;grid-template-columns:26px 1fr 14px;align-items:center;gap:6px;text-decoration:none;color:var(--ink);padding:6px 8px;border-radius:7px;font-size:.88rem;line-height:1.3}
+.navlink:hover{background:var(--accent-soft)}
+.navlink[aria-current="page"]{background:var(--accent-soft);font-weight:600}
+.navlink .num{font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.navlink .ok{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line)}
+.navlink.done .ok{background:var(--good);border-color:var(--good)}
+.navlink.hide{display:none}
+.menu-btn{display:none}
+
+main{min-width:0;padding:36px 40px 80px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.eyebrow{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.title h1{font-size:clamp(1.8rem,3.4vw,2.5rem);margin-top:6px}
+.lead{font-size:1.08rem;max-width:68ch;margin:10px 0 0}
+.freq{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-size:.75rem;font-weight:600;border-radius:99px;padding:2px 10px;white-space:nowrap}
+.freq.casi{background:var(--amber);color:var(--surface)}
+.freq.seguido{border:1.5px solid var(--amber);color:var(--amber)}
+.freq.aveces{border:1.5px dashed var(--muted);color:var(--muted)}
+
+section.blk{display:flex;flex-direction:column;gap:12px}
+section.blk > h2{font-size:1.2rem;display:flex;align-items:baseline;gap:10px}
+section.blk > h2 small{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);font-weight:400}
+.prose{max-width:70ch}
+.prose p{margin:0 0 .6em}
+.analogy{border-left:3px solid var(--amber);background:var(--amber-soft);padding:12px 16px;border-radius:0 var(--r) var(--r) 0;max-width:70ch}
+.bridge{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px 16px;max-width:76ch}
+.bridge b{color:var(--accent)}
+ul.pit{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:72ch}
+.answer{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;font-size:1.02rem;position:relative}
+.answer::before{content:"Respuesta modelo";display:block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:6px}
+.answer.hidden-a .atext{filter:blur(6px);user-select:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+pre.code{margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:var(--r);padding:14px 16px;overflow-x:auto;font:13.5px/1.6 var(--f-mono);tab-size:4}
+pre.code .ln{display:block;padding:0 6px;margin:0 -6px;border-radius:4px}
+pre.code .ln.hl{background:#2a4a41}
+.k{color:var(--c-kw)} .s{color:var(--c-str)} .c{color:var(--c-com);font-style:italic} .n{color:var(--c-num)} .d{color:var(--c-deco)} .f{color:var(--c-fn)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cmp > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tag{font-size:.75rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.tag.bad{color:var(--bad)} .tag.good{color:var(--good)}
+.cmp .bad pre{box-shadow:inset 3px 0 0 var(--bad)}
+.cmp .good pre{box-shadow:inset 3px 0 0 var(--good)}
+.cmp p{margin:0;font-size:.9rem;color:var(--muted)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.card h3{font-size:1rem;font-family:var(--f-body);font-weight:600}
+.card .hint{color:var(--muted);font-size:.9rem;margin:0}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-size:.88rem;text-align:left}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.out{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:13px/1.55 var(--f-mono);white-space:pre-wrap;word-break:break-word}
+.note{font-size:.9rem;color:var(--muted);margin:0}
+
+.stages{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.stage{border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-size:.78rem;text-align:center;background:var(--bg);transition:background .2s,border-color .2s}
+.stage b{display:block;font-size:.8rem}
+.stage.run{border-color:var(--accent);background:var(--accent-soft)}
+.stage.ok{border-color:var(--good);background:var(--good-soft)}
+.stage.fail{border-color:var(--bad);background:var(--bad-soft)}
+.stage.skip{opacity:.4}
+.status{font-family:var(--f-mono);font-weight:600;font-size:1rem}
+.status.s2{color:var(--good)} .status.s4,.status.s5{color:var(--bad)}
+.log{margin:0;padding-left:1.1em;font-size:.88rem;display:flex;flex-direction:column;gap:3px}
+
+.tl{position:relative;border:1px solid var(--line);border-radius:8px;padding:10px 12px 26px;background:var(--bg)}
+.tlrow{display:grid;grid-template-columns:130px 1fr;align-items:center;gap:8px;height:28px}
+.tlrow span{font-size:.8rem;font-family:var(--f-mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{position:relative;height:16px;border-radius:4px;background:linear-gradient(90deg,transparent calc(100% - 1px),var(--line) calc(100% - 1px));background-size:var(--cell,25%) 100%}
+.seg{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--accent);transition:left .35s,width .35s}
+.seg.wait{background:var(--accent);opacity:.35}
+.seg.block{background:var(--bad)}
+.axis{position:absolute;left:150px;right:12px;bottom:4px;display:flex;justify-content:space-between;font:11px var(--f-mono);color:var(--muted)}
+.total{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.ex{display:flex;flex-direction:column;gap:10px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;text-align:left;font-size:.92rem}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.opt code{background:transparent;padding:0}
+.fb{border-radius:8px;padding:10px 12px;font-size:.92rem}
+.fb.right{background:var(--good-soft)} .fb.wrong{background:var(--bad-soft)}
+.cls{display:flex;flex-direction:column;gap:8px}
+.clsrow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:8px}
+.clsrow:last-child{border-bottom:0}
+.clsrow .cats{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.clsrow .cats button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 8px;font-size:.8rem;font-family:var(--f-mono)}
+.clsrow .cats button.right{background:var(--good);border-color:var(--good);color:var(--surface)}
+.clsrow .cats button.wrong{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.clsrow .why{grid-column:1/-1;font-size:.86rem;color:var(--muted);margin:0}
+
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+.pager a{text-decoration:none;font-size:.9rem;max-width:45%}
+.mark{border:1.5px solid var(--good);color:var(--good);background:transparent;border-radius:99px;padding:8px 16px;font-weight:600}
+.mark[aria-pressed="true"]{background:var(--good);color:var(--surface)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.tcard{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-height:96px}
+.tcard:hover{border-color:var(--accent)}
+.tcard .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.tcard b{font-weight:600;font-size:.95rem;line-height:1.3}
+.tcard.done{box-shadow:inset 3px 0 0 var(--good)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.fact span{display:block;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.fact b{font-family:var(--f-mono);font-size:1.05rem;font-variant-numeric:tabular-nums}
+.fact p{margin:4px 0 0;font-size:.82rem;color:var(--muted)}
+details.open-q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
+details.open-q summary{cursor:pointer;font-weight:600}
+details.open-q p{margin:10px 0 0}
+.score{font-family:var(--f-display);font-size:2rem}
+table.mini{border-collapse:collapse;font-size:.88rem;width:100%}
+table.mini td,table.mini th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+table.mini th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+.tablewrap{overflow-x:auto}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:min(320px,88vw);z-index:20;transform:translateX(-102%);transition:transform .25s;box-shadow:0 0 40px rgba(0,0,0,.25)}
+  .side.open{transform:none}
+  .menu-btn{display:inline-flex;position:sticky;top:10px;z-index:10;margin:10px 16px 0;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-size:.9rem}
+  main{padding:16px 16px 60px}
+  .cmp{grid-template-columns:1fr}
+  .stages{grid-template-columns:repeat(3,1fr)}
+  .tlrow{grid-template-columns:80px 1fr}
+  .axis{left:100px}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Temas">
+    <div class="brand"><b>Python + FastAPI</b><span>Guía de entrevista y primera API</span></div>
+    <div class="prog"><div class="bar"><i id="progbar"></i></div><span id="progtxt">0 de 22 temas repasados</span></div>
+    <div class="filters" role="group" aria-label="Filtrar por frecuencia">
+      <button class="chip" data-f="all" aria-pressed="true">Todos</button>
+      <button class="chip" data-f="casi" aria-pressed="false">Casi siempre</button>
+      <button class="chip" data-f="seguido" aria-pressed="false">Seguido</button>
+      <button class="chip" data-f="aveces" aria-pressed="false">A veces</button>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <div>
+    <button class="menu-btn" id="menuBtn" aria-controls="side" aria-expanded="false">☰ Temas</button>
+    <main id="main"></main>
+  </div>
+</div>
+<script>
+const TOPICS = [
+/* ───────────── BLOQUE A: PYTHON ───────────── */
+{
+ id:1, block:'A', title:`Tipado dinámico y type hints`, short:`Tipado y type hints`, freq:'casi',
+ def:`Python es de <b>tipado dinámico y fuerte</b>: las variables no tienen tipo, los valores sí, y no hay conversiones implícitas (<code>"1" + 1</code> lanza <code>TypeError</code>). Los <b>type hints</b> son anotaciones que el intérprete no hace cumplir; las verifican herramientas como mypy o pyright y, sobre todo, las leen FastAPI y Pydantic en tiempo de ejecución para validar.`,
+ analogy:`Son como las etiquetas en las cajas de una mudanza: el camión no las lee y lleva la caja igual, pero quien desempaca (el IDE, mypy, FastAPI) sí las usa para saber qué hacer con cada una.`,
+ code:`def total_pedido(precios: list[float], descuento: float = 0.0) -> float:
+    return sum(precios) * (1 - descuento)
+
+total_pedido([12_000.0, 8_500.0])   # 20500.0
+total_pedido("abc")                 # Python no se queja hasta que sum() falla
+
+cliente_id: int | None = None       # unión, como number | null en TS
+contacto: dict[str, str] = {"email": "ana@mail.com"}`,
+ problem:`Sin hints pierdes autocompletado y, en FastAPI, la validación automática: FastAPI no sabe que <code>id</code> debe ser entero. El mal uso típico es creer que el hint protege en ejecución.`,
+ bad:{code:`def buscar_producto(id, incluir_stock=False):
+    ...  # ¿id es int o str? ¿qué devuelve?`, note:`Nadie sabe qué recibe ni qué devuelve; FastAPI trataría id como str.`},
+ good:{code:`def buscar_producto(id: int, incluir_stock: bool = False) -> Producto | None:
+    ...`, note:`El contrato queda claro, el IDE ayuda y FastAPI valida que id sea entero.`},
+ bridge:`<b>TypeScript:</b> los tipos se borran al compilar y el compilador bloquea el build si no cuadran. <b>Python:</b> no hay paso que bloquee (mypy es opcional), pero los hints <i>sí existen en ejecución</i> (<code>func.__annotations__</code>). Por eso FastAPI convierte <code>producto_id: int</code> en validación y documentación, algo que en TS requiere Zod o class-validator. Además TS es estructural; las clases de Python son nominales (para estructural existe <code>typing.Protocol</code>).`,
+ pitfalls:[`Esperar que <code>x: int = "hola"</code> falle: Python lo acepta sin decir nada.`,`Pensar que <code>"1" + 1</code> da <code>"11"</code>: en Python es <code>TypeError</code>, conviertes explícitamente con <code>int()</code> o <code>str()</code>.`,`Truthiness distinta: <code>[]</code>, <code>{}</code>, <code>""</code> y <code>0</code> son falsy. En JS <code>[]</code> es truthy.`,`Solo existe <code>None</code>: no hay <code>null</code> y <code>undefined</code> por separado.`],
+ answer:`Python es dinámico pero fuerte: los valores tienen tipo y no se convierten solos. Los type hints no se aplican en ejecución; los revisa una herramienta como mypy o pyright. La diferencia con TypeScript es que en TS los tipos desaparecen al compilar, mientras que en Python siguen disponibles en runtime, y por eso Pydantic y FastAPI los usan para validar datos y generar la documentación de la API.`,
+ demo:{type:'toggle', title:`Laboratorio: ¿qué hace Python?`, hint:`Elige una línea y mira el resultado real.`, options:[
+  {label:`"1" + 1`, code:`"1" + 1`, out:`TypeError: can only concatenate str (not "int") to str`, note:`Tipado fuerte: en JS daría "11".`},
+  {label:`int("42") + 1`, code:`int("42") + 1`, out:`43`, note:`La conversión siempre es explícita.`},
+  {label:`bool([])`, code:`bool([])`, out:`False`, note:`Colección vacía es falsy. En JS Boolean([]) es true.`},
+  {label:`hint ignorado`, code:`x: int = "hola"
+print(x)`, out:`hola`, note:`El intérprete no hace cumplir el hint. mypy sí marcaría error.`},
+  {label:`hint y operación`, code:`def doble(n: int) -> int:
+    return n * 2
+
+doble("ab")`, out:`'abab'`, note:`Funciona porque str también soporta *. El hint no lo impidió.`}
+ ]},
+ ex:[
+  {kind:'output', q:`¿Qué imprime?`, code:`def doble(n: int) -> int:
+    return n * 2
+
+print(doble("ha"))`, opts:[`TypeError`,`haha`,`0`,`None`], a:1, exp:`El hint no se aplica en ejecución. <code>"ha" * 2</code> es una operación válida que repite el string.`},
+  {kind:'output', q:`¿Qué imprime?`, code:`print(bool(""), bool("0"), bool([0]))`, opts:[`False False False`,`False True True`,`True True True`,`False False True`], a:1, exp:`Solo el string vacío es falsy. <code>"0"</code> es un string con un carácter y <code>[0]</code> es una lista con un elemento: ambos truthy.`}
+ ]
+},
+{
+ id:2, block:'A', title:`Estructuras de datos: list, tuple, dict y set`, short:`list, tuple, dict, set`, freq:'casi',
+ def:`<b>list</b>: secuencia ordenada y mutable. <b>tuple</b>: secuencia ordenada e inmutable (hashable si su contenido lo es). <b>dict</b>: clave → valor, conserva el orden de inserción y busca en O(1). <b>set</b>: elementos únicos sin orden, pertenencia en O(1).`,
+ analogy:`list es la fila de pedidos en la barra; tuple, las coordenadas impresas en el recibo (no se reescriben); dict, el fichero de clientes por cédula; set, la lista de invitados donde nadie aparece dos veces.`,
+ code:`carrito = ["cafe", "taza", "cafe"]          # list: orden y duplicados
+ubicacion = (4.4389, -75.2322)               # tuple: inmutable
+stock = {"cafe": 12, "taza": 3}              # dict
+categorias = {"bebidas", "accesorios"}       # set
+
+stock.get("filtro", 0)     # 0, sin KeyError
+"cafe" in stock            # True en O(1)
+set(carrito)               # {'cafe', 'taza'}
+precio, cantidad = (25_000, 2)   # desempaquetado de tupla`,
+ problem:`Buscar con <code>in</code> en una lista recorre todo (O(n)); en un set o dict es casi instantáneo. Usar list para datos que no deben cambiar invita a modificarlos por error.`,
+ bad:{code:`ids_vip = [ ... 100_000 ids ... ]
+for pedido in pedidos:
+    if pedido.cliente_id in ids_vip:   # O(n) cada vez
+        aplicar_descuento(pedido)`, note:`Con 10.000 pedidos son hasta mil millones de comparaciones.`},
+ good:{code:`ids_vip = set(lista_ids)
+for pedido in pedidos:
+    if pedido.cliente_id in ids_vip:   # O(1)
+        aplicar_descuento(pedido)`, note:`Mismo código, otra estructura, órdenes de magnitud más rápido.`},
+ bridge:`<b>list</b> ≈ Array. <b>dict</b> ≈ objeto literal o <code>Map</code>, pero las claves deben ser hashables (no puedes usar una lista como clave). <b>set</b> ≈ <code>Set</code>. <b>tuple</b> ≈ una tupla <code>readonly</code> de TS, solo que la inmutabilidad existe de verdad en ejecución.`,
+ pitfalls:[`<code>stock["filtro"]</code> lanza <code>KeyError</code>; en JS darías con <code>undefined</code>. Usa <code>.get()</code> cuando la clave puede faltar.`,`<code>(1)</code> es el número 1; la tupla de un elemento es <code>(1,)</code>.`,`Se usa <code>len(x)</code>, no <code>x.length</code>.`,`<code>{}</code> crea un dict vacío, no un set. El set vacío es <code>set()</code>.`],
+ answer:`Uso lista cuando necesito una colección ordenada que va a cambiar, tupla cuando el dato es fijo, como un registro o una coordenada, y además puede ser clave de un diccionario. Diccionario para buscar por clave en tiempo constante y set cuando me importa la pertenencia o eliminar duplicados. La elección afecta el rendimiento: buscar en lista es O(n) y en set o dict es O(1) promedio.`,
+ demo:{type:'toggle', title:`¿Qué estructura necesito?`, hint:`Elige una necesidad de la tienda.`, options:[
+  {label:`Productos del carrito en orden`, code:`carrito = ["cafe", "taza", "cafe"]
+carrito.append("filtro")`, out:`list → ['cafe', 'taza', 'cafe', 'filtro']`, note:`Orden, duplicados y cambios: list.`},
+  {label:`Stock por nombre de producto`, code:`stock = {"cafe": 12, "taza": 3}
+stock["cafe"] -= 2`, out:`dict → {'cafe': 10, 'taza': 3}`, note:`Acceso directo por clave en O(1).`},
+  {label:`Categorías sin repetir`, code:`etiquetas = {"bebidas", "bebidas", "molido"}`, out:`set → {'bebidas', 'molido'}`, note:`El set descarta duplicados solo.`},
+  {label:`Clave compuesta (cliente, fecha)`, code:`ventas = {(7, "2026-11-12"): 3}
+ventas[(7, "2026-11-12")]`, out:`3`, note:`La tupla es hashable y puede ser clave; una lista no.`},
+  {label:`Lista como clave`, code:`ventas = {[7, "2026-11-12"]: 3}`, out:`TypeError: unhashable type: 'list'`, note:`Las claves de dict deben ser inmutables y hashables.`}
+ ]},
+ ex:[
+  {kind:'classify', q:`Clasifica cada caso con la estructura más adecuada.`, cats:['list','tuple','dict','set'], items:[
+   {t:`Historial de estados de un pedido, en orden`, c:'list', why:`Orden y crecimiento: list.`},
+   {t:`Precio de cada producto por su código SKU`, c:'dict', why:`Búsqueda por clave.`},
+   {t:`Emails únicos que ya recibieron la promo`, c:'set', why:`Pertenencia rápida y sin duplicados.`},
+   {t:`Latitud y longitud de una tienda`, c:'tuple', why:`Dato fijo de dos valores.`}
+  ]},
+  {kind:'output', q:`¿Qué imprime?`, code:`d = {"a": 1}
+print(d.get("b"), len({1, 1, 2}))`, opts:[`KeyError`,`None 3`,`None 2`,`0 2`], a:2, exp:`<code>.get()</code> devuelve <code>None</code> si falta la clave, y el set <code>{1, 1, 2}</code> queda con dos elementos.`}
+ ]
+},
+{
+ id:3, block:'A', title:`Comprehensions y generadores`, short:`Comprehensions y generadores`, freq:'seguido',
+ def:`Una <b>comprehension</b> construye una lista, dict o set en una sola expresión. Un <b>generador</b> produce valores de uno en uno bajo demanda con <code>yield</code>: no guarda todo en memoria (evaluación perezosa).`,
+ analogy:`La comprehension es preparar todos los pedidos y ponerlos en la barra de una vez. El generador es un barista que prepara el siguiente café solo cuando lo pides.`,
+ code:`precios = [12_000, 8_500, 30_000]
+con_iva = [round(p * 1.19) for p in precios if p > 10_000]   # [14280, 35700]
+por_id = {p.id: p for p in productos}                        # dict comprehension
+
+def leer_pedidos(ruta: str):
+    with open(ruta) as f:
+        for linea in f:
+            yield linea.strip()     # se pausa aquí y entrega un valor
+
+# expresión generadora: paréntesis en vez de corchetes
+total_caracteres = sum(len(l) for l in leer_pedidos("pedidos.csv"))`,
+ problem:`Cargar millones de filas en una lista para recorrerlas una vez gasta memoria sin necesidad. El generador procesa en streaming.`,
+ bad:{code:`lineas = [l for l in open("ventas_2026.csv")]   # 4 GB en RAM
+total = sum(len(l) for l in lineas)`, note:`Toda la data vive en memoria al mismo tiempo.`},
+ good:{code:`with open("ventas_2026.csv") as f:
+    total = sum(len(l) for l in f)   # una línea a la vez`, note:`Memoria constante, mismo resultado.`},
+ bridge:`La comprehension equivale a <code>.filter().map()</code> encadenados. Los generadores existen igual en JS (<code>function*</code> y <code>yield</code>). Frente a RxJS: un Observable <i>empuja</i> valores (push); un generador los entrega cuando tú los pides (pull).`,
+ pitfalls:[`Un generador se agota: la segunda vez que lo recorres está vacío.`,`<code>(x for x in datos)</code> es un generador, no una tupla.`,`Comprehensions anidadas de tres niveles: si no se lee en voz alta, usa un for normal.`,`Llamar a la función generadora no ejecuta nada hasta el primer <code>next()</code>.`],
+ answer:`Una list comprehension crea la lista completa en memoria; una expresión generadora o una función con yield produce los valores de forma perezosa, uno por iteración, y conserva su estado entre llamadas. Uso generadores para procesar archivos grandes o resultados paginados sin cargarlos completos. Hay que recordar que un generador solo se puede recorrer una vez.`,
+ demo:{type:'stepper', title:`Recorre un generador valor por valor`, hint:`Cada clic en «Siguiente» ejecuta hasta el próximo yield.`, code:`def numeros_pedido():
+    print("inicio")
+    yield 101
+    print("después del primero")
+    yield 102
+    yield 103
+    print("fin")
+
+gen = numeros_pedido()
+next(gen)
+next(gen)
+next(gen)
+next(gen)`, steps:[
+  {hl:[9], text:`Crear el generador no ejecuta el cuerpo: no se imprime nada.`, out:``},
+  {hl:[10,2,3], text:`El primer next() corre hasta el primer yield y se pausa.`, out:`inicio\n→ 101`},
+  {hl:[11,4,5], text:`Retoma justo después del yield anterior.`, out:`después del primero\n→ 102`},
+  {hl:[12,6], text:`Siguiente yield.`, out:`→ 103`},
+  {hl:[13,7], text:`Ya no hay más yield: imprime "fin" y lanza StopIteration. Un for lo captura solo.`, out:`fin\nStopIteration`}
+ ]},
+ ex:[
+  {kind:'output', q:`¿Qué imprime?`, code:`g = (x * 2 for x in range(3))
+print(list(g))
+print(list(g))`, opts:[`[0, 2, 4] y [0, 2, 4]`,`[0, 2, 4] y []`,`[2, 4, 6] y []`,`Error`], a:1, exp:`El generador se agota tras la primera lectura completa.`},
+  {kind:'output', q:`¿Qué imprime?`, code:`print({n: n ** 2 for n in range(3)})`, opts:[`[0, 1, 4]`,`{0, 1, 4}`,`{0: 0, 1: 1, 2: 4}`,`{1: 1, 2: 4, 3: 9}`], a:2, exp:`Dict comprehension. <code>range(3)</code> va de 0 a 2.`}
+ ]
+},
+{
+ id:4, block:'A', title:`Funciones: *args, **kwargs, defaults, lambdas y closures`, short:`Funciones y closures`, freq:'casi',
+ def:`Python acepta parámetros posicionales, con nombre y con valor por defecto. <code>*args</code> recoge posicionales extra en una tupla y <code>**kwargs</code> recoge los nombrados extra en un dict. Las <b>lambdas</b> son funciones de una sola expresión y los <b>closures</b> son funciones que recuerdan variables del ámbito donde se crearon.`,
+ analogy:`<code>*args</code> es una bolsa donde caben cuantos productos quieras; <code>**kwargs</code> es la casilla de «observaciones» del formulario: campos opcionales con nombre.`,
+ code:`def crear_pedido(cliente_id: int, *productos: str, urgente: bool = False, **extra):
+    return {"cliente": cliente_id, "items": productos, "urgente": urgente, **extra}
+
+crear_pedido(7, "cafe", "taza", urgente=True, nota="sin azúcar")
+# {'cliente': 7, 'items': ('cafe', 'taza'), 'urgente': True, 'nota': 'sin azúcar'}
+
+ordenados = sorted(productos, key=lambda p: p.precio)
+
+def contador_pedidos():
+    total = 0
+    def siguiente():
+        nonlocal total       # sin esto: UnboundLocalError
+        total += 1
+        return total
+    return siguiente`,
+ problem:`El valor por defecto se evalúa <b>una sola vez</b>, cuando se define la función. Si es mutable (lista, dict), todas las llamadas comparten el mismo objeto.`,
+ bad:{code:`def agregar_item(item, carrito=[]):
+    carrito.append(item)
+    return carrito`, note:`Cada llamada sin carrito reutiliza la misma lista y arrastra los items anteriores.`},
+ good:{code:`def agregar_item(item, carrito: list | None = None):
+    if carrito is None:
+        carrito = []
+    carrito.append(item)
+    return carrito`, note:`Se crea una lista nueva en cada llamada.`},
+ bridge:`<code>*args</code> ≈ rest <code>...args</code>; <code>**kwargs</code> ≈ objeto de opciones; <code>f(*lista)</code> y <code>f(**dic)</code> ≈ spread. Los closures funcionan como en JS, pero para <i>reasignar</i> una variable externa necesitas <code>nonlocal</code>. En JS los defaults se evalúan en cada llamada; en Python no.`,
+ pitfalls:[`Default mutable: el error de entrevista más famoso de Python.`,`Olvidar <code>nonlocal</code> al reasignar dentro de un closure.`,`Las lambdas solo admiten una expresión, sin sentencias ni anotaciones.`,`Closures en un bucle capturan la variable, no el valor (como <code>var</code> en JS).`],
+ answer:`args recoge argumentos posicionales extra como tupla y kwargs los nombrados como diccionario; se usan para funciones flexibles o para reenviar argumentos, como hacen los decoradores. Un error clásico es poner una lista como valor por defecto: se evalúa una sola vez al definir la función y se comparte entre llamadas, así que el patrón correcto es usar None y crear la lista dentro.`,
+ demo:{type:'mutable', title:`Llama la función varias veces`, hint:`Compara la versión con default mutable y la versión con None.`},
+ ex:[
+  {kind:'output', q:`¿Qué imprime?`, code:`def f(x, lista=[]):
+    lista.append(x)
+    return lista
+
+f(1)
+print(f(2))`, opts:[`[2]`,`[1, 2]`,`[1]`,`Error`], a:1, exp:`La lista por defecto se creó una vez y conserva el 1 de la llamada anterior.`},
+  {kind:'output', q:`¿Qué imprime?`, code:`def g(*a, **k):
+    print(a, k)
+
+g(1, 2, x=3)`, opts:[`[1, 2] {'x': 3}`,`(1, 2) {'x': 3}`,`(1, 2, 3) {}`,`1 2 x=3`], a:1, exp:`<code>*a</code> es una tupla y <code>**k</code> un dict.`}
+ ]
+},
+{
+ id:5, block:'A', title:`Decoradores`, short:`Decoradores`, freq:'casi',
+ def:`Un decorador es una función que recibe una función y devuelve otra que la envuelve, para añadir comportamiento antes o después sin tocar su código. <code>@deco</code> encima de <code>def f</code> es azúcar sintáctico de <code>f = deco(f)</code>.`,
+ analogy:`El papel de regalo: el producto es el mismo, pero antes de llegar a él pasas por la envoltura (logs, permisos, medición de tiempos).`,
+ code:`import functools
+import time
+
+def medir_tiempo(func):
+    @functools.wraps(func)          # conserva nombre, docstring y firma
+    def wrapper(*args, **kwargs):
+        inicio = time.perf_counter()
+        resultado = func(*args, **kwargs)
+        print(f"{func.__name__} tardó {time.perf_counter() - inicio:.3f}s")
+        return resultado
+    return wrapper
+
+@medir_tiempo
+def calcular_total(pedido_id: int) -> float:
+    ...
+
+# Decorador con argumentos: una capa más
+def reintentar(veces: int):
+    def decorador(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for intento in range(veces):
+                try:
+                    return func(*args, **kwargs)
+                except ConnectionError:
+                    if intento == veces - 1:
+                        raise
+        return wrapper
+    return decorador`,
+ problem:`Sin decoradores repites el mismo código de logs, caché o permisos en cada función. Mal escritos, rompen la función: devuelven None o borran su firma.`,
+ bad:{code:`def log(func):
+    def wrapper(*args, **kwargs):
+        print("llamando", func.__name__)
+        func(*args, **kwargs)        # falta return
+    return wrapper                   # falta functools.wraps`, note:`La función decorada devuelve None y pierde su nombre y firma. FastAPI lee la firma para saber los parámetros: sin wraps se rompe.`},
+ good:{code:`def log(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        print("llamando", func.__name__)
+        return func(*args, **kwargs)
+    return wrapper`, note:`Devuelve el resultado y conserva los metadatos.`},
+ bridge:`En Angular, <code>@Component</code> o <code>@Injectable</code> son decoradores de TS que adjuntan <i>metadatos</i> a la clase para que el framework los lea después. En Python el decorador es una función normal que se ejecuta al definir y <i>reemplaza</i> el objeto por lo que devuelva. <code>@app.get("/productos")</code> en FastAPI registra tu función en el router y te la devuelve igual.`,
+ pitfalls:[`Olvidar <code>return resultado</code> en el wrapper.`,`Olvidar <code>@functools.wraps</code>.`,`Confundir <code>@deco</code> con <code>@deco()</code>: el segundo exige un decorador con argumentos.`,`Creer que el decorador corre en cada llamada: el decorador corre una vez al definir; el wrapper corre en cada llamada.`],
+ answer:`Un decorador es una función de orden superior: recibe una función y devuelve otra que la envuelve. La sintaxis con arroba equivale a reasignar la función con el resultado del decorador. Por dentro defino un wrapper que acepta args y kwargs, hago algo antes, llamo a la original, hago algo después y devuelvo su resultado, usando functools.wraps para no perder el nombre ni la firma. FastAPI los usa para registrar rutas.`,
+ demo:{type:'stepper', title:`Así envuelve un decorador a la función`, hint:`Sigue la ejecución línea por línea.`, code:`def medir_tiempo(func):
+    def wrapper(*args, **kwargs):
+        inicio = time.perf_counter()
+        resultado = func(*args, **kwargs)
+        print(f"tardó {time.perf_counter() - inicio:.3f}s")
+        return resultado
+    return wrapper
+
+@medir_tiempo
+def calcular_total(pedido_id):
+    return 54_000
+
+calcular_total(1042)`, steps:[
+  {hl:[9,10], text:`Al definir, Python ejecuta calcular_total = medir_tiempo(calcular_total).`, out:``},
+  {hl:[7], text:`medir_tiempo devuelve wrapper. Desde ahora el nombre calcular_total apunta a wrapper.`, out:`calcular_total → <function wrapper>`},
+  {hl:[13,2], text:`Llamar calcular_total(1042) en realidad llama wrapper(1042). args = (1042,)`, out:``},
+  {hl:[3], text:`El wrapper hace su trabajo previo: toma el tiempo.`, out:``},
+  {hl:[4,11], text:`Llama a la función original, que sigue guardada en func gracias al closure.`, out:``},
+  {hl:[5], text:`Trabajo posterior: imprime la duración.`, out:`tardó 0.000s`},
+  {hl:[6], text:`Devuelve el resultado original. Sin este return, quien llama recibiría None.`, out:`→ 54000`}
+ ]},
+ ex:[
+  {kind:'output', q:`¿En qué orden se imprime?`, code:`def deco(f):
+    print("A")
+    def w():
+        print("B")
+        f()
+        print("C")
+    return w
+
+@deco
+def hola():
+    print("hola")
+
+hola()`, opts:[`B hola C`,`A B hola C`,`A hola`,`B A hola C`], a:1, exp:`"A" se imprime al decorar, antes de llamar a nada. Luego la llamada ejecuta el wrapper: B, hola, C.`},
+  {kind:'concept', q:`¿A qué equivale <code>@cache</code> encima de <code>def precio()</code>?`, opts:[`<code>precio = cache</code>`,`<code>precio = cache(precio)</code>`,`<code>cache = precio(cache)</code>`,`<code>precio()</code> se ejecuta al importar`], a:1, exp:`La arroba aplica el decorador y reasigna el nombre con lo que devuelva.`}
+ ]
+},
+{
+ id:6, block:'A', title:`Manejo de errores y context managers`, short:`Errores y with`, freq:'casi',
+ def:`<code>try / except / else / finally</code> controla errores: <code>else</code> corre si no hubo excepción y <code>finally</code> corre siempre. Las excepciones propias heredan de <code>Exception</code>. Un <b>context manager</b> (<code>with</code>) garantiza preparación y limpieza, por medio de <code>__enter__</code>/<code>__exit__</code> o del decorador <code>@contextmanager</code>.`,
+ analogy:`El <code>with</code> es el préstamo de llaves de la bodega con firma: pase lo que pase adentro, al salir devuelves las llaves.`,
+ code:`class StockInsuficiente(Exception):
+    def __init__(self, producto: str, pedido: int, disponible: int):
+        super().__init__(f"{producto}: pediste {pedido}, hay {disponible}")
+        self.producto = producto
+
+def reservar(producto: str, cantidad: int) -> None:
+    disponible = stock.get(producto, 0)
+    if cantidad > disponible:
+        raise StockInsuficiente(producto, cantidad, disponible)
+    stock[producto] -= cantidad
+
+try:
+    reservar("cafe", 50)
+except StockInsuficiente as e:
+    print("No se pudo:", e)
+else:
+    print("Reservado")
+finally:
+    print("Fin del intento")
+
+from contextlib import contextmanager
+
+@contextmanager
+def transaccion(sesion):
+    try:
+        yield sesion
+        sesion.commit()
+    except Exception:
+        sesion.rollback()
+        raise`,
+ problem:`Tragarse errores esconde bugs y deja datos a medias. Sin <code>with</code>, un error en medio deja archivos abiertos o transacciones sin cerrar.`,
+ bad:{code:`try:
+    reservar("cafe", 50)
+except:
+    pass`, note:`Atrapa todo, incluso Ctrl+C (KeyboardInterrupt), y nadie se entera del fallo.`},
+ good:{code:`try:
+    reservar("cafe", 50)
+except StockInsuficiente as e:
+    logger.warning("Sin stock: %s", e)
+    raise ErrorDePedido("No se pudo reservar") from e`, note:`Atrapas lo que esperas y conservas la causa original con <code>from e</code>.`},
+ bridge:`<code>try/catch/finally</code> ≈ <code>try/except/finally</code>; <code>throw</code> → <code>raise</code>; <code>catch (e)</code> → <code>except Tipo as e</code>. El <code>with</code> no tiene equivalente clásico en JS; lo más parecido es <code>using</code> (gestión explícita de recursos, TS 5.2+). Python prefiere el estilo EAFP: intentar y capturar, en vez de verificar todo antes.`,
+ pitfalls:[`<code>except:</code> sin tipo captura también <code>SystemExit</code> y <code>KeyboardInterrupt</code>.`,`No conocer el <code>else</code> del try: separa el código que puede fallar del que solo corre si todo salió bien.`,`Relanzar con <code>raise e</code> en vez de <code>raise</code> a secas cambia el punto de origen del traceback.`,`Heredar de <code>BaseException</code> en vez de <code>Exception</code>.`],
+ answer:`Capturo excepciones específicas, nunca un except vacío. Uso else para el código que solo debe correr si no hubo error y finally para la limpieza obligatoria. Para errores de negocio creo excepciones propias que heredan de Exception, y encadeno causas con raise from. Para recursos como archivos, conexiones o transacciones uso context managers con with, que garantizan la liberación aunque haya una excepción.`,
+ demo:{type:'toggle', title:`¿Qué bloques se ejecutan?`, hint:`Stock actual: cafe = 12. Cambia la llamada.`, options:[
+  {label:`reservar("cafe", 5)`, code:`try:          ✔ corre
+except:       ✘ no corre
+else:         ✔ corre
+finally:      ✔ corre`, out:`Reservado\nFin del intento`, note:`Sin excepción: try, else y finally.`},
+  {label:`reservar("cafe", 50)`, code:`try:          ✔ corre hasta el raise
+except:       ✔ corre
+else:         ✘ no corre
+finally:      ✔ corre`, out:`No se pudo: cafe: pediste 50, hay 12\nFin del intento`, note:`La excepción salta al except; else se omite.`},
+  {label:`reservar("te", 1)`, code:`try:          ✔ corre hasta el raise
+except:       ✔ corre
+else:         ✘ no corre
+finally:      ✔ corre`, out:`No se pudo: te: pediste 1, hay 0\nFin del intento`, note:`.get("te", 0) devuelve 0, así que también es stock insuficiente.`},
+  {label:`reservar(None, 1)`, code:`try:          ✔ falla en stock[...]
+except StockInsuficiente:  ✘ no coincide
+else:         ✘ no corre
+finally:      ✔ corre y luego el error sube`, out:`Fin del intento\nTypeError: ... (sale de la función)`, note:`finally corre igual, pero la excepción que no coincide sigue subiendo.`}
+ ]},
+ ex:[
+  {kind:'output', q:`¿Qué imprime?`, code:`try:
+    print(1)
+    x = 1 / 0
+    print(2)
+except ZeroDivisionError:
+    print(3)
+else:
+    print(4)
+finally:
+    print(5)`, opts:[`1 2 3 5`,`1 3 5`,`1 3 4 5`,`1 5`], a:1, exp:`El 2 nunca se ejecuta; else se salta porque hubo excepción; finally siempre corre.`},
+  {kind:'concept', q:`¿Qué garantiza <code>with open("pedidos.csv") as f:</code>?`, opts:[`Que el archivo existe`,`Que se cierra al salir del bloque, incluso con error`,`Que la lectura es async`,`Que no hay excepciones`], a:1, exp:`El context manager llama <code>__exit__</code> siempre, y ahí se cierra el archivo.`}
+ ]
+},
+{
+ id:7, block:'A', title:`Módulos, paquetes, entornos virtuales y dependencias`, short:`Módulos, venv y uv`, freq:'seguido',
+ def:`Un <b>módulo</b> es un archivo <code>.py</code>; un <b>paquete</b> es una carpeta de módulos (normalmente con <code>__init__.py</code>). Un <b>entorno virtual</b> aísla el intérprete y las librerías de cada proyecto. La documentación actual de FastAPI usa <b>uv</b> por defecto, con <code>pyproject.toml</code> y <code>uv.lock</code>.`,
+ analogy:`El entorno virtual es la despensa propia de cada proyecto: no sacas ingredientes del mercado común ni le cambias la receta al vecino.`,
+ code:`# Terminal (recomendado: uv)
+uv init tienda-api && cd tienda-api
+uv add "fastapi[standard]"
+uv run fastapi dev app/main.py
+
+# Alternativa clásica con venv + pip
+python3 -m venv .venv
+source .venv/bin/activate
+pip install "fastapi[standard]"
+
+# Estructura e imports
+# app/
+#   __init__.py
+#   main.py
+#   productos/
+#     __init__.py
+#     router.py
+from app.productos.router import router as productos_router
+
+if __name__ == "__main__":     # solo si ejecutas el archivo directamente
+    print("modo script")`,
+ problem:`Sin entorno virtual, dos proyectos que necesitan versiones distintas de una librería se rompen entre sí, y lo que instalaste en el Python del sistema puede romper herramientas del Mac.`,
+ bad:{code:`sudo pip install fastapi
+from utilidades import *`, note:`Instalación global y un import con asterisco que llena el espacio de nombres sin saber qué trae.`},
+ good:{code:`uv add "fastapi[standard]"
+from app.utilidades import calcular_iva`, note:`Dependencia registrada en pyproject.toml y bloqueada en uv.lock; import explícito.`},
+ bridge:`<code>pyproject.toml</code> ≈ <code>package.json</code>; <code>uv.lock</code> ≈ <code>package-lock.json</code>; <code>.venv</code> ≈ <code>node_modules</code>, pero además contiene el intérprete; PyPI ≈ registro de npm; <code>uv run</code> ≈ <code>npx</code>/<code>npm run</code>. Diferencia clave: Node busca <code>node_modules</code> solo; Python usa el entorno que esté activo, o el que <code>uv run</code> active por ti.`,
+ pitfalls:[`Instalar sin activar el venv y luego no encontrar el paquete.`,`Llamar a tu archivo <code>fastapi.py</code> o <code>json.py</code>: tapa la librería real al importar.`,`Imports circulares entre módulos (A importa B y B importa A).`,`Commitear la carpeta <code>.venv</code> al repo.`],
+ answer:`Cada archivo .py es un módulo y una carpeta de módulos es un paquete. Aíslo cada proyecto en un entorno virtual para que sus dependencias no choquen con otros proyectos ni con el sistema. Hoy uso uv: declara dependencias en pyproject.toml y fija versiones exactas en uv.lock, igual que package.json y el lockfile en Node. El bloque if name igual a main permite que un módulo sea importable y ejecutable a la vez.`,
+ demo:{type:'toggle', title:`De npm a uv`, hint:`Elige el comando que ya conoces.`, options:[
+  {label:`npm init`, code:`uv init tienda-api`, out:`Crea pyproject.toml, .python-version y main.py`, note:`El equivalente de package.json es pyproject.toml.`},
+  {label:`npm install axios`, code:`uv add httpx`, out:`Agrega la dependencia a pyproject.toml y actualiza uv.lock`, note:`httpx es el cliente HTTP moderno, con modo sync y async.`},
+  {label:`npm install`, code:`uv sync`, out:`Crea .venv e instala exactamente lo del lockfile`, note:`Lo que corres al clonar el repo.`},
+  {label:`npm i -D jest`, code:`uv add --dev pytest`, out:`Dependencia de desarrollo`, note:`No se instala en producción si así lo configuras.`},
+  {label:`npm run dev`, code:`uv run fastapi dev app/main.py`, out:`Servidor con recarga en http://127.0.0.1:8000`, note:`uv run ejecuta dentro del entorno del proyecto sin activarlo a mano.`}
+ ]},
+ ex:[
+  {kind:'concept', q:`¿Qué archivo cumple el papel de <code>package-lock.json</code> con uv?`, opts:[`pyproject.toml`,`requirements.txt`,`uv.lock`,`.python-version`], a:2, exp:`<code>uv.lock</code> fija las versiones exactas de todo el árbol de dependencias.`},
+  {kind:'concept', q:`¿Cuándo corre el código dentro de <code>if __name__ == "__main__":</code>?`, opts:[`Siempre`,`Cuando el archivo se ejecuta directamente, no cuando se importa`,`Solo en producción`,`Cuando se importa por primera vez`], a:1, exp:`Al importar, <code>__name__</code> es el nombre del módulo; al ejecutarlo directo vale <code>"__main__"</code>.`}
+ ]
+},
+{
+ id:8, block:'A', title:`Concurrencia: async/await, event loop, hilos, procesos y GIL`, short:`async, hilos y GIL`, freq:'casi',
+ def:`<b>async/await</b> da concurrencia cooperativa en un solo hilo con un event loop (asyncio): ideal para esperas de I/O. Los <b>hilos</b> los gestiona el sistema operativo, pero en CPython el <b>GIL</b> deja que solo un hilo ejecute bytecode Python a la vez: sirven para I/O, no aceleran cálculos. Los <b>procesos</b> dan paralelismo real para trabajo de CPU. Python 3.13+ ofrece una compilación opcional sin GIL (free-threaded), pero la instalación estándar todavía lo tiene.`,
+ analogy:`El event loop es un mesero que atiende varias mesas: toma un pedido y, mientras la cocina prepara (await), atiende otra mesa. Los hilos son varios meseros que comparten una sola libreta (el GIL): solo uno escribe a la vez. Los procesos son varias cocinas independientes.`,
+ code:`import asyncio
+
+async def consultar_inventario(producto: str) -> int:
+    await asyncio.sleep(1)        # simula I/O: BD, API externa
+    return 10
+
+async def main():
+    resultados = await asyncio.gather(
+        consultar_inventario("cafe"),
+        consultar_inventario("taza"),
+        consultar_inventario("filtro"),
+    )                              # ~1 s en total, no 3 s
+    print(resultados)              # [10, 10, 10]
+
+asyncio.run(main())
+
+# Código bloqueante dentro de async: mándalo a un hilo
+resultado = await asyncio.to_thread(generar_pdf_factura, pedido_id)`,
+ problem:`Un <code>time.sleep()</code> o una librería bloqueante dentro de una corrutina congela todo el event loop: ninguna otra tarea avanza.`,
+ bad:{code:`async def consultar(producto):
+    time.sleep(1)                 # bloquea el loop
+    return requests.get(url).json()  # requests es bloqueante`, note:`Parece async, pero atiende una cosa a la vez.`},
+ good:{code:`async def consultar(producto):
+    await asyncio.sleep(1)
+    async with httpx.AsyncClient() as client:
+        r = await client.get(url)
+    return r.json()`, note:`Cada espera cede el control al event loop.`},
+ bridge:`La sintaxis es casi igual a JS y <code>asyncio.gather</code> ≈ <code>Promise.all</code>. Diferencia clave: en JS una Promise empieza a ejecutarse en cuanto se crea; en Python una corrutina <b>no hace nada</b> hasta que la awaiteas o la conviertes en Task. Node también tiene un solo hilo con event loop, pero no tiene GIL porque nunca tuvo hilos de JS compartiendo memoria. RxJS añade streams y cancelación; asyncio tiene Tasks cancelables y async generators.`,
+ pitfalls:[`Llamar una función async sin <code>await</code>: obtienes un objeto corrutina y el warning «was never awaited».`,`Usar librerías bloqueantes (requests, psycopg2, time.sleep) dentro de <code>async def</code>.`,`Creer que async acelera cálculos de CPU: solo ayuda a esperar mejor.`,`Usar hilos para paralelizar cálculo pesado: el GIL lo serializa.`],
+ answer:`Async es concurrencia en un solo hilo: el event loop alterna entre tareas cada vez que una hace await sobre I/O, así que sirve para muchas esperas de red o base de datos. Los hilos también sirven para I/O, pero por el GIL solo uno ejecuta Python a la vez, así que no aceleran cálculos. Para trabajo de CPU uso procesos. En FastAPI lo importante es no bloquear el event loop dentro de un endpoint async.`,
+ demo:{type:'timeline', title:`Tres tareas de 1 segundo`, hint:`Compara cómo se reparten en el tiempo.`, max:3, modes:[
+  {label:`Secuencial`, total:`≈ 3.0 s`, bars:[{n:'inventario cafe',s:0,e:1,k:'wait'},{n:'inventario taza',s:1,e:2,k:'wait'},{n:'inventario filtro',s:2,e:3,k:'wait'}], note:`Cada espera de I/O bloquea a la siguiente.`},
+  {label:`asyncio.gather (I/O)`, total:`≈ 1.0 s`, bars:[{n:'inventario cafe',s:0,e:1,k:'wait'},{n:'inventario taza',s:0,e:1,k:'wait'},{n:'inventario filtro',s:0,e:1,k:'wait'}], note:`Las tres esperas se solapan en un solo hilo.`},
+  {label:`Hilos con CPU pesada`, total:`≈ 3.0 s`, bars:[{n:'calcular iva 1',s:0,e:1,k:'cpu'},{n:'calcular iva 2',s:1,e:2,k:'cpu'},{n:'calcular iva 3',s:2,e:3,k:'cpu'}], note:`El GIL hace que los hilos se turnen: no hay ganancia en CPU.`},
+  {label:`Procesos con CPU pesada`, total:`≈ 1.0 s`, bars:[{n:'calcular iva 1',s:0,e:1,k:'cpu'},{n:'calcular iva 2',s:0,e:1,k:'cpu'},{n:'calcular iva 3',s:0,e:1,k:'cpu'}], note:`Cada proceso tiene su propio intérprete y su propio GIL: paralelismo real si hay núcleos.`}
+ ]},
+ ex:[
+  {kind:'classify', q:`¿Qué herramienta de concurrencia usarías?`, cats:['async','hilos','procesos'], items:[
+   {t:`Llamar a 50 APIs de proveedores con httpx.AsyncClient`, c:'async', why:`Muchas esperas de red con librería async.`},
+   {t:`Redimensionar 10.000 fotos de productos`, c:'procesos', why:`CPU pesada: el GIL bloquea a los hilos.`},
+   {t:`Usar un SDK legacy bloqueante sin versión async`, c:'hilos', why:`I/O bloqueante: un hilo (o asyncio.to_thread) evita congelar el loop.`},
+   {t:`Calcular estadísticas de ventas en Python puro con millones de filas`, c:'procesos', why:`Cálculo de CPU.`}
+  ]},
+  {kind:'output', q:`¿Qué imprime?`, code:`async def f():
+    return 1
+
+print(f())`, opts:[`1`,`<coroutine object f at 0x...> y un RuntimeWarning`,`Promise { 1 }`,`None`], a:1, exp:`Llamar a una función async crea una corrutina pero no la ejecuta. Necesitas <code>await f()</code> o <code>asyncio.run(f())</code>.`}
+ ]
+},
+{
+ id:9, block:'A', title:`Dataclasses y Pydantic`, short:`Dataclasses y Pydantic`, freq:'casi',
+ def:`<code>@dataclass</code> genera <code>__init__</code>, <code>__repr__</code> y <code>__eq__</code> a partir de las anotaciones, <b>sin validar</b>. <b>Pydantic</b> (<code>BaseModel</code>, v2) valida y convierte datos en ejecución, serializa a dict o JSON y genera JSON Schema. FastAPI está construido sobre Pydantic.`,
+ analogy:`La dataclass es un formulario impreso: tiene casillas, pero nadie revisa lo que escribes. Pydantic es el funcionario de ventanilla que revisa cada casilla y te devuelve el formulario con la lista de errores.`,
+ code:`from dataclasses import dataclass, field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
+@dataclass
+class ItemCarrito:
+    producto_id: int
+    cantidad: int = 1
+    notas: list[str] = field(default_factory=list)
+
+class Cliente(BaseModel):
+    nombre: str = Field(min_length=2)
+    email: EmailStr                      # requiere email-validator
+    edad: int | None = Field(default=None, ge=18)
+
+    @field_validator("nombre")
+    @classmethod
+    def limpiar_nombre(cls, v: str) -> str:
+        return v.strip().title()
+
+c = Cliente(nombre="  ana  ", email="ana@mail.com", edad="30")
+c.edad            # 30 (convirtió el string a int)
+c.model_dump()    # {'nombre': 'Ana', 'email': 'ana@mail.com', 'edad': 30}
+c.model_dump_json()`,
+ problem:`Los datos externos (JSON de un cliente, variables de entorno) no son confiables. Una dataclass los acepta tal cual; Pydantic los valida en la frontera de tu sistema.`,
+ bad:{code:`class Cliente(BaseModel):
+    nombre: str
+    class Config:              # Pydantic v1
+        orm_mode = True
+
+    @validator("nombre")       # v1, obsoleto
+    def v(cls, v): ...
+
+cliente.dict()                 # v1`, note:`Sintaxis de v1 que aún aparece en tutoriales viejos.`},
+ good:{code:`from pydantic import BaseModel, ConfigDict, field_validator
+
+class Cliente(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    nombre: str
+
+    @field_validator("nombre")
+    @classmethod
+    def v(cls, v: str) -> str: ...
+
+cliente.model_dump()`, note:`Pydantic v2: model_config, field_validator, model_dump.`},
+ bridge:`La dataclass ≈ una <code>interface</code> más una clase con constructor automático. Pydantic ≈ <b>Zod</b>: <code>Cliente(**datos)</code> o <code>Cliente.model_validate(datos)</code> ≈ <code>schema.parse(datos)</code>. La diferencia es que en Zod defines el esquema y <i>derivas</i> el tipo con <code>z.infer</code>; en Pydantic la clase con type hints es esquema y tipo a la vez.`,
+ pitfalls:[`Poner <code>notas: list = []</code> en una dataclass: error, usa <code>field(default_factory=list)</code>.`,`Mezclar sintaxis de Pydantic v1 y v2 copiada de distintos tutoriales.`,`Sorprenderse de que <code>"30"</code> se convierta a <code>30</code>: es el modo lax por defecto; existe <code>strict=True</code>.`,`Usar <code>EmailStr</code> sin tener instalado email-validator (viene incluido en <code>fastapi[standard]</code>).`],
+ answer:`Una dataclass genera el boilerplate de una clase de datos pero no valida nada. Pydantic valida y convierte los datos en tiempo de ejecución usando los type hints, devuelve errores detallados y sabe serializar a JSON y generar JSON Schema. Uso dataclasses para estructuras internas y Pydantic en las fronteras: requests, respuestas y configuración. Es parecido a Zod, pero el esquema es la propia clase.`,
+ demo:{type:'toggle', title:`Pasa datos por el modelo Cliente`, hint:`Elige una entrada y mira qué devuelve Pydantic.`, options:[
+  {label:`Datos válidos`, code:`Cliente(nombre="  ana  ", email="ana@mail.com", edad=30)`, out:`Cliente(nombre='Ana', email='ana@mail.com', edad=30)`, note:`El validador limpió el nombre.`},
+  {label:`edad como string`, code:`Cliente(nombre="Ana", email="ana@mail.com", edad="30")`, out:`Cliente(nombre='Ana', email='ana@mail.com', edad=30)`, note:`Modo lax: "30" se convierte a int.`},
+  {label:`edad "treinta"`, code:`Cliente(nombre="Ana", email="ana@mail.com", edad="treinta")`, out:`ValidationError: 1 validation error for Cliente
+edad
+  Input should be a valid integer, unable to parse string as an integer
+  [type=int_parsing, input_value='treinta', input_type=str]`, note:`Error con campo, tipo de error y valor recibido.`},
+  {label:`menor de 18`, code:`Cliente(nombre="Ana", email="ana@mail.com", edad=15)`, out:`ValidationError: 1 validation error for Cliente
+edad
+  Input should be greater than or equal to 18
+  [type=greater_than_equal, input_value=15, input_type=int]`, note:`Restricción de Field(ge=18).`},
+  {label:`sin email`, code:`Cliente(nombre="Ana")`, out:`ValidationError: 1 validation error for Cliente
+email
+  Field required [type=missing, input_value={'nombre': 'Ana'}, input_type=dict]`, note:`Campo obligatorio sin default.`}
+ ]},
+ ex:[
+  {kind:'concept', q:`En Pydantic v2, ¿cómo conviertes un modelo a dict?`, opts:[`<code>.dict()</code>`,`<code>.model_dump()</code>`,`<code>dict(modelo)</code> es lo recomendado`,`<code>.to_json()</code>`], a:1, exp:`<code>.dict()</code> es de v1 y está deprecado. En v2 se usa <code>model_dump()</code> y <code>model_dump_json()</code>.`},
+  {kind:'concept', q:`¿Qué pasa con <code>ItemCarrito(producto_id="abc")</code> si es una dataclass?`, opts:[`ValidationError`,`TypeError`,`Se crea sin error con producto_id = "abc"`,`Convierte a int`], a:2, exp:`Las dataclasses no validan tipos. Para eso existe Pydantic, o las dataclasses de Pydantic.`}
+ ]
+},
+{
+ id:10, block:'A', title:`Comparaciones clásicas: is vs ==, copias, mutabilidad`, short:`is, ==, copias`, freq:'casi',
+ def:`<code>==</code> compara valor (llama a <code>__eq__</code>); <code>is</code> compara identidad, es decir, si es el mismo objeto en memoria. Mutables: list, dict, set y la mayoría de objetos. Inmutables: int, float, str, tuple, frozenset. La <b>copia superficial</b> duplica el contenedor pero comparte lo de adentro; la <b>profunda</b> lo copia todo de forma recursiva.`,
+ analogy:`<code>is</code> pregunta si es la misma taza física; <code>==</code> pregunta si las dos tazas tienen el mismo café.`,
+ code:`import copy
+
+pedido = {"cliente": "Ana", "items": ["cafe", "taza"]}
+
+alias = pedido                       # misma referencia
+superficial = pedido.copy()          # o copy.copy(pedido), dict(pedido)
+profunda = copy.deepcopy(pedido)
+
+pedido["items"].append("filtro")
+superficial["items"]   # ['cafe', 'taza', 'filtro']  ¡la lista es compartida!
+profunda["items"]      # ['cafe', 'taza']
+
+[1, 2] == [1, 2]       # True: compara contenido
+[1, 2] is [1, 2]       # False: son dos objetos distintos
+
+if cliente is None:    # forma correcta de comparar con None
+    ...`,
+ problem:`Confundir referencia con copia produce bugs fantasma: modificas el pedido de un cliente y cambia el de otro. Usar <code>is</code> para comparar valores funciona a veces por casualidad y falla en producción.`,
+ bad:{code:`if estado == None: ...
+if nombre is "Ana": ...
+tablero = [[0] * 3] * 3`, note:`== None se puede sobrescribir; is con strings depende de detalles del intérprete; la última línea crea tres referencias a la misma fila.`},
+ good:{code:`if estado is None: ...
+if nombre == "Ana": ...
+tablero = [[0] * 3 for _ in range(3)]`, note:`is solo para None, True y False (singletons); comprehension para filas independientes.`},
+ bridge:`<code>is</code> se parece a <code>===</code> entre objetos (misma referencia). Pero <code>==</code> en Python compara contenido: <code>[1] == [1]</code> es True, mientras que en JS <code>[1] === [1]</code> es false. El spread <code>{...obj}</code> de JS es copia superficial, igual que <code>dict.copy()</code>, y <code>structuredClone</code> ≈ <code>copy.deepcopy</code>.`,
+ pitfalls:[`<code>a = b = []</code> crea una sola lista con dos nombres.`,`<code>[[0] * 3] * 3</code>: cambiar una fila cambia las tres.`,`<code>is</code> con enteros pequeños (-5 a 256) «funciona» por caché de CPython y engaña.`,`Las tuplas son inmutables, pero si contienen una lista, esa lista sí cambia.`],
+ answer:`== compara valores y is compara identidad. Uso is solo con singletons como None. Las listas, diccionarios y sets son mutables; los números, strings y tuplas son inmutables, por eso las tuplas pueden ser claves de diccionario. Asignar no copia: crea otra referencia. Una copia superficial duplica el contenedor y comparte los objetos internos; si hay estructuras anidadas que voy a modificar, uso deepcopy.`,
+ demo:{type:'toggle', title:`Alias, copia superficial y profunda`, hint:`Aplica un cambio al pedido original y mira las tres variables.`, options:[
+  {label:`pedido["items"].append("filtro")`, code:`pedido["items"].append("filtro")`, out:`alias       → {'cliente': 'Ana', 'items': ['cafe', 'taza', 'filtro']}
+superficial → {'cliente': 'Ana', 'items': ['cafe', 'taza', 'filtro']}
+profunda    → {'cliente': 'Ana', 'items': ['cafe', 'taza']}`, note:`Mutar un objeto interno se ve en la copia superficial porque comparte esa lista.`},
+  {label:`pedido["cliente"] = "Luis"`, code:`pedido["cliente"] = "Luis"`, out:`alias       → {'cliente': 'Luis', 'items': ['cafe', 'taza']}
+superficial → {'cliente': 'Ana', 'items': ['cafe', 'taza']}
+profunda    → {'cliente': 'Ana', 'items': ['cafe', 'taza']}`, note:`Reasignar una clave del primer nivel no afecta a la copia superficial.`},
+  {label:`pedido["items"] = []`, code:`pedido["items"] = []`, out:`alias       → {'cliente': 'Ana', 'items': []}
+superficial → {'cliente': 'Ana', 'items': ['cafe', 'taza']}
+profunda    → {'cliente': 'Ana', 'items': ['cafe', 'taza']}`, note:`Reasignar no es mutar: la copia sigue apuntando a la lista vieja.`}
+ ]},
+ ex:[
+  {kind:'output', q:`¿Qué imprime?`, code:`a = [1, 2]
+b = [1, 2]
+print(a == b, a is b)`, opts:[`True True`,`True False`,`False False`,`False True`], a:1, exp:`Mismo contenido, distintos objetos.`},
+  {kind:'output', q:`¿Qué imprime?`, code:`m = [[0] * 2] * 2
+m[0][0] = 9
+print(m)`, opts:[`[[9, 0], [0, 0]]`,`[[9, 0], [9, 0]]`,`[[9, 9], [0, 0]]`,`Error`], a:1, exp:`<code>* 2</code> sobre la lista externa repite la misma referencia a la fila.`},
+  {kind:'classify', q:`¿Mutable o inmutable?`, cats:['mutable','inmutable'], items:[
+   {t:`list`, c:'mutable', why:`append, pop y asignación por índice.`},
+   {t:`tuple`, c:'inmutable', why:`No se puede reasignar un elemento.`},
+   {t:`str`, c:'inmutable', why:`Cada operación crea un string nuevo.`},
+   {t:`dict`, c:'mutable', why:`Se agregan y cambian claves.`},
+   {t:`frozenset`, c:'inmutable', why:`Versión inmutable de set.`}
+  ]}
+ ]
+},
+/* ───────────── BLOQUE B: HTTP Y FASTAPI ───────────── */
+{
+ id:11, block:'B', title:`HTTP por dentro y principios REST`, short:`HTTP y REST`, freq:'casi',
+ def:`HTTP es un protocolo de petición y respuesta <b>sin estado</b>: método + ruta + cabeceras + cuerpo opcional, y de vuelta código de estado + cabeceras + cuerpo. REST organiza la API alrededor de <b>recursos</b> (sustantivos como <code>/pedidos</code>) y usa cada método con su significado. Un método es <b>idempotente</b> si repetirlo deja el servidor en el mismo estado que hacerlo una vez.`,
+ analogy:`Es la ventanilla de un restaurante: el método es el verbo (pedir, cambiar, cancelar), la ruta es el plato, las cabeceras son las notas del ticket y el código de estado es lo que responde el cajero.`,
+ code:`POST /pedidos HTTP/1.1
+Host: api.tienda.co
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Content-Type: application/json
+
+{"cliente_id": 7, "items": [{"producto_id": 3, "cantidad": 2}]}
+
+HTTP/1.1 201 Created
+Location: /pedidos/1042
+Content-Type: application/json
+
+{"id": 1042, "estado": "pendiente", "total": 50000}`, codeLang:'txt',
+ table:{head:['Método','Uso','Seguro','Idempotente'], rows:[
+  ['GET','Leer','Sí','Sí'],['POST','Crear / acción','No','No'],['PUT','Reemplazar completo','No','Sí'],['PATCH','Modificar parcial','No','No garantizado'],['DELETE','Eliminar','No','Sí']]},
+ table2:{head:['Código','Cuándo'], rows:[
+  ['200 OK','Lectura o actualización con cuerpo'],['201 Created','Recurso creado (con Location)'],['204 No Content','Éxito sin cuerpo, típico de DELETE'],['400 Bad Request','Petición mal formada o regla de negocio genérica'],['401 Unauthorized','No autenticado: falta token o es inválido'],['403 Forbidden','Autenticado, pero sin permiso'],['404 Not Found','El recurso no existe'],['409 Conflict','Choca con el estado actual: email duplicado, sin stock'],['422 Unprocessable Content','Validación fallida (lo usa FastAPI)'],['500 Internal Server Error','Error no controlado del servidor']]},
+ problem:`Una API que usa verbos en las rutas y responde 200 para todo obliga al frontend a leer el cuerpo para saber si algo falló, y rompe cachés, reintentos e interceptores.`,
+ bad:{code:`POST /crearPedido
+GET  /borrarProducto?id=3
+200 OK  {"error": "no existe"}`, note:`Verbos en la URL, un GET que modifica datos y un error disfrazado de éxito.`},
+ good:{code:`POST   /pedidos          → 201 Created
+DELETE /productos/3      → 204 No Content
+GET    /pedidos/999      → 404 Not Found`, note:`Recursos en plural, el método dice la acción y el código dice el resultado.`},
+ bridge:`Todo esto ya lo consumes con <code>HttpClient</code>: el <code>HttpErrorResponse</code> que llega a tu interceptor trae el <code>status</code> que ahora vas a decidir tú. Un GET idempotente es lo que permite que un interceptor de reintentos funcione sin duplicar pedidos.`,
+ pitfalls:[`Confundir 401 (¿quién eres?) con 403 (sé quién eres y no puedes).`,`Pensar que idempotente significa «misma respuesta»: un segundo DELETE puede dar 404, pero el estado del servidor no cambia.`,`Usar PUT para cambios parciales.`,`Olvidar que HTTP no guarda estado: la autenticación viaja en cada petición.`],
+ answer:`HTTP es petición y respuesta sin estado. En REST modelo recursos con sustantivos y uso los métodos por su semántica: GET lee y es seguro, POST crea, PUT reemplaza, PATCH modifica parcialmente y DELETE elimina. GET, PUT y DELETE son idempotentes: repetirlos deja el mismo estado, por eso se pueden reintentar sin riesgo; POST no. Respondo con el código adecuado: 201 al crear, 204 sin contenido, 401 sin autenticación, 403 sin permiso, 404, 409 en conflictos y 422 en validación.`,
+ demo:{type:'idem', title:`Simulador de idempotencia`, hint:`Envía cada petición varias veces y observa el estado del servidor.`},
+ ex:[
+  {kind:'classify', q:`¿Qué método HTTP corresponde?`, cats:['GET','POST','PUT','PATCH','DELETE'], items:[
+   {t:`Crear un pedido nuevo`, c:'POST', why:`Crea un recurso y no es idempotente.`},
+   {t:`Listar los productos de la categoría café`, c:'GET', why:`Lectura con query param.`},
+   {t:`Reemplazar todos los datos del cliente 7`, c:'PUT', why:`Reemplazo completo e idempotente.`},
+   {t:`Cambiar solo el estado del pedido a «enviado»`, c:'PATCH', why:`Modificación parcial.`},
+   {t:`Eliminar el producto 3`, c:'DELETE', why:`Eliminar es idempotente.`}
+  ]},
+  {kind:'status', q:`Un cliente autenticado pide <code>GET /pedidos/1042</code>, pero ese pedido es de otro cliente.`, opts:[`401`,`403`,`404`,`422`], a:1, exp:`Está autenticado, pero no autorizado: 403. Algunas APIs responden 404 a propósito para no revelar que el pedido existe; si lo dices en la entrevista, suma puntos.`},
+  {kind:'status', q:`<code>POST /clientes</code> con un email que ya está registrado.`, opts:[`400`,`409`,`422`,`500`], a:1, exp:`La petición es válida, pero entra en conflicto con el estado actual: 409 Conflict.`}
+ ]
+},
+{
+ id:12, block:'B', title:`Rutas, parámetros de ruta, query params y cuerpo`, short:`Rutas y parámetros`, freq:'casi',
+ def:`Una <b>path operation</b> es método + ruta + función. FastAPI decide de dónde sale cada parámetro según su declaración: si su nombre aparece en la ruta es <b>path param</b>; si es un tipo simple que no está en la ruta, es <b>query param</b>; si es un modelo Pydantic, es el <b>body</b>. Con <code>Annotated</code> y <code>Path</code>/<code>Query</code> añades restricciones.`,
+ analogy:`Una dirección de entrega: la ruta es la calle y el número (identifica el recurso), los query params son las instrucciones opcionales («dejar en portería») y el body es el paquete.`,
+ code:`from typing import Annotated
+from fastapi import FastAPI, Path, Query
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class ProductoCrear(BaseModel):
+    nombre: str
+    precio: int
+    categoria: str | None = None
+
+@app.get("/productos/destacados")          # rutas fijas antes que las dinámicas
+async def destacados():
+    return [{"id": 1, "nombre": "Café de origen"}]
+
+@app.get("/productos/{producto_id}")
+async def obtener_producto(producto_id: Annotated[int, Path(gt=0)]):
+    return {"id": producto_id}
+
+@app.get("/productos")
+async def listar_productos(
+    categoria: str | None = None,
+    limite: Annotated[int, Query(ge=1, le=100)] = 20,
+):
+    return {"categoria": categoria, "limite": limite}
+
+@app.post("/productos", status_code=201)
+async def crear_producto(producto: ProductoCrear):
+    return producto`,
+ problem:`Las rutas se evalúan en orden. Si la dinámica va primero, <code>/productos/destacados</code> intenta convertir «destacados» a int y responde 422.`,
+ bad:{code:`@app.get("/productos/{producto_id}")
+async def obtener(producto_id: int): ...
+
+@app.get("/productos/destacados")    # nunca se alcanza
+async def destacados(): ...`, note:`GET /productos/destacados → 422 int_parsing.`},
+ good:{code:`@app.get("/productos/destacados")
+async def destacados(): ...
+
+@app.get("/productos/{producto_id}")
+async def obtener(producto_id: int): ...`, note:`Lo específico primero, lo genérico después.`},
+ bridge:`En Express escribirías <code>app.get('/productos/:id', (req, res) => ...)</code> y convertirías <code>req.params.id</code> a mano. Aquí la conversión y validación salen del type hint. Es la misma idea de <code>:id</code> en el router de Angular, que luego lees con <code>ActivatedRoute</code>, pero sin parsear.`,
+ pitfalls:[`El orden de las rutas importa.`,`Los query params llegan como texto; FastAPI los convierte según el hint (<code>?activo=true</code> → <code>True</code>).`,`Un parámetro sin default es obligatorio, aunque sea query.`,`<code>/productos/</code> con barra final redirige con un 307 a <code>/productos</code> si así la definiste.`],
+ answer:`FastAPI infiere el origen de cada parámetro: si el nombre está en la ruta es path param, si es un tipo simple fuera de la ruta es query param y si es un modelo Pydantic es el cuerpo. Los type hints convierten y validan, y con Annotated más Path o Query agrego restricciones como mínimos y máximos. Si algo no cumple, responde 422 sin que yo escriba validaciones. Ojo con el orden: las rutas fijas van antes que las que tienen parámetros.`,
+ demo:{type:'pipeline', title:`Envía peticiones a /productos`, hint:`Elige una petición y mira por dónde pasa.`, scenarios:[
+  {label:`GET /productos/5`, req:`GET /productos/5`, st:['ok','ok','ok','ok','ok','ok'], log:['Middleware: registra la petición','Ruta: coincide con /productos/{producto_id}','Validación: "5" → 5, cumple gt=0','Dependencias: ninguna','Handler: obtener_producto(producto_id=5)','Respuesta serializada a JSON'], status:200, body:`{"id": 5}`},
+  {label:`GET /productos/abc`, req:`GET /productos/abc`, st:['ok','ok','fail','skip','skip','ok'], log:['Middleware: registra la petición','Ruta: coincide con /productos/{producto_id}','Validación: "abc" no es un entero','El handler nunca se ejecuta','',''], status:422, body:`{"detail": [{"type": "int_parsing", "loc": ["path", "producto_id"],
+  "msg": "Input should be a valid integer, unable to parse string as an integer",
+  "input": "abc"}]}`},
+  {label:`GET /productos?limite=500`, req:`GET /productos?limite=500`, st:['ok','ok','fail','skip','skip','ok'], log:['Middleware: registra la petición','Ruta: coincide con /productos','Validación: 500 supera le=100','El handler nunca se ejecuta','',''], status:422, body:`{"detail": [{"type": "less_than_equal", "loc": ["query", "limite"],
+  "msg": "Input should be less than or equal to 100",
+  "input": "500", "ctx": {"le": 100}}]}`},
+  {label:`GET /productos?categoria=cafe`, req:`GET /productos?categoria=cafe`, st:['ok','ok','ok','ok','ok','ok'], log:['Middleware: registra la petición','Ruta: coincide con /productos','Validación: categoria="cafe", limite usa su default 20','Dependencias: ninguna','Handler: listar_productos(...)','Respuesta serializada a JSON'], status:200, body:`{"categoria": "cafe", "limite": 20}`}
+ ]},
+ ex:[
+  {kind:'concept', q:`Con la ruta <code>/productos/{producto_id}</code> y la firma <code>def f(producto_id: int, categoria: str, datos: ProductoCrear)</code>, ¿de dónde sale <code>categoria</code>?`, opts:[`De la ruta`,`Del query string`,`Del body`,`De las cabeceras`], a:1, exp:`Tipo simple que no aparece en la ruta: query param, y obligatorio porque no tiene default.`},
+  {kind:'status', q:`<code>GET /productos/0</code> con <code>producto_id: Annotated[int, Path(gt=0)]</code>.`, opts:[`200`,`400`,`404`,`422`], a:3, exp:`0 no cumple gt=0: error de validación <code>greater_than</code>, 422.`}
+ ]
+},
+{
+ id:13, block:'B', title:`Modelos de entrada y salida, validación y response_model`, short:`Modelos y response_model`, freq:'casi',
+ def:`Separa los esquemas: lo que <b>entra</b> (<code>ClienteCrear</code>), lo que <b>sale</b> (<code>ClientePublico</code>) y lo que se <b>guarda</b>. El tipo de retorno del endpoint, o <code>response_model</code>, valida y <b>filtra</b> la respuesta: solo salen los campos del modelo de salida.`,
+ analogy:`La carta que ve el cliente no muestra el costo de los ingredientes ni el proveedor, aunque la cocina los conozca.`,
+ code:`from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+class ClienteBase(BaseModel):
+    nombre: str = Field(min_length=2)
+    email: EmailStr
+
+class ClienteCrear(ClienteBase):
+    password: str = Field(min_length=8)
+
+class ClientePublico(ClienteBase):
+    model_config = ConfigDict(from_attributes=True)   # para leer objetos ORM
+    id: int
+
+@app.post("/clientes", status_code=201)
+def crear_cliente(datos: ClienteCrear, session: SessionDep) -> ClientePublico:
+    cliente = guardar_cliente(session, datos)   # tiene hashed_password
+    return cliente                              # sale solo id, nombre, email
+
+# Si devuelves un tipo distinto al anotado, usa response_model
+@app.get("/clientes/{cliente_id}", response_model=ClientePublico)
+def obtener_cliente(cliente_id: int, session: SessionDep):
+    return session.get(Cliente, cliente_id)`,
+ problem:`Con un solo modelo para todo terminas devolviendo el hash de la contraseña o permitiendo que el cliente envíe campos que no debería, como <code>es_admin</code>.`,
+ bad:{code:`@app.post("/clientes")
+def crear(datos: ClienteCrear) -> ClienteCrear:
+    guardar(datos)
+    return datos            # devuelve el password`, note:`El modelo de entrada se usa como salida.`},
+ good:{code:`@app.post("/clientes", status_code=201)
+def crear(datos: ClienteCrear) -> ClientePublico:
+    return guardar(datos)   # FastAPI filtra`, note:`Entrada y salida separadas; la herencia evita repetir campos.`},
+ bridge:`Es la idea de los DTO de NestJS o de tener <code>CreateClienteDto</code> y <code>ClienteResponse</code> en tus servicios de Angular. La diferencia es que aquí el modelo de salida no es solo un tipo: se valida y filtra en ejecución. Pydantic frente a una interfaz de TS: la interfaz desaparece al compilar; el modelo actúa.`,
+ pitfalls:[`Usar el mismo modelo para entrada, salida y tabla.`,`Devolver un objeto ORM sin <code>from_attributes=True</code>.`,`Si tu respuesta no cumple el modelo de salida, el error es un <b>500</b> (bug tuyo), no un 422.`,`Por defecto los campos extra se ignoran; con <code>model_config = ConfigDict(extra="forbid")</code> los rechazas.`],
+ answer:`Defino modelos distintos para entrada y salida, normalmente con una clase base compartida. La entrada valida lo que el cliente puede enviar y la salida controla lo que expongo: si anoto el retorno o uso response_model, FastAPI filtra los campos, así nunca se filtra un hash de contraseña. Si el body no cumple, el cliente recibe 422 con el detalle; si mi respuesta no cumple, es un 500 porque es un error del servidor.`,
+ demo:{type:'pipeline', title:`POST /clientes con distintos cuerpos`, hint:`Manda un cuerpo válido o uno inválido y mira el 422 de Pydantic.`, scenarios:[
+  {label:`Cuerpo válido`, req:`POST /clientes
+{"nombre": "Ana", "email": "ana@mail.com", "password": "cafe-2026!"}`, st:['ok','ok','ok','ok','ok','ok'], log:['Middleware: registra la petición','Ruta: POST /clientes','Validación: ClienteCrear OK','Dependencias: abre SessionDep','Handler: guarda con hashed_password','Respuesta filtrada por ClientePublico'], status:201, body:`{"nombre": "Ana", "email": "ana@mail.com", "id": 7}`},
+  {label:`Email sin @`, req:`POST /clientes
+{"nombre": "Ana", "email": "ana.mail.com", "password": "cafe-2026!"}`, st:['ok','ok','fail','skip','skip','ok'], log:['Middleware: registra la petición','Ruta: POST /clientes','Validación: EmailStr rechaza el valor','No se abre sesión ni corre el handler','',''], status:422, body:`{"detail": [{"type": "value_error", "loc": ["body", "email"],
+  "msg": "value is not a valid email address: An email address must have an @-sign.",
+  "input": "ana.mail.com", "ctx": {"reason": "An email address must have an @-sign."}}]}`},
+  {label:`Password corto`, req:`POST /clientes
+{"nombre": "Ana", "email": "ana@mail.com", "password": "123"}`, st:['ok','ok','fail','skip','skip','ok'], log:['Middleware: registra la petición','Ruta: POST /clientes','Validación: min_length=8','El handler nunca se ejecuta','',''], status:422, body:`{"detail": [{"type": "string_too_short", "loc": ["body", "password"],
+  "msg": "String should have at least 8 characters",
+  "input": "123", "ctx": {"min_length": 8}}]}`},
+  {label:`Campo extra es_admin`, req:`POST /clientes
+{"nombre": "Ana", "email": "ana@mail.com", "password": "cafe-2026!", "es_admin": true}`, st:['ok','ok','ok','ok','ok','ok'], log:['Middleware: registra la petición','Ruta: POST /clientes','Validación: es_admin no existe en el modelo y se ignora','Dependencias: abre SessionDep','Handler: guarda sin es_admin','Respuesta filtrada'], status:201, body:`{"nombre": "Ana", "email": "ana@mail.com", "id": 8}`}
+ ]},
+ ex:[
+  {kind:'status', q:`El handler devuelve un dict sin el campo <code>id</code>, que es obligatorio en <code>ClientePublico</code>.`, opts:[`200 sin id`,`422`,`500`,`204`], a:2, exp:`Falla la validación de la respuesta (ResponseValidationError). Es un error del servidor: 500.`},
+  {kind:'concept', q:`¿Qué hace FastAPI con los campos que no están en el modelo de salida?`, opts:[`Los devuelve igual`,`Los filtra`,`Lanza 422`,`Los convierte a null`], a:1, exp:`El modelo de respuesta funciona como filtro: solo sale lo declarado.`}
+ ]
+},
+{
+ id:14, block:'B', title:`Inyección de dependencias con Depends`, short:`Depends`, freq:'casi',
+ def:`<code>Depends</code> declara que el valor de un parámetro lo provee una función que FastAPI ejecuta <b>antes del handler, en cada petición</b>. Las dependencias pueden tener sus propias dependencias (un árbol), su resultado se cachea dentro de la misma petición, y si usan <code>yield</code> ejecutan limpieza después de responder.`,
+ analogy:`El mise en place: antes de que el chef cocine, alguien le deja listos y medidos los ingredientes. El chef no va a la bodega ni lava los platos al final.`,
+ code:`from typing import Annotated
+from fastapi import Depends
+from sqlmodel import Session, select
+
+def get_session():
+    with Session(engine) as session:
+        yield session              # tras la respuesta, se cierra
+
+SessionDep = Annotated[Session, Depends(get_session)]
+
+def paginacion(pagina: int = 1, tamano: int = 20) -> dict:
+    return {"offset": (pagina - 1) * tamano, "limit": tamano}
+
+PaginacionDep = Annotated[dict, Depends(paginacion)]
+
+@app.get("/pedidos")
+def listar_pedidos(session: SessionDep, pag: PaginacionDep) -> list[PedidoPublico]:
+    consulta = select(Pedido).offset(pag["offset"]).limit(pag["limit"])
+    return session.exec(consulta).all()`,
+ problem:`Sin dependencias repites en cada endpoint cómo abrir la sesión, leer el token o paginar, y no puedes reemplazar esas piezas en los tests.`,
+ bad:{code:`session = Session(engine)       # global, compartida
+
+@app.get("/pedidos")
+def listar():
+    return session.exec(select(Pedido)).all()`, note:`Una sesión compartida por todas las peticiones: datos cruzados y conexiones sin cerrar.`},
+ good:{code:`@app.get("/pedidos")
+def listar(session: SessionDep):
+    return session.exec(select(Pedido)).all()`, note:`Una sesión por petición, cerrada al terminar y reemplazable en tests.`},
+ bridge:`Se parece al inyector de Angular, pero hay diferencias que conviene decir en la entrevista. Angular resuelve por <b>tipo o token</b> y sus providers suelen ser singletons (<code>providedIn: 'root'</code>). FastAPI resuelve por <b>función</b>, la ejecuta en cada petición y sus parámetros pueden salir de la propia petición (query, cabeceras, body). Para tests, <code>app.dependency_overrides</code> ≈ <code>TestBed.overrideProvider</code>.`,
+ pitfalls:[`Escribir <code>Depends(get_session())</code> con paréntesis: le pasas el resultado, no la función.`,`Esperar un singleton: cada petición crea su propio valor.`,`Poner lógica de negocio pesada dentro de las dependencias.`,`No crear alias con <code>Annotated</code> y repetir <code>Depends(...)</code> en todos los endpoints.`],
+ answer:`Depends le dice a FastAPI que un parámetro lo produce otra función. FastAPI resuelve el árbol de dependencias antes del handler, en cada petición, y cachea los resultados dentro de esa petición. Con yield puedo abrir y cerrar recursos como la sesión de base de datos. A diferencia de Angular, no hay singletons por defecto ni resolución por tipo, y en tests reemplazo dependencias con dependency_overrides.`,
+ demo:{type:'stepper', title:`Resolución de dependencias en GET /pedidos/mios`, hint:`Avanza paso a paso.`, code:`def get_session():
+    with Session(engine) as session:
+        yield session
+
+SessionDep = Annotated[Session, Depends(get_session)]
+
+def get_cliente_actual(token: TokenDep, session: SessionDep) -> Cliente:
+    return buscar_por_token(session, token)
+
+ClienteActual = Annotated[Cliente, Depends(get_cliente_actual)]
+
+@app.get("/pedidos/mios")
+def mis_pedidos(cliente: ClienteActual, session: SessionDep):
+    return listar_por_cliente(session, cliente.id)`, steps:[
+  {hl:[12,13], text:`Llega GET /pedidos/mios. FastAPI lee la firma: necesita cliente y session.`, out:``},
+  {hl:[7], text:`Para cliente necesita get_cliente_actual, que a su vez pide token y session.`, out:``},
+  {hl:[1,2,3], text:`Ejecuta get_session hasta el yield: abre la sesión.`, out:`sesión abierta`},
+  {hl:[8], text:`Con token y sesión, resuelve el cliente.`, out:`cliente = Ana (id 7)`},
+  {hl:[13], text:`El handler también pidió SessionDep: FastAPI reutiliza la misma sesión (caché por petición).`, out:`misma sesión, no se abre otra`},
+  {hl:[14], text:`Corre el handler con todo listo.`, out:`200 OK [pedidos de Ana]`},
+  {hl:[3], text:`Después de enviar la respuesta, continúa el código tras el yield: el with cierra la sesión.`, out:`sesión cerrada`}
+ ]},
+ ex:[
+  {kind:'concept', q:`Dos dependencias del mismo endpoint piden <code>SessionDep</code>. ¿Cuántas veces corre <code>get_session</code> en esa petición?`, opts:[`Una`,`Dos`,`Una por cada endpoint de la app`,`Una sola vez al arrancar la app`], a:0, exp:`FastAPI cachea el resultado de cada dependencia dentro de la misma petición.`},
+  {kind:'concept', q:`¿Qué está mal en <code>session: Session = Depends(get_session())</code>?`, opts:[`Nada`,`Falta async`,`Se pasa el resultado de llamar la función, no la función`,`Depends solo acepta clases`], a:2, exp:`Depends espera el callable: <code>Depends(get_session)</code>.`}
+ ]
+},
+{
+ id:15, block:'B', title:`Manejo de errores y HTTPException`, short:`HTTPException`, freq:'casi',
+ def:`<code>raise HTTPException(status_code, detail)</code> corta la ejecución y FastAPI responde un JSON <code>{"detail": ...}</code> con ese código. Para errores de dominio, lo limpio es crear excepciones propias y traducirlas a HTTP con <code>@app.exception_handler</code>.`,
+ analogy:`Es el cajero que te dice «ese plato no existe» en lugar de quedarse callado (500) o servirte un plato vacío (200 con null).`,
+ code:`from fastapi import HTTPException, Request, status
+from fastapi.responses import JSONResponse
+
+@app.get("/pedidos/{pedido_id}")
+def obtener_pedido(pedido_id: int, session: SessionDep) -> PedidoPublico:
+    pedido = session.get(Pedido, pedido_id)
+    if pedido is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pedido no encontrado",
+        )
+    return pedido
+
+# Excepción de dominio, sin saber nada de HTTP
+class StockInsuficiente(Exception):
+    def __init__(self, producto: str):
+        self.producto = producto
+
+@app.exception_handler(StockInsuficiente)
+async def stock_insuficiente_handler(request: Request, exc: StockInsuficiente):
+    return JSONResponse(status_code=409, content={"detail": f"Sin stock de {exc.producto}"})`,
+ problem:`Devolver errores como respuestas 200 engaña al frontend y a los reintentos. Lanzar HTTPException desde la lógica de negocio la ata a HTTP y la vuelve difícil de reutilizar.`,
+ bad:{code:`@app.get("/pedidos/{pedido_id}")
+def obtener(pedido_id: int):
+    pedido = buscar(pedido_id)
+    if not pedido:
+        return {"error": "no existe"}   # 200 OK`, note:`El cliente recibe 200 y tiene que adivinar.`},
+ good:{code:`@app.get("/pedidos/{pedido_id}")
+def obtener(pedido_id: int):
+    pedido = buscar(pedido_id)
+    if pedido is None:
+        raise HTTPException(404, "Pedido no encontrado")
+    return pedido`, note:`raise, no return, y el código correcto.`},
+ bridge:`Equivale a <code>throw new NotFoundException()</code> en NestJS. Del otro lado, es lo que tu interceptor de Angular recibe como <code>HttpErrorResponse</code> con <code>error.detail</code>. El <code>exception_handler</code> es el equivalente a un filtro de excepciones global.`,
+ pitfalls:[`Escribir <code>return HTTPException(...)</code> en vez de <code>raise</code>.`,`Capturar <code>Exception</code> en el handler y esconder el error real.`,`Lanzar HTTPException desde servicios o repositorios: mejor una excepción de dominio y un handler.`,`Filtrar trazas internas en el <code>detail</code> de un 500.`],
+ answer:`Para errores esperados lanzo HTTPException con el código y un detail claro, por ejemplo 404 si no existe el recurso. Para reglas de negocio prefiero excepciones de dominio, como StockInsuficiente, que no saben nada de HTTP, y registro un exception handler que las traduce a la respuesta adecuada, por ejemplo 409. Así la lógica es reutilizable y testeable, y los errores no controlados terminan en 500 sin exponer detalles internos.`,
+ demo:{type:'pipeline', title:`Errores en /pedidos`, hint:`Prueba distintos casos de error.`, scenarios:[
+  {label:`GET /pedidos/1042`, req:`GET /pedidos/1042`, st:['ok','ok','ok','ok','ok','ok'], log:['Middleware: registra la petición','Ruta: /pedidos/{pedido_id}','Validación: 1042 es int','Dependencias: sesión abierta','Handler: encuentra el pedido','Respuesta 200'], status:200, body:`{"id": 1042, "estado": "pendiente", "total": 50000}`},
+  {label:`GET /pedidos/9999`, req:`GET /pedidos/9999`, st:['ok','ok','ok','ok','fail','ok'], log:['Middleware: registra la petición','Ruta: /pedidos/{pedido_id}','Validación: OK','Dependencias: sesión abierta','Handler: raise HTTPException(404)','FastAPI convierte la excepción en JSON'], status:404, body:`{"detail": "Pedido no encontrado"}`},
+  {label:`POST /pedidos sin stock`, req:`POST /pedidos
+{"items": [{"producto_id": 3, "cantidad": 99}]}`, st:['ok','ok','ok','ok','fail','ok'], log:['Middleware: registra la petición','Ruta: POST /pedidos','Validación: OK','Dependencias: sesión y cliente','El servicio lanza StockInsuficiente("cafe")','exception_handler la traduce a 409'], status:409, body:`{"detail": "Sin stock de cafe"}`},
+  {label:`Bug no controlado`, req:`GET /reportes/ventas`, st:['ok','ok','ok','ok','fail','fail'], log:['Middleware: registra la petición','Ruta: /reportes/ventas','Validación: OK','Dependencias: OK','Handler: ZeroDivisionError sin capturar','Respuesta genérica; la traza queda en los logs del servidor'], status:500, body:`Internal Server Error`}
+ ]},
+ ex:[
+  {kind:'concept', q:`¿Qué recibe el cliente con <code>raise HTTPException(404, "Pedido no encontrado")</code>?`, opts:[`200 con null`,`404 y <code>{"detail": "Pedido no encontrado"}</code>`,`404 y <code>{"error": "Pedido no encontrado"}</code>`,`500`], a:1, exp:`FastAPI usa la clave <code>detail</code> en el JSON de error.`},
+  {kind:'status', q:`Un endpoint divide entre cero y nadie captura la excepción.`, opts:[`400`,`422`,`500`,`503`], a:2, exp:`Toda excepción no controlada termina en 500 Internal Server Error.`}
+ ]
+},
+{
+ id:16, block:'B', title:`Endpoints async vs sync`, short:`async def vs def`, freq:'seguido',
+ def:`Un endpoint <code>async def</code> corre en el event loop: úsalo cuando todo lo que hace por dentro es awaitable (driver async, httpx). Un endpoint <code>def</code> normal FastAPI lo ejecuta en un <b>threadpool</b>, así que una llamada bloqueante no congela el servidor. Lo único realmente malo es poner código bloqueante dentro de <code>async def</code>. La propia documentación dice: si no sabes, usa <code>def</code> normal.`,
+ analogy:`Un mesero async que se queda parado frente a la cocina esperando un plato bloquea a todo el restaurante. Si la tarea es de esperar sin poder avisar, mejor contrata un ayudante (el threadpool).`,
+ code:`# 1. Bien: librería async dentro de async def
+@app.get("/productos/{producto_id}")
+async def obtener(producto_id: int, session: AsyncSessionDep):
+    return await session.get(Producto, producto_id)
+
+# 2. Bien: librería bloqueante con def (FastAPI usa el threadpool)
+@app.get("/tasa-cambio")
+def tasa_cambio():
+    return requests.get("https://api.banco.co/usd").json()
+
+# 3. Mal: bloqueante dentro de async def
+@app.get("/reporte")
+async def reporte():
+    time.sleep(2)          # nadie más es atendido durante 2 s
+    return {"ok": True}`,
+ problem:`Con <code>async def</code> y una llamada bloqueante, todas las peticiones concurrentes se atienden en fila. Con carga real, la latencia se dispara.`,
+ bad:{code:`@app.get("/clientes/{id}")
+async def obtener(id: int):
+    return psycopg2_buscar(id)   # driver sync en async def`, note:`Parece moderno y es el más lento de los tres.`},
+ good:{code:`@app.get("/clientes/{id}")
+def obtener(id: int):
+    return psycopg2_buscar(id)   # threadpool`, note:`O cambias a un driver async y usas async def con await.`},
+ bridge:`En Node todo corre en un solo hilo: bloquear en un handler bloquea el servidor entero, siempre. FastAPI te da una salida que Node no tiene: declarar el endpoint con <code>def</code> y dejar que lo ejecute en un hilo aparte.`,
+ pitfalls:[`async def con <code>requests</code>, <code>time.sleep</code> o un driver sync.`,`Creer que async siempre es más rápido.`,`Hacer cálculo pesado dentro de un endpoint: muévelo a un proceso o a una cola de tareas.`,`El threadpool es limitado (40 hilos por defecto en AnyIO): no es infinito.`],
+ answer:`Si dentro del endpoint uso solo librerías async, lo declaro con async def y hago await; si uso librerías bloqueantes, lo declaro con def normal y FastAPI lo ejecuta en un threadpool. El error grave es llamar código bloqueante dentro de async def, porque congela el event loop y serializa todas las peticiones. Para trabajo pesado de CPU no uso ninguno de los dos: lo mando a otro proceso o a una cola.`,
+ demo:{type:'timeline', title:`4 peticiones simultáneas a un endpoint que espera 1 s de I/O`, hint:`Cambia la forma de declarar el endpoint.`, max:4, modes:[
+  {label:`async def + await`, total:`≈ 1 s`, bars:[{n:'petición 1',s:0,e:1,k:'wait'},{n:'petición 2',s:0,e:1,k:'wait'},{n:'petición 3',s:0,e:1,k:'wait'},{n:'petición 4',s:0,e:1,k:'wait'}], note:`El event loop alterna entre las cuatro mientras esperan.`},
+  {label:`def + librería bloqueante`, total:`≈ 1 s`, bars:[{n:'petición 1',s:0,e:1,k:'wait'},{n:'petición 2',s:0,e:1,k:'wait'},{n:'petición 3',s:0,e:1,k:'wait'},{n:'petición 4',s:0,e:1,k:'wait'}], note:`Cada una corre en un hilo del threadpool. Funciona bien hasta agotar los hilos.`},
+  {label:`async def + time.sleep`, total:`≈ 4 s`, bars:[{n:'petición 1',s:0,e:1,k:'cpu'},{n:'petición 2',s:1,e:2,k:'cpu'},{n:'petición 3',s:2,e:3,k:'cpu'},{n:'petición 4',s:3,e:4,k:'cpu'}], note:`El loop queda bloqueado: las peticiones se atienden en fila.`}
+ ]},
+ ex:[
+  {kind:'classify', q:`¿Declararías el endpoint con async def o con def?`, cats:['async def','def'], items:[
+   {t:`Usa httpx.AsyncClient para consultar un proveedor`, c:'async def', why:`Librería async: await dentro de async def.`},
+   {t:`Usa requests para consultar un proveedor`, c:'def', why:`requests es bloqueante: threadpool.`},
+   {t:`Usa la Session síncrona de SQLModel`, c:'def', why:`Sesión bloqueante.`},
+   {t:`Usa AsyncSession con asyncpg`, c:'async def', why:`Driver async.`},
+   {t:`No sabes si la librería es async`, c:'def', why:`Es la recomendación literal de la doc de FastAPI.`}
+  ]}
+ ]
+},
+{
+ id:17, block:'B', title:`Base de datos: SQLAlchemy o SQLModel, sesiones y migraciones`, short:`BD, sesiones y Alembic`, freq:'casi',
+ def:`Un <b>ORM</b> mapea clases a tablas. SQLAlchemy 2.0 es el estándar en Python; <b>SQLModel</b>, del mismo autor de FastAPI, combina SQLAlchemy y Pydantic y es lo que usa la documentación oficial. La <b>Session</b> es la unidad de trabajo de una petición: acumulas cambios y se aplican con <code>commit()</code>. <b>Alembic</b> versiona el esquema con migraciones.`,
+ analogy:`La Session es un carrito de compras: agregas, cambias y quitas, pero nada se cobra hasta el commit. Las migraciones son las actas de cada remodelación del local: numeradas, en orden y reversibles.`,
+ code:`from sqlmodel import Field, Session, SQLModel, create_engine, select
+
+class Producto(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    nombre: str = Field(index=True)
+    precio: int
+    stock: int = 0
+
+# PostgreSQL con psycopg 3 (uv add "psycopg[binary]")
+DATABASE_URL = "postgresql+psycopg://tienda:secreto@localhost:5432/tienda"
+engine = create_engine(DATABASE_URL)
+
+@app.post("/productos", status_code=201)
+def crear_producto(datos: ProductoCrear, session: SessionDep) -> Producto:
+    producto = Producto.model_validate(datos)
+    session.add(producto)
+    session.commit()
+    session.refresh(producto)        # trae el id generado
+    return producto
+
+@app.get("/productos")
+def listar(session: SessionDep, categoria: str | None = None) -> list[Producto]:
+    consulta = select(Producto)
+    if categoria:
+        consulta = consulta.where(Producto.categoria == categoria)
+    return session.exec(consulta).all()
+
+# Migraciones
+# uv add alembic
+# uv run alembic init migrations
+# uv run alembic revision --autogenerate -m "crear tabla productos"
+# uv run alembic upgrade head`,
+ problem:`El problema N+1 (una consulta por cada fila al acceder a una relación) y concatenar texto en SQL son los dos errores que más se preguntan. Y <code>create_all()</code> no sirve para evolucionar el esquema en producción.`,
+ bad:{code:`pedidos = session.exec(select(Pedido)).all()
+for p in pedidos:
+    print(p.cliente.nombre)    # 1 consulta por pedido
+
+session.exec(text(f"SELECT * FROM productos WHERE nombre = '{nombre}'"))`, note:`N+1 consultas e inyección SQL.`},
+ good:{code:`from sqlalchemy.orm import selectinload
+
+consulta = select(Pedido).options(selectinload(Pedido.cliente))
+pedidos = session.exec(consulta).all()   # 2 consultas en total
+
+session.exec(select(Producto).where(Producto.nombre == nombre))`, note:`Carga anticipada y parámetros enlazados por el ORM.`},
+ bridge:`SQLModel o SQLAlchemy ≈ TypeORM o Prisma; Alembic ≈ <code>prisma migrate</code> o las migraciones de TypeORM. La Session se parece al <code>EntityManager</code> de TypeORM: un unit of work que agrupa cambios.`,
+ pitfalls:[`Olvidar <code>commit()</code>: no se guarda nada.`,`Compartir una sesión global entre peticiones.`,`No revisar el script de <code>--autogenerate</code>: Alembic no detecta todo (por ejemplo, renombrados).`,`Mezclar AsyncSession con un driver síncrono.`],
+ answer:`Uso SQLAlchemy o SQLModel para mapear modelos a tablas, con una sesión por petición inyectada como dependencia, que se cierra al terminar. Agrego objetos a la sesión, hago commit y refresh para obtener los valores generados. Para evitar N+1 cargo relaciones con selectinload o joinedload, nunca concateno SQL, y el esquema lo evoluciono con migraciones de Alembic revisadas a mano, no con create_all en producción.`,
+ demo:{type:'toggle', title:`El problema N+1, contado en consultas`, hint:`Listar 5 pedidos con el nombre de su cliente.`, options:[
+  {label:`Carga perezosa (lazy)`, code:`pedidos = session.exec(select(Pedido)).all()
+for p in pedidos:
+    print(p.cliente.nombre)`, out:`SELECT * FROM pedido;
+SELECT * FROM cliente WHERE id = 7;
+SELECT * FROM cliente WHERE id = 3;
+SELECT * FROM cliente WHERE id = 7;
+SELECT * FROM cliente WHERE id = 12;
+SELECT * FROM cliente WHERE id = 5;
+→ 6 consultas (1 + N). Con 1.000 pedidos: 1.001`, note:`Cada acceso a p.cliente dispara una consulta.`},
+  {label:`selectinload`, code:`consulta = select(Pedido).options(selectinload(Pedido.cliente))
+pedidos = session.exec(consulta).all()`, out:`SELECT * FROM pedido;
+SELECT * FROM cliente WHERE id IN (7, 3, 12, 5);
+→ 2 consultas, sin importar cuántos pedidos haya`, note:`Ideal para relaciones uno a muchos.`},
+  {label:`joinedload`, code:`consulta = select(Pedido).options(joinedload(Pedido.cliente))
+pedidos = session.exec(consulta).all()`, out:`SELECT pedido.*, cliente.* FROM pedido
+LEFT OUTER JOIN cliente ON cliente.id = pedido.cliente_id;
+→ 1 consulta`, note:`Útil para relaciones muchos a uno, como pedido → cliente.`}
+ ]},
+ ex:[
+  {kind:'concept', q:`Hiciste <code>session.add(producto)</code> y respondiste 201, pero el producto no aparece en la base de datos. ¿Qué faltó?`, opts:[`refresh()`,`commit()`,`flush()`,`close()`], a:1, exp:`Sin commit la transacción se descarta al cerrar la sesión.`},
+  {kind:'concept', q:`¿Qué hace <code>alembic revision --autogenerate</code>?`, opts:[`Aplica las migraciones`,`Compara tus modelos con el esquema actual y genera un script para revisar`,`Borra y recrea las tablas`,`Genera los modelos desde la BD`], a:1, exp:`Genera la migración; la aplicas con <code>alembic upgrade head</code> después de revisarla.`}
+ ]
+},
+{
+ id:18, block:'B', title:`Autenticación y autorización: JWT, OAuth2 y hashing`, short:`JWT, OAuth2 y hashing`, freq:'casi',
+ def:`<b>Autenticación</b>: quién eres. <b>Autorización</b>: qué puedes hacer. El flujo de la documentación de FastAPI: <code>POST /token</code> con usuario y contraseña (OAuth2 password flow) → JWT firmado → el cliente lo envía en <code>Authorization: Bearer</code> → una dependencia lo verifica en cada petición. Las contraseñas se guardan como hash con <b>Argon2</b> usando <b>pwdlib</b>, y los JWT se firman con <b>PyJWT</b>.`,
+ analogy:`El JWT es la manilla de un concierto: te la ponen en la entrada tras revisar tu boleta; adentro nadie vuelve a la taquilla, solo verifican que la manilla sea auténtica y no esté vencida. Pero cualquiera puede leer lo que dice la manilla.`,
+ code:`from datetime import datetime, timedelta, timezone
+from typing import Annotated
+
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jwt.exceptions import InvalidTokenError
+from pwdlib import PasswordHash
+
+password_hash = PasswordHash.recommended()          # Argon2
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def crear_token(sub: str, minutos: int = 30) -> str:
+    expira = datetime.now(timezone.utc) + timedelta(minutes=minutos)
+    return jwt.encode({"sub": sub, "exp": expira}, settings.secret_key, algorithm="HS256")
+
+async def get_cliente_actual(
+    token: Annotated[str, Depends(oauth2_scheme)], session: SessionDep
+) -> Cliente:
+    error = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Credenciales inválidas",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+    except InvalidTokenError:          # firma alterada, vencido, mal formado
+        raise error
+    cliente = buscar_por_email(session, payload.get("sub"))
+    if cliente is None:
+        raise error
+    return cliente
+
+ClienteActual = Annotated[Cliente, Depends(get_cliente_actual)]
+
+def requiere_admin(cliente: ClienteActual) -> Cliente:
+    if not cliente.es_admin:
+        raise HTTPException(status_code=403, detail="Solo administradores")
+    return cliente
+
+@app.post("/token")
+async def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep) -> Token:
+    cliente = buscar_por_email(session, form.username)
+    if not cliente or not password_hash.verify(form.password, cliente.hashed_password):
+        raise HTTPException(401, "Usuario o contraseña incorrectos",
+                            headers={"WWW-Authenticate": "Bearer"})
+    return Token(access_token=crear_token(cliente.email), token_type="bearer")`,
+ problem:`Guardar contraseñas en texto plano o con un hash rápido (MD5, SHA-256 sin sal) permite recuperarlas si se filtra la base. Poner datos sensibles en el JWT los expone: el payload solo está codificado en base64, no cifrado.`,
+ bad:{code:`cliente.password = form.password                 # texto plano
+token = jwt.encode({"sub": email, "password": pwd, "tarjeta": "..."}, "1234")`, note:`Contraseña sin hash, datos sensibles en el payload y una clave débil en el código.`},
+ good:{code:`cliente.hashed_password = password_hash.hash(form.password)
+token = jwt.encode({"sub": email, "exp": expira}, settings.secret_key,
+                   algorithm="HS256")`, note:`Argon2, payload mínimo con expiración y clave desde configuración (openssl rand -hex 32).`},
+ bridge:`En Angular guardabas el token y un interceptor añadía <code>Authorization: Bearer</code>; ahora estás del otro lado. Los <b>guards</b> de Angular se parecen a dependencias como <code>requiere_admin</code>, con una diferencia de fondo: el guard del frontend es experiencia de usuario; la dependencia del backend es la seguridad real.`,
+ pitfalls:[`Confundir 401 (token ausente o inválido) con 403 (token válido, sin permiso).`,`Creer que el payload es secreto.`,`Tokens sin expiración o imposibles de revocar: usa vida corta y refresh tokens.`,`<code>OAuth2PasswordRequestForm</code> espera form-data, no JSON (necesita python-multipart, incluido en <code>fastapi[standard]</code>).`],
+ answer:`Autenticación es verificar identidad y autorización es verificar permisos. En FastAPI expongo un endpoint de token con el flujo password de OAuth2: verifico la contraseña contra un hash Argon2 y emito un JWT firmado con expiración corta y el identificador en sub. Una dependencia lee el Bearer token, lo decodifica con la clave y algoritmo esperados, carga el usuario y responde 401 si algo falla. Encima pongo dependencias de autorización que responden 403. El payload del JWT es legible, así que no lleva datos sensibles.`,
+ demo:{type:'pipeline', title:`Peticiones protegidas`, hint:`Prueba con y sin token.`, stages:['Middleware','Ruta','oauth2_scheme','get_cliente_actual','Permisos','Respuesta'], scenarios:[
+  {label:`Sin token`, req:`GET /pedidos/mios`, st:['ok','ok','fail','skip','skip','ok'], log:['Middleware: registra la petición','Ruta: /pedidos/mios','No hay cabecera Authorization','No se consulta la BD','',''], status:401, body:`{"detail": "Not authenticated"}`},
+  {label:`Token vencido`, req:`GET /pedidos/mios
+Authorization: Bearer eyJ...(exp pasado)`, st:['ok','ok','ok','fail','skip','ok'], log:['Middleware','Ruta','Extrae el token','jwt.decode lanza ExpiredSignatureError (es un InvalidTokenError)','',''], status:401, body:`{"detail": "Credenciales inválidas"}`},
+  {label:`Token válido de Ana`, req:`GET /pedidos/mios
+Authorization: Bearer eyJ...`, st:['ok','ok','ok','ok','ok','ok'], log:['Middleware','Ruta','Extrae el token','Firma y exp OK; carga a Ana','No requiere rol especial','Handler devuelve sus pedidos'], status:200, body:`[{"id": 1042, "estado": "pendiente"}]`},
+  {label:`Ana entra a /admin/reportes`, req:`GET /admin/reportes
+Authorization: Bearer eyJ...`, st:['ok','ok','ok','ok','fail','ok'], log:['Middleware','Ruta','Extrae el token','Token válido: Ana','requiere_admin: Ana no es admin',''], status:403, body:`{"detail": "Solo administradores"}`}
+ ]},
+ ex:[
+  {kind:'status', q:`Alguien cambia un carácter del payload del JWT y lo envía.`, opts:[`200`,`401`,`403`,`422`], a:1, exp:`La firma ya no coincide: <code>InvalidSignatureError</code> → 401.`},
+  {kind:'concept', q:`¿El payload de un JWT es secreto?`, opts:[`Sí, está cifrado`,`No, está codificado en base64url y cualquiera lo lee; la firma solo garantiza que no se alteró`,`Solo si usas HS256`,`Solo en HTTPS`], a:1, exp:`Firmar no es cifrar. No pongas datos sensibles en el payload.`}
+ ]
+},
+{
+ id:19, block:'B', title:`Middleware, CORS y tareas en segundo plano`, short:`Middleware, CORS, background`, freq:'seguido',
+ def:`Un <b>middleware</b> envuelve cada petición y respuesta (logs, tiempos, cabeceras). <b>CORS</b> es una regla del navegador: bloquea respuestas de otro origen salvo que el servidor lo permita con cabeceras; se configura con <code>CORSMiddleware</code>. <b>BackgroundTasks</b> ejecuta algo después de enviar la respuesta, como un correo de confirmación.`,
+ analogy:`El middleware es el portero del edificio: todos pasan por él al entrar y al salir. La tarea en segundo plano es «te enviamos el recibo por correo»: te vas con tu café y el correo sale después.`,
+ code:`import time
+from fastapi import BackgroundTasks, Request
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200", "https://tienda.co"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.middleware("http")
+async def medir_tiempo(request: Request, call_next):
+    inicio = time.perf_counter()
+    response = await call_next(request)        # sigue la cadena
+    response.headers["X-Process-Time"] = f"{time.perf_counter() - inicio:.4f}"
+    return response
+
+def enviar_confirmacion(email: str, pedido_id: int) -> None:
+    ...  # SMTP: lento
+
+@app.post("/pedidos", status_code=201)
+def crear_pedido(datos: PedidoCrear, tareas: BackgroundTasks, cliente: ClienteActual):
+    pedido = guardar_pedido(datos, cliente)
+    tareas.add_task(enviar_confirmacion, cliente.email, pedido.id)
+    return pedido                               # el cliente no espera el correo`,
+ problem:`Sin CORS configurado, tu app Angular en <code>localhost:4200</code> no puede leer las respuestas de la API en <code>localhost:8000</code>. Sin tareas en segundo plano, el usuario espera a que salga un correo para ver su pedido.`,
+ bad:{code:`app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+)`, note:`Cualquier sitio web podría hacer peticiones con las credenciales de tus usuarios. La especificación de CORS no admite * cuando hay credenciales.`},
+ good:{code:`app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,   # lista explícita
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+)`, note:`Orígenes explícitos desde configuración.`},
+ bridge:`El middleware es el <code>HttpInterceptor</code> de Angular, pero del lado del servidor: <code>await call_next(request)</code> ≈ <code>next.handle(req)</code>. También se parece al <code>(req, res, next)</code> de Express. Y el error de CORS que veías en la consola de Chrome se arregla aquí, no en Angular (en desarrollo también lo esquivabas con <code>proxy.conf.json</code>).`,
+ pitfalls:[`Creer que CORS protege tu API: solo lo aplican los navegadores; curl o Postman lo ignoran.`,`Usar BackgroundTasks para trabajos pesados o críticos: si el proceso se reinicia, se pierden. Usa una cola (Celery, ARQ, RQ).`,`Olvidar que las peticiones con JSON o Authorization generan un preflight OPTIONS.`,`Registrar CORS después de otros middlewares que pueden responder antes.`],
+ answer:`El middleware intercepta todas las peticiones y respuestas; lo uso para logs, métricas o cabeceras, como un interceptor de Angular pero en el servidor. CORS es una protección del navegador: configuro CORSMiddleware con una lista explícita de orígenes, nunca asterisco con credenciales, sabiendo que no protege contra clientes que no son navegadores. Para trabajo que no debe retrasar la respuesta, como enviar un correo, uso BackgroundTasks; si es pesado o no puede perderse, una cola de tareas.`,
+ demo:{type:'toggle', title:`CORS desde el navegador`, hint:`Tu Angular hace POST /pedidos con JSON y token.`, options:[
+  {label:`Desde localhost:4200 (permitido)`, code:`OPTIONS /pedidos            ← preflight del navegador
+Origin: http://localhost:4200
+Access-Control-Request-Method: POST`, out:`200 OK
+access-control-allow-origin: http://localhost:4200
+access-control-allow-credentials: true
+→ el navegador envía el POST real → 201 Created`, note:`El preflight aprueba y el navegador continúa.`},
+  {label:`Desde https://otro-sitio.com`, code:`OPTIONS /pedidos
+Origin: https://otro-sitio.com`, out:`400 Disallowed CORS origin
+(sin access-control-allow-origin)
+→ el navegador NO envía el POST y muestra el error de CORS en consola`, note:`El servidor no aprobó el origen.`},
+  {label:`Desde curl o Postman`, code:`curl -X POST https://api.tienda.co/pedidos -H "Authorization: Bearer ..."`, out:`201 Created`, note:`No hay navegador, no hay CORS. Por eso CORS no reemplaza a la autenticación.`}
+ ]},
+ ex:[
+  {kind:'concept', q:`¿Cuándo se ejecuta una tarea agregada con <code>tareas.add_task(...)</code>?`, opts:[`Antes del handler`,`En paralelo con el handler`,`Después de enviar la respuesta`,`Al reiniciar el servidor`], a:2, exp:`El cliente recibe la respuesta y luego corre la tarea.`},
+  {kind:'concept', q:`¿Qué equivale a <code>await call_next(request)</code> en un interceptor de Angular?`, opts:[`<code>req.clone()</code>`,`<code>next.handle(req)</code>`,`<code>subscribe()</code>`,`<code>HttpHeaders.set()</code>`], a:1, exp:`Ambos pasan la petición al siguiente eslabón y te devuelven la respuesta para modificarla.`}
+ ]
+},
+{
+ id:20, block:'B', title:`Estructura de un proyecto real`, short:`Estructura del proyecto`, freq:'seguido',
+ def:`Separa por responsabilidad: <b>routers</b> (HTTP), <b>servicios</b> (reglas de negocio), <b>repositorios</b> (acceso a datos), <b>schemas</b> (Pydantic), <b>models</b> (tablas) y <b>configuración</b> con pydantic-settings. <code>APIRouter</code> modulariza las rutas y <code>lifespan</code> maneja el arranque y el apagado (los eventos <code>on_event</code> están deprecados).`,
+ analogy:`En un restaurante, el mesero (router) toma el pedido, el chef (servicio) decide cómo prepararlo y el bodeguero (repositorio) trae los ingredientes. El mesero no cocina y el chef no atiende mesas.`,
+ code:`tienda-api/
+├── pyproject.toml
+├── uv.lock
+├── .env                    # nunca al repo
+├── alembic.ini
+├── migrations/
+├── app/
+│   ├── main.py             # crea FastAPI, lifespan, incluye routers
+│   ├── core/
+│   │   ├── config.py       # Settings
+│   │   └── security.py     # hash y JWT
+│   ├── db.py               # engine y get_session
+│   ├── deps.py             # SessionDep, ClienteActual
+│   ├── pedidos/
+│   │   ├── router.py
+│   │   ├── schemas.py
+│   │   ├── models.py
+│   │   ├── service.py
+│   │   └── repository.py
+│   └── productos/ ...
+└── tests/`, codeLang:'txt',
+ code2:`# app/core/config.py
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
+    database_url: str
+    secret_key: str
+    token_minutos: int = 30
+    cors_origins: list[str] = ["http://localhost:4200"]
+
+settings = Settings()
+
+# app/pedidos/router.py
+router = APIRouter(prefix="/pedidos", tags=["pedidos"])
+
+@router.post("", status_code=201)
+def crear(datos: PedidoCrear, cliente: ClienteActual, session: SessionDep) -> PedidoPublico:
+    return PedidoService(session).crear(datos, cliente)
+
+# app/main.py
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # arranque: conexiones, cargar modelos de IA, etc.
+    yield
+    # apagado: liberar recursos
+
+app = FastAPI(title="Tienda API", lifespan=lifespan)
+app.include_router(pedidos.router)
+app.include_router(productos.router)`,
+ problem:`Con todo en <code>main.py</code>, la lógica de negocio queda mezclada con HTTP y SQL: no se puede probar sin levantar la API ni reutilizar desde un script o un worker.`,
+ bad:{code:`@app.post("/pedidos")
+def crear(datos: dict):
+    con = psycopg.connect("postgres://admin:1234@...")
+    total = sum(i["precio"] * i["cantidad"] for i in datos["items"])
+    if total > 1_000_000: ...
+    con.execute(f"INSERT INTO pedido ...")`, note:`Credenciales en el código, sin validación, reglas y SQL en el handler.`},
+ good:{code:`@router.post("", status_code=201)
+def crear(datos: PedidoCrear, servicio: PedidoServiceDep) -> PedidoPublico:
+    return servicio.crear(datos)`, note:`El router solo traduce HTTP; el servicio contiene la regla y se prueba solo.`},
+ bridge:`Es la organización por <i>features</i> que ya usas en Angular: cada carpeta con su router (como las rutas del feature), sus servicios y sus modelos. <code>Settings</code> ≈ <code>environment.ts</code>, pero se lee de variables de entorno en ejecución, no al compilar.`,
+ pitfalls:[`Sobreingeniería: un repositorio para un CRUD de tres tablas puede sobrar. Empieza simple.`,`Commitear el <code>.env</code> con secretos.`,`Usar <code>@app.on_event("startup")</code>: está deprecado, usa <code>lifespan</code>.`,`Imports circulares entre módulos de distintos features.`],
+ answer:`Organizo por features, y dentro de cada uno separo router, esquemas, modelos, servicio y, si hace falta, repositorio. El router solo maneja HTTP; el servicio tiene las reglas de negocio y no conoce HTTP; el repositorio encapsula las consultas. La configuración sale de variables de entorno con pydantic-settings, las dependencias comunes viven en un módulo deps, y uso lifespan para el arranque y el apagado. Ajusto la cantidad de capas al tamaño del proyecto.`,
+ demo:{type:'stepper', title:`Una petición POST /pedidos atraviesa las capas`, hint:`Avanza capa por capa.`, code:`# router.py
+@router.post("", status_code=201)
+def crear(datos: PedidoCrear, servicio: PedidoServiceDep) -> PedidoPublico:
+    return servicio.crear(datos)
+
+# service.py
+class PedidoService:
+    def crear(self, datos: PedidoCrear) -> Pedido:
+        for item in datos.items:
+            if self.repo_productos.stock(item.producto_id) < item.cantidad:
+                raise StockInsuficiente(item.producto_id)
+        total = self.calcular_total(datos)
+        return self.repo_pedidos.insertar(datos, total)
+
+# repository.py
+class PedidoRepository:
+    def insertar(self, datos, total) -> Pedido:
+        pedido = Pedido(**datos.model_dump(exclude={"items"}), total=total)
+        self.session.add(pedido)
+        self.session.commit()
+        self.session.refresh(pedido)
+        return pedido`, steps:[
+  {hl:[2,3], text:`Router: FastAPI ya validó el body con PedidoCrear y resolvió el servicio como dependencia.`, out:``},
+  {hl:[4], text:`El router delega. No calcula ni consulta nada.`, out:``},
+  {hl:[8,9,10,11], text:`Servicio: aplica la regla de negocio (hay stock). Si falla, lanza una excepción de dominio.`, out:`stock OK`},
+  {hl:[12], text:`Servicio: calcula el total. Esta lógica se prueba sin HTTP ni BD real.`, out:`total = 50000`},
+  {hl:[13,17,18,19,20,21], text:`Repositorio: único lugar que habla con la base de datos.`, out:`INSERT INTO pedido ... → id 1042`},
+  {hl:[3], text:`De vuelta en el router, FastAPI filtra con PedidoPublico y responde 201.`, out:`201 Created {"id": 1042, ...}`}
+ ]},
+ ex:[
+  {kind:'classify', q:`¿En qué capa va cada cosa?`, cats:['router','servicio','repositorio','schemas','config'], items:[
+   {t:`Validar que hay stock antes de crear el pedido`, c:'servicio', why:`Regla de negocio.`},
+   {t:`Definir prefix /pedidos y status_code 201`, c:'router', why:`Detalle HTTP.`},
+   {t:`Ejecutar un SELECT con filtros y paginación`, c:'repositorio', why:`Acceso a datos.`},
+   {t:`Leer DATABASE_URL del entorno`, c:'config', why:`pydantic-settings.`},
+   {t:`Declarar qué campos acepta el POST`, c:'schemas', why:`Modelo Pydantic de entrada.`}
+  ]}
+ ]
+},
+{
+ id:21, block:'B', title:`Testing con pytest y TestClient`, short:`pytest y TestClient`, freq:'seguido',
+ def:`<b>pytest</b> descubre funciones <code>test_*</code> en archivos <code>test_*.py</code>, usa <code>assert</code> normal y prepara contexto con <b>fixtures</b>, que se inyectan por nombre de parámetro. <b>TestClient</b> (basado en HTTPX) hace peticiones a tu app sin levantar un servidor. <code>app.dependency_overrides</code> reemplaza la BD o el usuario actual.`,
+ analogy:`Un ensayo general con utilería: el escenario y los actores son los reales, pero la comida es de plástico.`,
+ code:`import pytest
+from fastapi.testclient import TestClient
+from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel.pool import StaticPool
+
+from app.main import app
+from app.db import get_session
+
+@pytest.fixture
+def session():
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False},
+                           poolclass=StaticPool)      # BD en memoria
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as s:
+        yield s
+
+@pytest.fixture
+def client(session):
+    app.dependency_overrides[get_session] = lambda: session
+    with TestClient(app) as c:                         # corre el lifespan
+        yield c
+    app.dependency_overrides.clear()
+
+def test_crear_producto(client):
+    r = client.post("/productos", json={"nombre": "Café", "precio": 25000})
+    assert r.status_code == 201
+    assert r.json()["nombre"] == "Café"
+
+@pytest.mark.parametrize("limite, esperado", [(1, 200), (100, 200), (101, 422)])
+def test_limite(client, limite, esperado):
+    assert client.get(f"/productos?limite={limite}").status_code == esperado`,
+ problem:`Sin tests, cada cambio en un modelo o una dependencia puede romper endpoints en silencio. Con tests que usan la BD de desarrollo, los resultados dependen del orden y de datos viejos.`,
+ bad:{code:`def test_crear():
+    r = requests.post("http://localhost:8000/productos", json={...})
+    assert r.status_code == 201   # requiere servidor y BD reales`, note:`Lento, frágil y deja basura en la base.`},
+ good:{code:`def test_crear(client):
+    r = client.post("/productos", json={...})
+    assert r.status_code == 201`, note:`Sin servidor, con BD aislada por fixture.`},
+ bridge:`pytest ≈ Jest o Jasmine, y <code>assert</code> ≈ <code>expect</code>. Una fixture ≈ <code>beforeEach</code>, pero se inyecta por el <b>nombre del parámetro</b> (otra vez inyección de dependencias). <code>dependency_overrides</code> ≈ <code>TestBed.overrideProvider</code>, y TestClient ≈ supertest.`,
+ pitfalls:[`No limpiar <code>dependency_overrides</code> y contaminar otros tests.`,`Probar solo el camino feliz: los 401, 404 y 422 también son contrato.`,`No usar <code>with TestClient(app)</code>: sin el with no corre el lifespan.`,`Archivos o funciones sin el prefijo <code>test_</code>: pytest no los encuentra.`],
+ answer:`Uso pytest con fixtures para preparar una base de datos aislada, normalmente SQLite en memoria o un Postgres de pruebas, y TestClient para llamar los endpoints sin servidor. Con dependency_overrides reemplazo la sesión y el usuario autenticado. Pruebo el camino feliz y los errores: validación 422, 401, 403 y 404. Con parametrize cubro varios casos sin duplicar código, y las reglas de negocio de los servicios las pruebo con tests unitarios sin HTTP.`,
+ demo:{type:'toggle', title:`Corre la suite`, hint:`Mira cómo reporta pytest.`, options:[
+  {label:`Todo pasa`, code:`uv run pytest -q`, out:`.....                                                  [100%]
+5 passed in 0.41s`, note:`Cada punto es un test que pasó.`},
+  {label:`Falla un test`, code:`uv run pytest -q`, out:`..F..                                                  [100%]
+_________________________ test_crear_producto __________________________
+    def test_crear_producto(client):
+        r = client.post("/productos", json={"nombre": "Café", "precio": 25000})
+>       assert r.status_code == 201
+E       assert 422 == 201
+E        +  where 422 = <Response [422]>.status_code
+1 failed, 4 passed in 0.44s`, note:`pytest reescribe el assert y muestra ambos valores: aquí el endpoint esperaba un campo que el test no envió.`},
+  {label:`Con parametrize`, code:`uv run pytest -v -k limite`, out:`test_productos.py::test_limite[1-200] PASSED
+test_productos.py::test_limite[100-200] PASSED
+test_productos.py::test_limite[101-422] PASSED`, note:`Un test, tres casos con nombre propio.`}
+ ]},
+ ex:[
+  {kind:'concept', q:`¿Cómo recibe un test una fixture llamada <code>client</code>?`, opts:[`Con un import`,`Declarando un parámetro llamado client`,`Con el decorador @use("client")`,`Llamando client()`], a:1, exp:`pytest inyecta la fixture por nombre de parámetro.`},
+  {kind:'concept', q:`¿Para qué sirve <code>app.dependency_overrides</code>?`, opts:[`Cambiar rutas`,`Reemplazar dependencias como la sesión o el usuario actual en tests`,`Desactivar validación`,`Cachear respuestas`], a:1, exp:`Es el mecanismo oficial para inyectar dobles de prueba.`}
+ ]
+},
+{
+ id:22, block:'B', title:`OpenAPI automático y despliegue con Uvicorn y Docker`, short:`OpenAPI, Uvicorn y Docker`, freq:'seguido',
+ def:`FastAPI genera un esquema <b>OpenAPI</b> a partir de rutas, type hints y modelos, y lo sirve en <code>/docs</code> (Swagger UI), <code>/redoc</code> y <code>/openapi.json</code>. En producción corre sobre <b>Uvicorn</b>, un servidor ASGI; <code>fastapi run</code> lo usa por debajo. La documentación oficial lo empaqueta en Docker con la imagen <code>python:3.14</code>.`,
+ analogy:`OpenAPI es la carta del restaurante que se reimprime sola cada vez que cambias una receta.`,
+ code:`app = FastAPI(title="Tienda API", version="1.0.0")
+
+@app.get(
+    "/productos/{producto_id}",
+    tags=["productos"],
+    summary="Obtener un producto",
+    responses={404: {"description": "El producto no existe"}},
+)
+def obtener(producto_id: int) -> ProductoPublico: ...
+
+# Desarrollo: recarga automática, solo en 127.0.0.1
+#   uv run fastapi dev app/main.py
+# Producción: sin recarga, escucha en 0.0.0.0
+#   fastapi run app/main.py --port 80`,
+ code2:`# Dockerfile (basado en la documentación oficial)
+FROM python:3.14
+WORKDIR /code
+COPY ./requirements.txt /code/requirements.txt      # generado con uv export
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY ./app /code/app
+CMD ["fastapi", "run", "app/main.py", "--port", "80"]
+
+# compose.yaml
+services:
+  api:
+    build: .
+    ports: ["8000:80"]
+    env_file: .env          # DATABASE_URL=postgresql+psycopg://tienda:secreto@db:5432/tienda
+    depends_on: [db]
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: tienda
+      POSTGRES_PASSWORD: secreto
+      POSTGRES_DB: tienda
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+volumes:
+  pgdata:`, code2Lang:'txt',
+ problem:`La documentación escrita a mano se desactualiza al primer cambio. En despliegue, usar el modo dev o la forma shell del CMD causa problemas: recarga innecesaria y un apagado que no ejecuta el lifespan.`,
+ bad:{code:`CMD fastapi dev app/main.py --host 0.0.0.0
+# DATABASE_URL=...@localhost:5432/tienda`, note:`Modo dev en producción, CMD en forma shell (sin apagado limpio) y localhost dentro del contenedor, que es el propio contenedor.`},
+ good:{code:`CMD ["fastapi", "run", "app/main.py", "--port", "80"]
+# DATABASE_URL=...@db:5432/tienda`, note:`Forma exec y el nombre del servicio de Compose como host.`},
+ bridge:`<code>fastapi dev</code> vs <code>fastapi run</code> ≈ <code>ng serve</code> vs servir el build. Uvicorn ocupa el lugar del servidor HTTP de Node. Con <code>/openapi.json</code> puedes generar el cliente tipado de Angular con openapi-generator y dejar de escribir interfaces a mano.`,
+ pitfalls:[`Usar <code>localhost</code> para la BD dentro de Docker Compose: usa el nombre del servicio.`,`Meter secretos en la imagen en vez de variables de entorno.`,`Dejar <code>/docs</code> público en una API interna sin pensarlo.`,`Varios workers en un contenedor cuando ya escalas con réplicas: la doc recomienda un proceso por contenedor en ese caso.`],
+ answer:`FastAPI genera OpenAPI automáticamente a partir de los type hints y los modelos Pydantic, así que Swagger siempre refleja el código y puedo generar clientes tipados. Para producción uso fastapi run, que corre Uvicorn sin recarga, dentro de un contenedor Docker con el CMD en forma exec para un apagado limpio. La configuración llega por variables de entorno, y con Docker Compose levanto la API junto a PostgreSQL usando el nombre del servicio como host.`,
+ demo:{type:'toggle', title:`Cambia el modelo y mira el JSON Schema`, hint:`Así aparece el campo precio de ProductoCrear en /openapi.json.`, options:[
+  {label:`precio: int`, code:`precio: int`, out:`"precio": {"type": "integer", "title": "Precio"}
+"required": ["nombre", "precio"]`, note:`Tipo y obligatoriedad salen del hint.`},
+  {label:`precio: int = Field(gt=0)`, code:`precio: int = Field(gt=0)`, out:`"precio": {"type": "integer", "exclusiveMinimum": 0, "title": "Precio"}`, note:`La restricción aparece en la doc y Swagger la muestra.`},
+  {label:`categoria: str | None = None`, code:`categoria: str | None = None`, out:`"categoria": {"anyOf": [{"type": "string"}, {"type": "null"}],
+              "default": null, "title": "Categoria"}`, note:`Opcional y anulable; no entra en required.`},
+  {label:`con description`, code:`precio: int = Field(gt=0, description="Precio en pesos colombianos, sin decimales")`, out:`"precio": {"type": "integer", "exclusiveMinimum": 0,
+           "description": "Precio en pesos colombianos, sin decimales", "title": "Precio"}`, note:`Lo que escribes en el código es lo que lee tu equipo de frontend.`}
+ ]},
+ ex:[
+  {kind:'concept', q:`Dentro de Docker Compose, ¿qué host va en DATABASE_URL para llegar a Postgres?`, opts:[`localhost`,`127.0.0.1`,`db (el nombre del servicio)`,`0.0.0.0`], a:2, exp:`Compose crea una red donde cada servicio se resuelve por su nombre.`},
+  {kind:'concept', q:`¿Qué diferencia a <code>fastapi run</code> de <code>fastapi dev</code>?`, opts:[`Ninguna`,`run es para producción: sin recarga y escucha en 0.0.0.0`,`run no usa Uvicorn`,`dev no genera /docs`], a:1, exp:`dev recarga al guardar y escucha en 127.0.0.1; run está pensado para producción.`}
+ ]
+}
+];
+
+const OPEN_QS = [
+ {q:`¿Cuál es la diferencia entre una lista y una tupla, y cuándo usarías cada una?`, a:`La lista es mutable y la uso para colecciones que cambian; la tupla es inmutable, más liviana y hashable si su contenido lo es, así que sirve para registros fijos y como clave de diccionario. También comunica intención: si es tupla, nadie debería modificarla.`},
+ {q:`¿Qué es el GIL y cómo afecta a una API hecha con FastAPI?`, a:`Es un candado de CPython que deja a un solo hilo ejecutar bytecode a la vez. En una API casi todo es I/O, así que no estorba mucho: async y el threadpool sueltan el candado mientras esperan. Afecta al cálculo pesado, que mando a procesos o a una cola. Existe una compilación sin GIL, pero aún no es la estándar.`},
+ {q:`Explícame cómo funciona un decorador por dentro.`, a:`Es una función que recibe otra y devuelve una nueva que la envuelve. La arroba equivale a reasignar el nombre. El wrapper recibe args y kwargs, hace algo antes, llama a la original, hace algo después y devuelve el resultado; con functools.wraps conserva nombre y firma, algo clave en FastAPI porque lee la firma.`},
+ {q:`¿Qué pasa si pongo time.sleep(2) dentro de un endpoint async def?`, a:`Bloquea el event loop dos segundos y ninguna otra petición avanza: el servidor atiende en fila. La solución es usar await asyncio.sleep o librerías async, o declarar el endpoint con def para que FastAPI lo ejecute en el threadpool.`},
+ {q:`¿Por qué separas modelos de entrada y de salida?`, a:`Porque lo que el cliente puede enviar y lo que puedo exponer son contratos distintos. El de entrada valida y evita campos como es_admin; el de salida filtra datos sensibles como el hash de la contraseña. Con herencia desde una clase base no repito campos.`},
+ {q:`¿Cómo implementarías autenticación con JWT en FastAPI?`, a:`Un endpoint de token con OAuth2PasswordRequestForm que verifica la contraseña contra un hash Argon2 y devuelve un JWT firmado con sub y exp. Una dependencia con OAuth2PasswordBearer extrae el token, lo decodifica con PyJWT, carga el usuario y responde 401 si algo falla. Encima, dependencias de permisos que responden 403.`},
+ {q:`¿Qué es la idempotencia y qué métodos HTTP la cumplen?`, a:`Repetir la petición deja el servidor en el mismo estado que hacerla una vez. GET, PUT y DELETE son idempotentes; POST no, y PATCH no está garantizado. Importa para reintentos: un PUT se puede reintentar sin miedo, un POST puede duplicar un pedido si no uso una clave de idempotencia.`},
+ {q:`¿Cómo funciona la inyección de dependencias de FastAPI y en qué se diferencia de la de Angular?`, a:`Declaro con Depends qué función produce un parámetro y FastAPI arma el árbol y lo ejecuta en cada petición, con caché dentro de la petición y limpieza con yield. Angular resuelve por tipo o token y sus servicios suelen ser singletons. En tests uso dependency_overrides, como overrideProvider en TestBed.`},
+ {q:`¿Cómo testeas un endpoint que necesita base de datos y usuario autenticado?`, a:`Con fixtures de pytest creo una base aislada y un TestClient. Con dependency_overrides reemplazo get_session por la sesión de prueba y get_cliente_actual por un usuario falso. Pruebo el caso feliz y los errores 401, 403, 404 y 422, y limpio los overrides al final.`},
+ {q:`¿Qué es el problema N+1 y cómo lo evitas?`, a:`Hacer una consulta para la lista y luego una por cada elemento al acceder a una relación. Con mil pedidos son mil y una consultas. Lo evito con carga anticipada: selectinload para colecciones o joinedload para relaciones muchos a uno, y lo detecto activando el log de SQL.`},
+ {q:`¿Cómo estructurarías un proyecto FastAPI para un equipo?`, a:`Por features, cada uno con router, schemas, models y service; repositorio si el acceso a datos lo justifica. Configuración con pydantic-settings desde variables de entorno, dependencias comunes en un módulo, lifespan para el arranque, Alembic para migraciones, tests con pytest y todo en Docker.`},
+ {q:`¿Cuál es la diferencia entre 401 y 403?`, a:`401 significa que no sé quién eres: falta el token o es inválido. 403 significa que sé quién eres pero no tienes permiso para ese recurso.`}
+];
+
+const TEST_QS = [
+ {q:`¿Qué imprime <code>print([1, 2] == [1, 2], [1, 2] is [1, 2])</code>?`, opts:[`True True`,`True False`,`False False`,`False True`], a:1, exp:`== compara contenido; is compara identidad.`},
+ {q:`¿Qué devuelve llamar <code>agregar("cafe")</code> por segunda vez si la firma es <code>def agregar(x, l=[])</code> y hace append y return?`, opts:[`['cafe']`,`['cafe', 'cafe']`,`[]`,`Error`], a:1, exp:`El default mutable se comparte entre llamadas.`},
+ {q:`¿Qué herramienta usarías para paralelizar cálculo pesado en Python estándar?`, opts:[`asyncio`,`threading`,`multiprocessing`,`Más endpoints async`], a:2, exp:`Por el GIL, solo los procesos dan paralelismo real de CPU.`},
+ {q:`En FastAPI, un parámetro <code>limite: int = 20</code> que no aparece en la ruta es…`, opts:[`Path param`,`Query param`,`Body`,`Header`], a:1, exp:`Tipo simple fuera de la ruta: query.`},
+ {q:`El cliente envía un JSON con un email inválido a un endpoint con modelo Pydantic. ¿Código?`, opts:[`400`,`409`,`422`,`500`], a:2, exp:`FastAPI responde 422 con el detalle de Pydantic.`},
+ {q:`¿Qué pasa si tu handler devuelve datos que no cumplen el response_model?`, opts:[`422`,`200 igual`,`500`,`204`], a:2, exp:`Es un error del servidor: ResponseValidationError → 500.`},
+ {q:`¿Qué hace el código después de <code>yield</code> en una dependencia?`, opts:[`Nunca corre`,`Corre antes del handler`,`Corre después de la respuesta, como limpieza`,`Corre al apagar la app`], a:2, exp:`Así se cierran sesiones y recursos.`},
+ {q:`Token válido, pero el usuario no es admin y pide un recurso de admin.`, opts:[`401`,`403`,`404`,`422`], a:1, exp:`Autenticado sin permiso: 403.`},
+ {q:`¿Qué librería recomienda hoy la documentación de FastAPI para hashear contraseñas?`, opts:[`hashlib con sha256`,`passlib con bcrypt`,`pwdlib con Argon2`,`PyJWT`], a:2, exp:`La guía oficial usa <code>pwdlib[argon2]</code> y <code>PasswordHash.recommended()</code>.`},
+ {q:`¿Cuál es la forma vigente de ejecutar código al arrancar y apagar la app?`, opts:[`@app.on_event("startup")`,`lifespan con asynccontextmanager`,`Un middleware`,`Una BackgroundTask`], a:1, exp:`on_event está deprecado; se usa el parámetro lifespan.`},
+ {q:`Llamas <code>DELETE /productos/3</code> dos veces. La segunda responde 404. ¿Es idempotente?`, opts:[`No, la respuesta cambió`,`Sí, el estado del servidor es el mismo`,`Solo si responde 204 las dos veces`,`Depende del ORM`], a:1, exp:`La idempotencia se mide por el estado, no por la respuesta.`},
+ {q:`¿Qué método de Pydantic v2 reemplaza a <code>.dict()</code>?`, opts:[`.to_dict()`,`.model_dump()`,`.serialize()`,`.json()`], a:1, exp:`En v2: model_dump() y model_dump_json().`}
+];
+
+/* ───────────── APP ───────────── */
+const KEY = 'guia-python-fastapi-v1';
+const FREQ = {casi:'Casi siempre', seguido:'Seguido', aveces:'A veces'};
+const STAGES = ['Middleware','Ruta','Validación','Dependencias','Handler','Respuesta'];
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function loadState(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
+function saveState(){ try { localStorage.setItem(KEY, JSON.stringify({done:[...done]})); } catch(e){} }
+let done = new Set(loadState().done || []);
+let filter = 'all';
+
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* Resaltado mínimo de Python */
+const KW = new Set('False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield'.split(' '));
+const BI = new Set('print len range sum sorted set dict list tuple int str float bool isinstance super open next round type frozenset'.split(' '));
+const PYRE = /(#[^\n]*)|([rRbBfFuU]{0,2}(?:"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'))|(@[A-Za-z_][\w.]*)|(\b\d[\d_]*(?:\.\d+)?\b)|([A-Za-z_]\w*)/g;
+function hlPy(src){
+  let out = '', last = 0, m;
+  PYRE.lastIndex = 0;
+  while ((m = PYRE.exec(src))){
+    out += esc(src.slice(last, m.index));
+    const t = m[0];
+    if (m[1]) out += '<span class="c">'+esc(t)+'</span>';
+    else if (m[2]) out += '<span class="s">'+esc(t)+'</span>';
+    else if (m[3]) out += '<span class="d">'+esc(t)+'</span>';
+    else if (m[4]) out += '<span class="n">'+esc(t)+'</span>';
+    else if (KW.has(t)) out += '<span class="k">'+t+'</span>';
+    else if (BI.has(t)) out += '<span class="f">'+t+'</span>';
+    else out += esc(t);
+    last = PYRE.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+function hlTxt(src){
+  return src.split('\n').map(l => {
+    const i = l.indexOf('#');
+    if (i >= 0 && !/https?:\/\/|"[^"]*#/.test(l.slice(0,i+1))) return esc(l.slice(0,i)) + '<span class="c">'+esc(l.slice(i))+'</span>';
+    return esc(l);
+  }).join('\n');
+}
+function codeBlock(src, lang, hlLines){
+  const html = (lang === 'txt' ? hlTxt(src) : hlPy(src));
+  const lines = html.split('\n');
+  const set = new Set(hlLines || []);
+  return '<pre class="code" tabindex="0">' + lines.map((l,i) => '<span class="ln'+(set.has(i+1)?' hl':'')+'">'+(l||' ')+'</span>').join('') + '</pre>';
+}
+
+function freqTag(f){ return '<span class="freq '+f+'">'+FREQ[f]+'</span>'; }
+
+/* ── Navegación ── */
+function renderNav(){
+  const nav = document.getElementById('nav');
+  const link = (href, num, label, extra) => '<a class="navlink'+(extra||'')+'" href="#'+href+'" data-href="'+href+'"><span class="num">'+num+'</span><span>'+label+'</span><span class="ok" aria-hidden="true"></span></a>';
+  let h = '<div class="navgroup">'+link('inicio','·','Inicio y progreso','')+'</div>';
+  [['A','Bloque A · Python'],['B','Bloque B · HTTP y FastAPI']].forEach(([b,label]) => {
+    h += '<div class="navgroup"><h4>'+label+'</h4>';
+    TOPICS.filter(t => t.block === b).forEach(t => {
+      const hide = filter !== 'all' && t.freq !== filter ? ' hide' : '';
+      h += link('t'+t.id, String(t.id).padStart(2,'0'), t.short, (done.has(t.id)?' done':'')+hide);
+    });
+    h += '</div>';
+  });
+  h += '<div class="navgroup"><h4>Final</h4>'+link('simulacro','✓','Simulacro de entrevista','')+'</div>';
+  nav.innerHTML = h;
+  markCurrent();
+  updateProgress();
+}
+function markCurrent(){
+  const cur = (location.hash || '#inicio').slice(1);
+  document.querySelectorAll('.navlink').forEach(a => {
+    if (a.dataset.href === cur) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+  });
+}
+function updateProgress(){
+  const n = done.size;
+  document.getElementById('progbar').style.width = (n/TOPICS.length*100)+'%';
+  document.getElementById('progtxt').textContent = n+' de '+TOPICS.length+' temas repasados';
+}
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  filter = c.dataset.f;
+  document.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+  renderNav();
+}));
+const side = document.getElementById('side'), menuBtn = document.getElementById('menuBtn');
+menuBtn.addEventListener('click', () => { const o = side.classList.toggle('open'); menuBtn.setAttribute('aria-expanded', String(o)); });
+document.getElementById('nav').addEventListener('click', e => { if (e.target.closest('a')) { side.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); } });
+
+/* ── Vistas ── */
+const main = document.getElementById('main');
+function route(){
+  const h = (location.hash || '#inicio').slice(1);
+  const m = /^t(\d+)$/.exec(h);
+  if (m && TOPICS.find(t => t.id === +m[1])) renderTopic(TOPICS.find(t => t.id === +m[1]));
+  else if (h === 'simulacro') renderSim();
+  else renderHome();
+  markCurrent();
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', route);
+
+function renderHome(){
+  const counts = {casi:0, seguido:0, aveces:0};
+  TOPICS.forEach(t => counts[t.freq]++);
+  const card = t => '<a class="tcard'+(done.has(t.id)?' done':'')+'" href="#t'+t.id+'"><div class="top"><span>'+String(t.id).padStart(2,'0')+'</span>'+freqTag(t.freq)+'</div><b>'+t.title+'</b></a>';
+  main.innerHTML = '<div class="wrap">'+
+  '<div class="title"><div class="eyebrow">Guía de estudio · de Angular y TypeScript a backend</div><h1>Python y FastAPI para entrevistas</h1>'+
+  '<p class="lead">22 temas en orden de aprendizaje, con lo que más se pregunta en entrevistas técnicas y lo necesario para tu primera API. Todos los ejemplos usan la misma API de una tienda: clientes, pedidos y productos.</p></div>'+
+  '<div class="facts">'+
+   '<div class="fact"><span>FastAPI</span><b>0.162.5</b><p>Última versión, 11 nov 2026. Aún es 0.x: fija la versión menor en tu proyecto.</p></div>'+
+   '<div class="fact"><span>Pydantic</span><b>2.14.3</b><p>4 nov 2026. Sintaxis v2: model_dump, field_validator, ConfigDict.</p></div>'+
+   '<div class="fact"><span>Python</span><b>3.14</b><p>Imagen que usa la guía oficial de Docker. Pydantic 2.14 ya no soporta 3.9.</p></div>'+
+   '<div class="fact"><span>Herramientas de la doc</span><b>uv · PyJWT · pwdlib</b><p>Annotated en parámetros, lifespan en vez de on_event, Argon2 para contraseñas.</p></div>'+
+  '</div>'+
+  '<section class="blk"><h2>Cómo usarla</h2><div class="prose"><p>Cada tema trae definición, analogía, código, la versión mala junto a la buena, el puente con TypeScript o Angular cuando ayuda, los errores típicos de quien viene de JavaScript y una respuesta modelo para decir en voz alta. Luego hay una demo que manipulas con clics y ejercicios con respuesta inmediata.</p><p>Marca cada tema como repasado al final de su página; el progreso se guarda en este navegador. Las etiquetas indican qué tan seguido aparece el tema en entrevistas: '+freqTag('casi')+' ('+counts.casi+'), '+freqTag('seguido')+' ('+counts.seguido+'), '+freqTag('aveces')+'.</p><p>Cuando termines, haz el <a href="#simulacro">simulacro</a>: preguntas abiertas para responder en voz alta y un test con puntaje.</p></div></section>'+
+  '<section class="blk"><h2>Bloque A · Python <small>temas 1–10</small></h2><div class="grid">'+TOPICS.filter(t=>t.block==='A').map(card).join('')+'</div></section>'+
+  '<section class="blk"><h2>Bloque B · HTTP y FastAPI <small>temas 11–22</small></h2><div class="grid">'+TOPICS.filter(t=>t.block==='B').map(card).join('')+'</div></section>'+
+  '<p class="note">Versiones verificadas el 12 de noviembre de 2026 en las notas de versión y los tutoriales oficiales de FastAPI (fastapi.tiangolo.com) y Pydantic (pydantic.dev).</p>'+
+  '</div>';
+}
+
+function tableHtml(t){
+  return '<div class="tablewrap"><table class="mini"><thead><tr>'+t.head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+t.rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+}
+
+function renderTopic(t){
+  const idx = TOPICS.indexOf(t), prev = TOPICS[idx-1], next = TOPICS[idx+1];
+  let h = '<div class="wrap">';
+  h += '<div class="title"><div class="eyebrow"><span>Bloque '+t.block+' · Tema '+t.id+' de 22</span>'+freqTag(t.freq)+'</div><h1>'+t.title+'</h1></div>';
+  h += '<section class="blk"><h2>Definición</h2><div class="prose"><p>'+t.def+'</p></div><div class="analogy"><b>Analogía.</b> '+t.analogy+'</div></section>';
+  h += '<section class="blk"><h2>Ejemplo <small>API de la tienda</small></h2>'+codeBlock(t.code, t.codeLang)+(t.code2?codeBlock(t.code2, t.code2Lang):'')+(t.table?tableHtml(t.table):'')+(t.table2?tableHtml(t.table2):'')+'</section>';
+  h += '<section class="blk"><h2>Qué resuelve y qué pasa si se usa mal</h2><div class="prose"><p>'+t.problem+'</p></div><div class="cmp"><div class="bad"><span class="tag bad">Así no</span>'+codeBlock(t.bad.code, t.codeLang==='txt'&&t.id!==20?'txt':'py')+'<p>'+t.bad.note+'</p></div><div class="good"><span class="tag good">Así sí</span>'+codeBlock(t.good.code, t.codeLang==='txt'&&t.id!==20?'txt':'py')+'<p>'+t.good.note+'</p></div></div></section>';
+  if (t.bridge) h += '<section class="blk"><h2>Puente con TypeScript y Angular</h2><div class="bridge">'+t.bridge+'</div></section>';
+  h += '<section class="blk"><h2>Errores típicos de quien viene de JavaScript</h2><ul class="pit">'+t.pitfalls.map(p=>'<li>'+p+'</li>').join('')+'</ul></section>';
+  h += '<section class="blk"><h2>Demo</h2><div class="card" id="demo"></div></section>';
+  h += '<section class="blk"><h2>Ejercicios</h2><div id="exs" class="ex"></div></section>';
+  h += '<section class="blk"><h2>Para decir en la entrevista</h2><div class="answer" id="ans"><div class="atext">'+t.answer+'</div></div><div class="row"><button class="btn" id="ansToggle" aria-pressed="false">Ocultar para ensayar en voz alta</button></div></section>';
+  h += '<div class="row"><button class="mark" id="mark" aria-pressed="'+done.has(t.id)+'">'+(done.has(t.id)?'✓ Repasado':'Marcar como repasado')+'</button></div>';
+  h += '<nav class="pager" aria-label="Temas">'+(prev?'<a href="#t'+prev.id+'">← '+prev.id+'. '+prev.short+'</a>':'<a href="#inicio">← Inicio</a>')+(next?'<a href="#t'+next.id+'" style="text-align:right">'+next.id+'. '+next.short+' →</a>':'<a href="#simulacro" style="text-align:right">Simulacro →</a>')+'</nav>';
+  h += '</div>';
+  main.innerHTML = h;
+  DEMOS[t.demo.type](document.getElementById('demo'), t.demo);
+  const exs = document.getElementById('exs');
+  t.ex.forEach((e,i) => { const d = document.createElement('div'); d.className = 'card'; exs.appendChild(d); (e.kind === 'classify' ? mountClassify : mountMcq)(d, e, 't'+t.id+'e'+i); });
+  const at = document.getElementById('ansToggle');
+  at.addEventListener('click', () => { const on = document.getElementById('ans').classList.toggle('hidden-a'); at.setAttribute('aria-pressed', String(on)); at.textContent = on ? 'Mostrar respuesta modelo' : 'Ocultar para ensayar en voz alta'; });
+  const mk = document.getElementById('mark');
+  mk.addEventListener('click', () => {
+    if (done.has(t.id)) done.delete(t.id); else done.add(t.id);
+    saveState();
+    mk.setAttribute('aria-pressed', String(done.has(t.id)));
+    mk.textContent = done.has(t.id) ? '✓ Repasado' : 'Marcar como repasado';
+    renderNav();
+  });
+}
+
+/* ── Ejercicios ── */
+const KIND = {output:'¿Qué imprime este código?', status:'¿Qué código de estado devuelve?', concept:'Pregunta rápida'};
+function mountMcq(el, e, id){
+  el.innerHTML = '<h3>'+KIND[e.kind]+'</h3><p class="hint" style="color:var(--ink)">'+e.q+'</p>'+(e.code?codeBlock(e.code,'py'):'')+'<div class="opts" role="group"></div><div class="fbx"></div>';
+  const opts = el.querySelector('.opts'), fbx = el.querySelector('.fbx');
+  e.opts.forEach((o,i) => {
+    const b = document.createElement('button'); b.className = 'opt'; b.innerHTML = o; b.id = id+'o'+i;
+    b.addEventListener('click', () => {
+      opts.querySelectorAll('.opt').forEach((x,j) => { x.disabled = true; if (j === e.a) x.classList.add('right'); });
+      const ok = i === e.a;
+      if (!ok) b.classList.add('wrong');
+      fbx.innerHTML = '<div class="fb '+(ok?'right':'wrong')+'"><b>'+(ok?'Correcto.':'No.')+'</b> '+e.exp+'</div><div class="row" style="margin-top:8px"><button class="btn retry">Intentar de nuevo</button></div>';
+      fbx.querySelector('.retry').addEventListener('click', () => mountMcq(el, e, id));
+    });
+    opts.appendChild(b);
+  });
+}
+function mountClassify(el, e, id){
+  el.innerHTML = '<h3>Clasifica</h3><p class="hint" style="color:var(--ink)">'+e.q+'</p><div class="cls"></div><p class="note score-c"></p>';
+  const box = el.querySelector('.cls'); let answered = 0, right = 0;
+  e.items.forEach((it,i) => {
+    const row = document.createElement('div'); row.className = 'clsrow';
+    row.innerHTML = '<span>'+it.t+'</span><div class="cats" role="group" aria-label="Opciones"></div>';
+    const cats = row.querySelector('.cats');
+    e.cats.forEach((c,j) => {
+      const b = document.createElement('button'); b.textContent = c; b.id = id+'i'+i+'c'+j;
+      b.addEventListener('click', () => {
+        cats.querySelectorAll('button').forEach(x => { x.disabled = true; if (x.textContent === it.c) x.classList.add('right'); });
+        const ok = c === it.c; if (!ok) b.classList.add('wrong');
+        answered++; if (ok) right++;
+        const w = document.createElement('p'); w.className = 'why'; w.innerHTML = (ok?'✓ ':'✗ Era <b>'+it.c+'</b>. ')+it.why; row.appendChild(w);
+        if (answered === e.items.length) el.querySelector('.score-c').innerHTML = right+' de '+e.items.length+' correctas. <button class="btn retry" style="margin-left:6px">Repetir</button>';
+        const r = el.querySelector('.retry'); if (r) r.addEventListener('click', () => mountClassify(el, e, id));
+      });
+      cats.appendChild(b);
+    });
+    box.appendChild(row);
+  });
+}
+
+/* ── Demos ── */
+const DEMOS = {
+ toggle(el, d){
+  el.innerHTML = '<h3>'+d.title+'</h3><p class="hint">'+d.hint+'</p><div class="row tg" role="group"></div><div class="tv" style="display:flex;flex-direction:column;gap:8px"></div>';
+  const row = el.querySelector('.tg'), view = el.querySelector('.tv');
+  const show = i => {
+    row.querySelectorAll('.btn').forEach((b,j) => b.setAttribute('aria-pressed', String(i === j)));
+    const o = d.options[i];
+    view.innerHTML = codeBlock(o.code, /^(GET|POST|OPTIONS|curl|uv|npm)/.test(o.code) || o.code.indexOf('✔') >= 0 ? 'txt' : 'py') + '<pre class="out">'+esc(o.out)+'</pre>' + (o.note?'<p class="note">'+o.note+'</p>':'');
+  };
+  d.options.forEach((o,i) => { const b = document.createElement('button'); b.className = 'btn'; b.textContent = o.label; b.addEventListener('click', () => show(i)); row.appendChild(b); });
+  show(0);
+ },
+ stepper(el, d){
+  let i = 0;
+  el.innerHTML = '<h3>'+d.title+'</h3><p class="hint">'+d.hint+'</p><div class="sc"></div><div class="row"><span class="note sn" style="font-family:var(--f-mono)"></span></div><p class="st" style="margin:0"></p><pre class="out so"></pre><div class="row"><button class="btn sp">← Anterior</button><button class="btn primary sx">Siguiente →</button><button class="btn sr">Reiniciar</button></div>';
+  const draw = () => {
+    const s = d.steps[i];
+    el.querySelector('.sc').innerHTML = codeBlock(d.code, 'py', s.hl);
+    el.querySelector('.sn').textContent = 'Paso '+(i+1)+' de '+d.steps.length;
+    el.querySelector('.st').innerHTML = s.text;
+    const acc = d.steps.slice(0,i+1).map(x => x.out).filter(Boolean).join('\n');
+    el.querySelector('.so').textContent = acc || '(sin salida todavía)';
+    el.querySelector('.sp').disabled = i === 0;
+    el.querySelector('.sx').disabled = i === d.steps.length-1;
+  };
+  el.querySelector('.sp').addEventListener('click', () => { if (i>0){ i--; draw(); } });
+  el.querySelector('.sx').addEventListener('click', () => { if (i<d.steps.length-1){ i++; draw(); } });
+  el.querySelector('.sr').addEventListener('click', () => { i = 0; draw(); });
+  draw();
+ },
+ pipeline(el, d){
+  const stages = d.stages || STAGES;
+  el.innerHTML = '<h3>'+d.title+'</h3><p class="hint">'+d.hint+'</p><div class="row pg" role="group"></div><pre class="out pr"></pre><div class="stages">'+stages.map((s,i)=>'<div class="stage" data-i="'+i+'"><b>'+(i+1)+'</b>'+s+'</div>').join('')+'</div><ol class="log"></ol><div class="row"><span class="status"></span></div><pre class="out pb"></pre>';
+  const row = el.querySelector('.pg');
+  let timers = [];
+  const run = k => {
+    timers.forEach(clearTimeout); timers = [];
+    row.querySelectorAll('.btn').forEach((b,j) => b.setAttribute('aria-pressed', String(j === k)));
+    const sc = d.scenarios[k];
+    el.querySelector('.pr').textContent = sc.req;
+    const st = el.querySelectorAll('.stage'), log = el.querySelector('.log'), status = el.querySelector('.status'), body = el.querySelector('.pb');
+    st.forEach(s => s.className = 'stage'); log.innerHTML = ''; status.textContent = ''; status.className = 'status'; body.textContent = '…';
+    const step = reduceMotion ? 0 : 320;
+    sc.st.forEach((state, j) => {
+      timers.push(setTimeout(() => {
+        if (state !== 'skip') st[j].classList.add('run');
+        timers.push(setTimeout(() => {
+          st[j].classList.remove('run'); st[j].classList.add(state);
+          if (sc.log[j]) { const li = document.createElement('li'); li.textContent = sc.log[j]; log.appendChild(li); }
+          if (j === sc.st.length - 1){
+            status.textContent = sc.status+' '+({200:'OK',201:'Created',204:'No Content',401:'Unauthorized',403:'Forbidden',404:'Not Found',409:'Conflict',422:'Unprocessable Content',500:'Internal Server Error'}[sc.status]||'');
+            status.classList.add('s'+String(sc.status)[0]);
+            body.textContent = sc.body;
+          }
+        }, step*0.6));
+      }, j*step));
+    });
+  };
+  d.scenarios.forEach((s,k) => { const b = document.createElement('button'); b.className = 'btn'; b.textContent = s.label; b.addEventListener('click', () => run(k)); row.appendChild(b); });
+  run(0);
+ },
+ timeline(el, d){
+  el.innerHTML = '<h3>'+d.title+'</h3><p class="hint">'+d.hint+'</p><div class="row tm" role="group"></div><div class="tl"><div class="rows"></div><div class="axis">'+Array.from({length:d.max+1},(_,i)=>'<span>'+i+' s</span>').join('')+'</div></div><div class="row"><b>Tiempo total:</b><span class="total"></span></div><p class="note tn"></p><p class="note">Barra clara: esperando I/O (el hilo queda libre). Barra roja: ocupando el hilo o la CPU.</p>';
+  const rowsEl = el.querySelector('.rows'), row = el.querySelector('.tm');
+  el.querySelector('.tl').style.setProperty('--cell', (100/d.max)+'%');
+  rowsEl.innerHTML = d.modes[0].bars.map(() => '<div class="tlrow"><span></span><div class="track"><div class="seg"></div></div></div>').join('');
+  const show = k => {
+    const m = d.modes[k];
+    row.querySelectorAll('.btn').forEach((b,j) => b.setAttribute('aria-pressed', String(j === k)));
+    rowsEl.querySelectorAll('.tlrow').forEach((r,i) => {
+      const b = m.bars[i];
+      r.querySelector('span').textContent = b.n;
+      const seg = r.querySelector('.seg');
+      seg.className = 'seg ' + (b.k === 'cpu' ? 'block' : 'wait');
+      seg.style.left = (b.s/d.max*100)+'%'; seg.style.width = ((b.e-b.s)/d.max*100)+'%';
+    });
+    el.querySelector('.total').textContent = m.total;
+    el.querySelector('.tn').textContent = m.note;
+  };
+  d.modes.forEach((m,k) => { const b = document.createElement('button'); b.className = 'btn'; b.textContent = m.label; b.addEventListener('click', () => show(k)); row.appendChild(b); });
+  show(0);
+ },
+ mutable(el, d){
+  let bad = [], calls = 0;
+  const items = ['cafe','taza','filtro','molino','prensa'];
+  el.innerHTML = '<h3>'+d.title+'</h3><p class="hint">'+d.hint+'</p><div class="cmp"><div class="bad"><span class="tag bad">carrito=[]</span>'+codeBlock('def agregar_item(item, carrito=[]):\n    carrito.append(item)\n    return carrito','py')+'<pre class="out mb">(sin llamadas)</pre></div><div class="good"><span class="tag good">carrito=None</span>'+codeBlock('def agregar_item(item, carrito=None):\n    if carrito is None:\n        carrito = []\n    carrito.append(item)\n    return carrito','py')+'<pre class="out mg">(sin llamadas)</pre></div></div><div class="row"><button class="btn primary mc">Llamar agregar_item(…)</button><button class="btn mr">Reiniciar</button></div><p class="note">Cada clic simula un cliente distinto que arma su propio carrito con un solo producto.</p>';
+  const mb = el.querySelector('.mb'), mg = el.querySelector('.mg');
+  const fmt = a => '[' + a.map(x => "'"+x+"'").join(', ') + ']';
+  let logB = [], logG = [];
+  el.querySelector('.mc').addEventListener('click', () => {
+    const it = items[calls % items.length]; calls++;
+    bad.push(it);
+    logB.push("agregar_item('"+it+"') → "+fmt(bad));
+    logG.push("agregar_item('"+it+"') → "+fmt([it]));
+    mb.textContent = logB.join('\n'); mg.textContent = logG.join('\n');
+  });
+  el.querySelector('.mr').addEventListener('click', () => { bad = []; calls = 0; logB = []; logG = []; mb.textContent = '(sin llamadas)'; mg.textContent = '(sin llamadas)'; });
+ },
+ idem(el, d){
+  let state, log;
+  const reset = () => { state = {precio:8000, stock:10, pedidos:[], existe1:true}; log = []; };
+  reset();
+  const reqs = [
+   {label:'PUT /productos/3 {"precio": 9000}', idem:true, run(){ state.precio = 9000; return '200 OK'; }},
+   {label:'PATCH /productos/3 {"stock": "+1"}', idem:false, run(){ state.stock += 1; return '200 OK'; }},
+   {label:'POST /pedidos {"producto_id": 3}', idem:false, run(){ const id = 1042 + state.pedidos.length; state.pedidos.push(id); return '201 Created (id '+id+')'; }},
+   {label:'DELETE /pedidos/1', idem:true, run(){ if (state.existe1){ state.existe1 = false; return '204 No Content'; } return '404 Not Found'; }}
+  ];
+  el.innerHTML = '<h3>'+d.title+'</h3><p class="hint">'+d.hint+'</p><div class="opts ir"></div><div class="cmp"><div><span class="tag" style="color:var(--muted)">Estado del servidor</span><pre class="out is"></pre></div><div><span class="tag" style="color:var(--muted)">Respuestas</span><pre class="out il"></pre></div></div><div class="row"><button class="btn irs">Reiniciar</button></div><p class="note">Fíjate en el DELETE: la segunda respuesta es 404, pero el estado no cambia. La idempotencia se mide por el efecto, no por la respuesta.</p>';
+  const draw = () => {
+    el.querySelector('.is').textContent = 'producto 3: precio=' + state.precio + ', stock=' + state.stock + '\npedidos creados: ' + (state.pedidos.length ? state.pedidos.join(', ') : 'ninguno') + '\npedido 1: ' + (state.existe1 ? 'existe' : 'eliminado');
+    el.querySelector('.il').textContent = log.length ? log.slice(-8).join('\n') : '(envía una petición)';
+  };
+  const ir = el.querySelector('.ir');
+  reqs.forEach(r => {
+    const b = document.createElement('button'); b.className = 'opt';
+    b.innerHTML = '<code>'+esc(r.label)+'</code> <span class="freq '+(r.idem?'seguido':'aveces')+'" style="margin-left:6px">'+(r.idem?'idempotente':'no idempotente')+'</span>';
+    b.addEventListener('click', () => { log.push(r.label.split(' ').slice(0,2).join(' ') + ' → ' + r.run()); draw(); });
+    ir.appendChild(b);
+  });
+  el.querySelector('.irs').addEventListener('click', () => { reset(); draw(); });
+  draw();
+ }
+};
+
+/* ── Simulacro ── */
+function renderSim(){
+  let h = '<div class="wrap"><div class="title"><div class="eyebrow">Final</div><h1>Simulacro de entrevista</h1><p class="lead">Primero responde en voz alta cada pregunta abierta, con un cronómetro de unos 90 segundos, y solo después abre la respuesta modelo. Luego haz el test.</p></div>';
+  h += '<section class="blk"><h2>Preguntas abiertas <small>'+OPEN_QS.length+'</small></h2>'+OPEN_QS.map((q,i)=>'<details class="open-q"><summary>'+(i+1)+'. '+q.q+'</summary><p>'+q.a+'</p></details>').join('')+'</section>';
+  h += '<section class="blk"><h2>Test de opción múltiple <small>'+TEST_QS.length+' preguntas</small></h2><div id="test" class="ex"></div><div class="row"><button class="btn primary" id="grade">Calificar</button><button class="btn" id="retest">Reiniciar test</button></div><div id="result"></div></section></div>';
+  main.innerHTML = h;
+  const test = document.getElementById('test');
+  const answers = {};
+  const build = () => {
+    test.innerHTML = '';
+    for (const k in answers) delete answers[k];
+    document.getElementById('result').innerHTML = '';
+    document.getElementById('grade').disabled = false;
+    TEST_QS.forEach((q,i) => {
+      const c = document.createElement('div'); c.className = 'card';
+      c.innerHTML = '<h3>'+(i+1)+'. <span style="font-weight:500">'+q.q+'</span></h3><div class="opts"></div><div class="fbx"></div>';
+      const o = c.querySelector('.opts');
+      q.opts.forEach((t,j) => {
+        const b = document.createElement('button'); b.className = 'opt'; b.innerHTML = t; b.id = 'q'+i+'o'+j; b.setAttribute('aria-pressed','false');
+        b.addEventListener('click', () => { answers[i] = j; o.querySelectorAll('.opt').forEach((x,m) => { x.setAttribute('aria-pressed', String(m === j)); x.style.borderColor = m === j ? 'var(--accent)' : ''; x.style.background = m === j ? 'var(--accent-soft)' : ''; }); });
+        o.appendChild(b);
+      });
+      test.appendChild(c);
+    });
+  };
+  build();
+  document.getElementById('grade').addEventListener('click', () => {
+    let score = 0;
+    [...test.children].forEach((c,i) => {
+      const q = TEST_QS[i], opts = c.querySelectorAll('.opt');
+      opts.forEach((x,j) => { x.disabled = true; x.style.borderColor = ''; x.style.background = ''; if (j === q.a) x.classList.add('right'); else if (answers[i] === j) x.classList.add('wrong'); });
+      const ok = answers[i] === q.a; if (ok) score++;
+      c.querySelector('.fbx').innerHTML = '<div class="fb '+(ok?'right':'wrong')+'"><b>'+(ok?'Correcto.':(answers[i]===undefined?'Sin responder.':'No.'))+'</b> '+q.exp+'</div>';
+    });
+    const pct = Math.round(score/TEST_QS.length*100);
+    document.getElementById('result').innerHTML = '<div class="card"><span class="score">'+score+' / '+TEST_QS.length+'</span><p class="note">'+(pct>=85?'Listo para la entrevista en estos temas.':pct>=60?'Buen avance. Repasa los temas de las preguntas que fallaste.':'Vuelve a los temas marcados con «Casi siempre» y repite el test.')+'</p></div>';
+    document.getElementById('grade').disabled = true;
+    document.getElementById('result').scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'center'});
+  });
+  document.getElementById('retest').addEventListener('click', build);
+}
+
+renderNav();
+route();
+</script>
+</body>
+</html>

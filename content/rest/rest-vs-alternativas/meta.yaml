@@ -1,0 +1,12 @@
+id: rest-vs-alternativas
+track: rest
+order: 19
+freq: often
+concepts:
+  - graphql
+  - grpc
+  - websockets
+  - sse
+  - webhooks
+related:
+  - rest-richardson

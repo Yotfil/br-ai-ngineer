@@ -1,0 +1,10 @@
+id: anatomia-peticion-respuesta
+track: rest
+order: 2
+freq: always
+concepts:
+  - linea-inicial
+  - body
+related:
+  - cabeceras
+  - anatomia-url

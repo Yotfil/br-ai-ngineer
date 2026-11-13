@@ -1,0 +1,144 @@
+.side {
+  position: fixed;
+  top: calc(var(--gap) + var(--top-h) + var(--gap));
+  left: var(--gap);
+  bottom: var(--gap);
+  width: var(--sw);
+  z-index: 20;
+  padding: 10px 8px;
+  overflow: auto;
+  scrollbar-width: none;
+  transition:
+    width 0.3s var(--ease-std),
+    transform 0.35s var(--ease-std),
+    opacity 0.3s;
+}
+.side h6 {
+  margin: 6px 10px 8px;
+  font: 500 10px var(--mono);
+  letter-spacing: 0.2em;
+  color: var(--faint);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.trk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 12px;
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    opacity 0.2s;
+}
+.trk:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font: 700 11px var(--mono);
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  flex: none;
+  transition: box-shadow 0.25s;
+}
+.trk.open .badge {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--c) 45%, transparent);
+}
+.trk b {
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trk i {
+  font: 500 11px var(--mono);
+  color: var(--muted);
+  font-style: normal;
+}
+.trk svg {
+  color: var(--faint);
+  transition: transform 0.2s;
+}
+.trk.open svg {
+  transform: rotate(90deg);
+}
+.soon {
+  opacity: 0.5;
+  cursor: default;
+}
+.soon:hover {
+  background: none;
+}
+.soon i {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.subs {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-left: 23px;
+  transition:
+    grid-template-rows 0.34s var(--ease-std),
+    opacity 0.3s,
+    margin 0.3s;
+}
+.subsIn {
+  overflow: hidden;
+  min-height: 0;
+  padding-left: 12px;
+  border-left: 1px solid var(--edge-soft);
+}
+.subsOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-bottom: 8px;
+}
+.sub {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.sub:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.05);
+}
+.sub.cur {
+  color: #fff;
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+}
+.collapsed h6,
+.collapsed .trk b,
+.collapsed .trk i,
+.collapsed .trk svg,
+.collapsed .subs {
+  display: none !important;
+}
+@media (max-width: 760px) {
+  .side {
+    transform: translateX(calc(-100% - 2 * var(--gap)));
+    opacity: 0;
+    pointer-events: none;
+  }
+}

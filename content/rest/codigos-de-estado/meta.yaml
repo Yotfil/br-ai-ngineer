@@ -1,0 +1,11 @@
+id: codigos-de-estado
+track: rest
+order: 6
+freq: always
+concepts:
+  - 401-vs-403
+  - 4xx-vs-5xx
+related:
+  - errores-problem-details
+  - autenticacion-autorizacion
+demo: status-explorer

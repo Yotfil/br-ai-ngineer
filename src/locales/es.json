@@ -1,0 +1,79 @@
+{
+  "brand": "CEREBRO",
+  "langName": "Español",
+  "top": {
+    "collapse": "Contraer menú",
+    "expand": "Expandir menú",
+    "language": "Idioma",
+    "motionStop": "Detener animaciones",
+    "motionResume": "Reanudar animaciones"
+  },
+  "search": {
+    "placeholder": "Buscar concepto: idempotencia, CORS, 429…",
+    "label": "Buscar concepto",
+    "shortcut": "Ctrl K",
+    "empty": "Sin resultados",
+    "topic": "Tema",
+    "concept": "Concepto",
+    "conceptOf": "Concepto · {{topic}}"
+  },
+  "side": {
+    "tracks": "Pistas",
+    "soon": "Próximamente",
+    "topics": "Temas de {{track}}"
+  },
+  "freq": {
+    "always": "casi siempre",
+    "often": "seguido",
+    "sometimes": "a veces"
+  },
+  "reader": {
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "prev": "← Anterior",
+    "next": "Siguiente tema →",
+    "tabs": {
+      "understand": "Entender",
+      "code": "En código",
+      "practice": "Practicar",
+      "interview": "En la entrevista"
+    },
+    "mode": {
+      "label": "Modo de fondo del lector",
+      "glass": "◻ Cristal",
+      "pure": "○ Sin fondo",
+      "solid": "◼ Sólido"
+    },
+    "notFound": "No se encontró el tema."
+  },
+  "section": {
+    "analogy": "Analogía",
+    "problem": "Qué problema resuelve",
+    "code:wire": "Así viaja por la red",
+    "code:server": "Del lado del servidor (FastAPI)",
+    "bad": "Riesgoso",
+    "good": "Correcto",
+    "bridge:typescript": "Puente con el frontend (TypeScript)",
+    "interview": "Para decir en la entrevista",
+    "myths": "Malentendidos comunes"
+  },
+  "exercise": {
+    "right": "Correcto.",
+    "wrongChoice": "No es esa.",
+    "wrongVerdict": "Revisa.",
+    "isOk": "Está bien",
+    "hasError": "Tiene un error"
+  },
+  "related": {
+    "concepts": "Conceptos del tema",
+    "related": "Relacionados",
+    "none": "—"
+  },
+  "brain": {
+    "label": "Mapa de conceptos",
+    "gestures": "clic: abrir · arrastrar: girar · Mayús + arrastrar: mover · rueda: acercar"
+  },
+  "demo": {
+    "label": "Demo interactiva"
+  }
+}

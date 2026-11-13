@@ -1,0 +1,11 @@
+id: http-sin-estado
+track: rest
+order: 8
+freq: always
+concepts:
+  - stateless
+  - cookie
+  - sesion
+related:
+  - autenticacion-autorizacion
+  - almacenamiento-del-token

@@ -1,0 +1,10 @@
+id: metodos-http
+track: rest
+order: 4
+freq: always
+concepts:
+  - put-vs-patch
+  - get-vs-post
+related:
+  - metodos-seguros-idempotentes
+  - preflight

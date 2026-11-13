@@ -1,0 +1,11 @@
+id: cache-http
+track: rest
+order: 11
+freq: often
+concepts:
+  - cache-control
+  - etag
+  - "304"
+related:
+  - cabeceras
+  - codigos-de-estado

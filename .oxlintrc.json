@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "ignorePatterns": ["src/generated/**", "dist/**"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["**/canvas-renderer", "**/canvas-renderer/**"],
+            "message": "El renderizador del cerebro solo se importa desde src/graph/ (design.md decisión 4). Usa src/graph/Brain.tsx y src/graph/types.ts."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/graph/**"],
+      "rules": { "no-restricted-imports": "off" }
+    }
+  ]
+}

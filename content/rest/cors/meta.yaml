@@ -1,0 +1,11 @@
+id: cors
+track: rest
+order: 10
+freq: always
+concepts:
+  - cors-concepto
+  - preflight
+  - origen
+related:
+  - metodos-http
+  - seguridad-api

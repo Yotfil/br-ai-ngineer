@@ -1,0 +1,53 @@
+/* Valores tomados de mockups/ui-v2.html (referencia visual aprobada). */
+:root {
+  --bg: #04050a;
+  --ink: #e6e7f2;
+  --muted: #8a8ca8;
+  --faint: #55577a;
+
+  /* Receta de cristal */
+  --glass: rgba(14, 15, 28, 0.52);
+  --glass-strong: rgba(9, 10, 20, 0.9);
+  --glass-reader: rgba(11, 12, 24, 0.2);
+  --glass-reader-none: rgba(11, 12, 24, 0);
+  --glass-results: rgba(10, 11, 22, 0.92);
+  --glass-blur: blur(28px) saturate(1.5);
+  --glass-blur-reader: blur(36px) saturate(1.45);
+  --glass-shadow: 0 12px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  --edge: rgba(160, 140, 255, 0.2);
+  --edge-soft: rgba(255, 255, 255, 0.07);
+
+  /* Acentos */
+  --violet: #a78bfa;
+  --cyan: #22d3ee;
+  --green: #4ade80;
+  --red: #fb7185;
+
+  /* Colores por pista (los valores efectivos vienen de content/tracks.yaml) */
+  --track-rest: #22d3ee;
+  --track-python: #4ade80;
+  --track-sql: #fbbf24;
+  --track-git: #fb7a4a;
+  --track-oop: #a78bfa;
+
+  /* Código */
+  --code-bg: rgba(4, 5, 11, 0.74);
+  --code-ink: #cfd3ea;
+
+  /* Medidas */
+  --sw: 268px;
+  --sw-collapsed: 64px;
+  --r: 18px;
+  --gap: 14px;
+  --top-h: 56px;
+
+  /* Curvas */
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Tipografías autoalojadas (@fontsource) */
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --track: var(--cyan);
+}

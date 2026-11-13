@@ -1,0 +1,10 @@
+id: idempotencia-en-la-practica
+track: rest
+order: 17
+freq: often
+concepts:
+  - clave-de-idempotencia
+  - reintentos
+related:
+  - idempotencia
+  - rate-limiting

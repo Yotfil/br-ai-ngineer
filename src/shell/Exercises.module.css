@@ -1,0 +1,53 @@
+.group + .group {
+  margin-top: 22px;
+}
+.q {
+  margin: 0 0 18px;
+}
+.stem {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+.opts {
+  display: flex;
+  flex-direction: column;
+}
+.opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--edge-soft);
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.opt:hover {
+  border-color: var(--edge);
+}
+.opts:has(.inline) {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.inline {
+  width: auto;
+}
+.ok {
+  border-color: var(--green);
+  background: rgba(74, 222, 128, 0.1);
+}
+.no {
+  border-color: var(--red);
+  background: rgba(251, 113, 133, 0.1);
+}
+.fb {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+.fb b {
+  color: var(--ink);
+}

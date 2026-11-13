@@ -1,0 +1,11 @@
+id: url-a-respuesta
+track: rest
+order: 1
+freq: always
+concepts:
+  - dns
+  - tcp
+  - ttfb
+related:
+  - https-tls
+  - anatomia-peticion-respuesta

@@ -1,0 +1,12 @@
+id: autenticacion-autorizacion
+track: rest
+order: 9
+freq: always
+concepts:
+  - jwt
+  - oauth2
+  - refresh-token
+related:
+  - http-sin-estado
+  - 401-vs-403
+  - seguridad-api

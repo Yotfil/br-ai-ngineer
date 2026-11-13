@@ -1,0 +1,1552 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Guía HTTP y REST</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: índice lateral de 20 temas + panel de estudio de un tema a la vez; en móvil el índice se vuelve un selector arriba */
+:root{
+  --bg:#f3f5f8;--surface:#ffffff;--ink:#15202c;--muted:#566577;--line:#d8dfe7;
+  --accent:#1d5cbd;--accent-soft:#e2ebf9;--wire:#0f2033;--wire-ink:#d5e2f0;--wire-key:#8fb8ef;--wire-start:#ffd28a;
+  --ok:#1b7646;--ok-soft:#e1f2e8;--warn:#9a5d08;--warn-soft:#fbefdc;--bad:#b0352d;--bad-soft:#f9e3e1;
+  --f-display:"Space Grotesk",system-ui,sans-serif;--f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d131a;--surface:#141c25;--ink:#e2e8ef;--muted:#95a3b3;--line:#253140;
+  --accent:#73a6f2;--accent-soft:#182a42;--wire:#090f16;--wire-ink:#d2e0ee;--wire-key:#86b3ee;--wire-start:#f2c477;
+  --ok:#55c48b;--ok-soft:#12291d;--warn:#e3a64c;--warn-soft:#2c2112;--bad:#f07b71;--bad-soft:#321715;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d131a;--surface:#141c25;--ink:#e2e8ef;--muted:#95a3b3;--line:#253140;
+  --accent:#73a6f2;--accent-soft:#182a42;--wire:#090f16;--wire-ink:#d2e0ee;--wire-key:#86b3ee;--wire-start:#f2c477;
+  --ok:#55c48b;--ok-soft:#12291d;--warn:#e3a64c;--warn-soft:#2c2112;--bad:#f07b71;--bad-soft:#321715;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.6;margin:0}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--accent-soft);padding:.05em .35em;border-radius:4px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--line);background:var(--surface);position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow-y:auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:14px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:1.25rem}
+.brand small{display:block;font-family:var(--f-body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.progress{margin:14px 0 10px;font-size:.82rem;color:var(--muted)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+.nav{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px}
+.nav button{width:100%;text-align:left;border:0;background:none;color:var(--ink);padding:7px 8px;border-radius:6px;display:grid;grid-template-columns:24px 1fr auto;gap:6px;align-items:center;font-size:.88rem;line-height:1.3}
+.nav button:hover{background:var(--accent-soft)}
+.nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav .n{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.nav .done .n{color:var(--ok)}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.casi{background:var(--bad)}.dot.seguido{background:var(--warn)}.dot.aveces{background:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.75rem;color:var(--muted);margin:8px 0 12px}
+.legend span{display:flex;align-items:center;gap:5px}
+.navsep{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 8px 4px}
+.mobilebar{display:none}
+main{padding-block:28px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.head{display:flex;flex-direction:column;gap:8px}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);letter-spacing:.04em}
+.head h1{font-size:clamp(1.6rem,3.5vw,2.25rem)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:999px;width:max-content}
+.pill.casi{background:var(--bad-soft);color:var(--bad)}.pill.seguido{background:var(--warn-soft);color:var(--warn)}.pill.aveces{background:var(--line);color:var(--muted)}
+.def{font-size:1.12rem;max-width:68ch}
+.sec h3{font-size:1rem;margin-bottom:6px;letter-spacing:.01em}
+.sec p,.sec li{max-width:70ch}
+.sec ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.analogy{border-left:3px solid var(--accent);padding:4px 0 4px 14px;color:var(--ink)}
+.analogy b{color:var(--accent)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.cols>div{min-width:0}
+.tag{font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.tag.bad{color:var(--bad)}.tag.good{color:var(--ok)}.tag.mute{color:var(--muted)}
+pre.wire{background:var(--wire);color:var(--wire-ink);font-family:var(--f-mono);font-size:.82rem;line-height:1.55;padding:14px 16px;border-radius:8px;margin:0;overflow-x:auto;white-space:pre}
+pre.wire .s{color:var(--wire-start);font-weight:500}
+pre.wire .k{color:var(--wire-key)}
+pre.wire .c{opacity:.6}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.bridge{background:var(--accent-soft);border-radius:10px;padding:14px 16px}
+.bridge .tag{color:var(--accent)}
+.answer{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:8px;padding:14px 16px}
+.answer .tag{color:var(--ok)}
+.demo{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.demo>.tag{color:var(--accent)}
+.demo h3{font-size:1.05rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:7px;font-size:.88rem}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.btn.sel{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.lbl{font-size:.78rem;color:var(--muted);min-width:70px}
+.note{font-size:.88rem;color:var(--muted)}
+.res{padding:10px 12px;border-radius:8px;font-size:.92rem}
+.res.ok{background:var(--ok-soft);color:var(--ok)}.res.bad{background:var(--bad-soft);color:var(--bad)}.res.warn{background:var(--warn-soft);color:var(--warn)}
+.res b{font-weight:600}
+.steps{display:flex;flex-wrap:wrap;gap:6px}
+.steps span{font-size:.78rem;padding:4px 10px;border-radius:999px;background:var(--line);color:var(--muted)}
+.steps span.on{background:var(--accent);color:var(--surface)}
+.steps span.past{background:var(--accent-soft);color:var(--accent)}
+.state{font-family:var(--f-mono);font-size:.8rem;background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;white-space:pre-wrap;overflow-x:auto}
+.log{font-family:var(--f-mono);font-size:.78rem;display:flex;flex-direction:column;gap:3px;max-height:220px;overflow-y:auto}
+.log div{padding:3px 8px;border-radius:5px;background:var(--bg)}
+.log .ch{background:var(--warn-soft);color:var(--warn)}
+.ex{display:flex;flex-direction:column;gap:14px}
+.q{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.q p{margin:0;font-weight:500}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts .btn.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:600}
+.opts .btn.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.why{font-size:.9rem;padding:10px 12px;border-radius:8px;background:var(--bg)}
+.url{font-family:var(--f-mono);font-size:clamp(.78rem,2.4vw,1rem);display:flex;flex-wrap:wrap;gap:2px;row-gap:6px}
+.url button{border:0;border-bottom:3px solid var(--line);background:none;color:var(--ink);font-family:inherit;font-size:inherit;padding:2px 1px}
+.url button.sel{border-color:var(--accent);color:var(--accent)}
+.lane{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;font-size:.78rem}
+.track{position:relative;height:22px;background:var(--bg);border-radius:4px;overflow:hidden}
+.track i{position:absolute;top:3px;height:16px;border-radius:3px;font-style:normal;font-size:.68rem;color:var(--surface);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono)}
+.track i.a{background:var(--accent)}.track i.b{background:var(--ok)}.track i.c{background:var(--warn)}.track i.x{background:var(--bad)}
+.jwt{font-family:var(--f-mono);font-size:.8rem;word-break:break-all;line-height:1.7}
+.jwt .h{color:var(--bad)}.jwt .p{color:var(--accent)}.jwt .g{color:var(--ok)}
+table.t{border-collapse:collapse;width:100%;font-size:.88rem}
+.tw{overflow-x:auto}
+table.t th,table.t td{text-align:left;border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
+table.t th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.markdone{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+details.reveal{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px 16px}
+details.reveal summary{cursor:pointer;font-weight:500}
+details.reveal[open] summary{margin-bottom:8px}
+.score{font-family:var(--f-display);font-size:2rem;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-mono);font-size:.76rem;padding:3px 8px;border-radius:5px;background:var(--bg);border:1px solid var(--line)}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{display:none}
+  .mobilebar{display:flex;flex-direction:column;gap:8px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+  .mobilebar select{font:inherit;padding:7px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+  .mobilebar .bar{margin-top:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <aside class="side" aria-label="Temas">
+    <div class="brand">HTTP y REST<small>Guía de estudio para entrevistas backend · Python + FastAPI</small></div>
+    <div class="progress"><span id="progTxt">0 de 20 repasados</span><div class="bar"><i id="progBar"></i></div></div>
+    <div class="legend"><span><i class="dot casi"></i>casi siempre</span><span><i class="dot seguido"></i>seguido</span><span><i class="dot aveces"></i>a veces</span></div>
+    <ul class="nav" id="nav"></ul>
+  </aside>
+  <div class="mobilebar">
+    <select id="msel" aria-label="Ir al tema"></select>
+    <div class="bar"><i id="progBar2"></i></div>
+  </div>
+  <main><div class="wrap" id="view"></div></main>
+</div>
+
+<script>
+const T = [];
+/* Cada tema: id, t, f (casi|seguido|aveces), def, ana, raw, py, prob, bad, good, bridge, myths[], ans, demo, ex[] */
+T.push({
+ t:"Qué pasa cuando escribes una URL y das Enter", f:"casi",
+ def:"El navegador resuelve el nombre del dominio a una IP (DNS), abre una conexión confiable con ese servidor (TCP), la cifra (TLS), envía la petición HTTP y recibe la respuesta, que luego interpreta y renderiza.",
+ ana:"Es como enviar una carta certificada a una empresa: primero buscas su dirección en el directorio (<b>DNS</b>), luego el mensajero confirma que alguien la puede recibir (<b>TCP</b>), la metes en un sobre sellado que solo ellos abren (<b>TLS</b>), y finalmente va tu carta (<b>petición</b>) y te devuelven otra (<b>respuesta</b>).",
+ raw:`# 1. DNS: api.tienda.co → 104.21.33.10  (caché del navegador → SO → resolver → servidores raíz/TLD/autoritativo)
+# 2. TCP: SYN → SYN-ACK → ACK  (puerto 443)
+# 3. TLS: ClientHello → ServerHello + certificado → claves acordadas
+# 4. Petición HTTP (ya cifrada dentro del túnel TLS):
+GET /v1/productos/42 HTTP/1.1
+Host: api.tienda.co
+Accept: application/json
+
+# 5. Respuesta:
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 58
+
+{"id":42,"nombre":"Café de origen Tolima","precio":38000}`,
+ py:`# Del lado del servidor, todo lo anterior ya ocurrió cuando tu código se ejecuta.
+# Un proxy (Nginx, el balanceador de AWS) suele terminar TLS; Uvicorn recibe HTTP
+# y FastAPI enruta la petición a esta función:
+@app.get("/v1/productos/{producto_id}")
+def obtener_producto(producto_id: int):
+    return {"id": producto_id, "nombre": "Café de origen Tolima", "precio": 38000}`,
+ prob:"Entender el viaje completo te permite diagnosticar en qué capa falla algo: un error de DNS no es un 500, un certificado vencido no es un bug de tu endpoint, y un timeout puede ocurrir antes de que tu código se ejecute.",
+ bridge:"En la pestaña <b>Network</b>, la vista <b>Timing</b> de cada petición muestra estas fases: <code>DNS Lookup</code>, <code>Initial connection</code> (TCP), <code>SSL</code> (TLS), <code>Waiting for server response</code> (lo que tarda tu backend, el TTFB) y <code>Content Download</code>. Cuando en un proyecto la petición es lenta, ese desglose te dice si el culpable es la red o el servidor.",
+ myths:["Pensar que el backend recibe la petición tal como salió del navegador. En medio suele haber CDN, balanceador y proxy inverso que agregan o quitan headers (por ejemplo <code>X-Forwarded-For</code>).","Creer que cada petición repite DNS, TCP y TLS. Hay caché de DNS y las conexiones se reutilizan (keep-alive).","Confundir el puerto: HTTP usa 80 y HTTPS 443 por defecto, aunque la URL no lo muestre."],
+ ans:"Primero el navegador revisa sus cachés y, si no tiene la IP, hace una consulta DNS. Con la IP abre una conexión TCP con el handshake de tres pasos y, como es HTTPS, negocia TLS: el servidor presenta su certificado y acuerdan claves de cifrado. Sobre ese canal envía la petición HTTP con método, ruta y headers. Del lado del servidor normalmente hay un balanceador o proxy que la reenvía a la aplicación; la app procesa, quizás consulta la base de datos, y devuelve una respuesta con código de estado, headers y body. Finalmente el navegador la interpreta y, si es HTML, pide los recursos adicionales y renderiza.",
+ demo:"journey"
+});
+T.push({
+ t:"Anatomía de una petición y una respuesta", f:"casi",
+ def:"Un mensaje HTTP tiene tres partes: una línea inicial (en la petición: método, ruta y versión; en la respuesta: versión, código y texto de estado), un bloque de headers <code>Nombre: valor</code>, una línea en blanco y un body opcional.",
+ ana:"Un paquete por mensajería: la <b>etiqueta</b> dice a quién va y qué tipo de envío es (línea inicial), las <b>notas adhesivas</b> agregan instrucciones como «frágil» o «contiene líquidos» (headers), y la <b>caja</b> trae el contenido (body).",
+ raw:`POST /v1/pedidos HTTP/1.1
+Host: api.tienda.co
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
+Content-Length: 46
+
+{"cliente_id":7,"items":[{"producto_id":42,"cantidad":2}]}
+
+HTTP/1.1 201 Created
+Content-Type: application/json
+Location: /v1/pedidos/1093
+
+{"id":1093,"estado":"pendiente","total":76000}`,
+ py:`from fastapi import FastAPI, Header, Request
+from pydantic import BaseModel
+
+class Item(BaseModel):
+    producto_id: int
+    cantidad: int
+
+class PedidoIn(BaseModel):        # el body ya validado
+    cliente_id: int
+    items: list[Item]
+
+@app.post("/v1/pedidos", status_code=201)
+def crear_pedido(pedido: PedidoIn, request: Request,
+                 user_agent: str | None = Header(default=None)):
+    # request.method, request.url.path, request.headers, user_agent...
+    return {"id": 1093, "estado": "pendiente", "total": 76000}`,
+ prob:"Si no respetas la estructura (por ejemplo, envías JSON sin <code>Content-Type: application/json</code>), el servidor no sabe cómo interpretar el body y responde 415 o 422. Los headers son la forma estándar de enviar metadatos; meterlos en el body o en la URL rompe herramientas intermedias como cachés y proxies.",
+ bridge:"Cuando escribes <code>this.http.post(url, body, {headers, params})</code>, Angular arma exactamente esta estructura: el método y la URL van a la línea inicial, <code>params</code> a la query string, <code>headers</code> al bloque de headers y <code>body</code> se serializa a JSON. Tu interceptor solo agrega una línea más al bloque de headers.",
+ myths:["Creer que GET no puede tener headers o que solo POST tiene body. GET tiene headers siempre; lo que no debería llevar es body con significado.","Pensar que los nombres de headers distinguen mayúsculas. <code>content-type</code> y <code>Content-Type</code> son el mismo header (en HTTP/2 viajan en minúscula).","Olvidar la línea en blanco: es lo que separa los headers del body."],
+ ans:"Una petición HTTP tiene una línea inicial con el método, la ruta con su query string y la versión del protocolo; luego vienen los headers, que son metadatos en formato clave-valor como Content-Type, Accept o Authorization; después una línea en blanco y el body opcional. La respuesta tiene la misma estructura, salvo que la línea inicial lleva la versión, el código de estado y su texto. Así, el servidor sabe qué se pide, con qué formato y credenciales, y el cliente sabe si salió bien y cómo leer lo que recibe.",
+ demo:"builder"
+});
+T.push({
+ t:"Anatomía de una URL", f:"seguido",
+ def:"Una URL identifica un recurso y dónde encontrarlo: <code>esquema://host:puerto/ruta?query#fragmento</code>. El fragmento nunca viaja al servidor; todo lo demás sí.",
+ ana:"Una dirección postal completa: el <b>esquema</b> es el medio de envío (correo normal o certificado), el <b>host</b> es el edificio, el <b>puerto</b> la ventanilla, la <b>ruta</b> el apartamento, la <b>query</b> las instrucciones extra («entregar solo en la mañana») y el <b>fragmento</b> una nota que tú usas al llegar, pero que el cartero nunca lee.",
+ raw:`URL: https://api.tienda.co:443/v1/productos?categoria=cafe&orden=-precio#reseñas
+
+# Lo que realmente viaja por la red:
+GET /v1/productos?categoria=cafe&orden=-precio HTTP/1.1
+Host: api.tienda.co
+# El "#reseñas" nunca sale del navegador.`,
+ py:`@app.get("/v1/productos")
+def listar_productos(categoria: str | None = None,   # query param opcional
+                     orden: str = "nombre"):          # query param con default
+    ...
+
+@app.get("/v1/productos/{producto_id}")              # path param
+def obtener_producto(producto_id: int): ...`,
+ prob:"Saber qué parte usar define el diseño de tu API: la <b>ruta</b> identifica el recurso (<code>/productos/42</code>) y la <b>query</b> lo filtra o modifica la vista (<code>?categoria=cafe</code>). Si mezclas los papeles terminas con rutas como <code>/productos/categoria/cafe/orden/precio</code>, imposibles de combinar.",
+ bad:`GET /v1/productos/buscar/cafe/barato
+GET /v1/getProductoById?id=42`,
+ good:`GET /v1/productos?categoria=cafe&precio_max=40000
+GET /v1/productos/42`,
+ bridge:"El fragmento es justo lo que usaban los routers de SPA en modo hash (<code>/#/pedidos</code>): como el servidor nunca lo ve, siempre servía el mismo <code>index.html</code>. Con rutas normales (<code>PathLocationStrategy</code>) el servidor sí recibe <code>/pedidos</code>, y por eso hay que configurarlo para que devuelva el <code>index.html</code> en cualquier ruta.",
+ myths:["Poner datos sensibles en la query string: quedan en logs del servidor, del proxy y en el historial del navegador, aunque uses HTTPS.","Creer que el fragmento llega al backend.","Olvidar codificar caracteres especiales: un espacio viaja como <code>%20</code> y la ñ como <code>%C3%B1</code>."],
+ ans:"Una URL tiene esquema, que indica el protocolo; host, que es el dominio; puerto, que si se omite es 80 para HTTP o 443 para HTTPS; ruta, que identifica el recurso; query string, con parámetros clave-valor para filtrar o paginar; y fragmento, que solo usa el navegador y nunca se envía al servidor. En diseño REST, la ruta identifica el recurso y la query modifica la vista de la colección.",
+ demo:"url"
+});
+T.push({
+ t:"Métodos HTTP y PUT vs. PATCH", f:"casi",
+ def:"El método indica la intención de la petición sobre el recurso: leer (GET), crear o procesar (POST), reemplazar (PUT), modificar parcialmente (PATCH), eliminar (DELETE), pedir solo los headers (HEAD) o consultar qué se permite (OPTIONS).",
+ ana:"Una ficha de cliente en un archivador: <b>GET</b> es leerla, <b>POST</b> es entregar una ficha nueva para que el archivo le asigne número, <b>PUT</b> es cambiar la ficha completa por otra, <b>PATCH</b> es corregir solo el teléfono con corrector, <b>DELETE</b> es sacarla, <b>HEAD</b> es preguntar si existe y cuándo se modificó sin sacarla, y <b>OPTIONS</b> es preguntar qué te dejan hacer con ella.",
+ raw:`# Estado actual de /v1/clientes/7
+{"id":7,"nombre":"Ana Ruiz","email":"ana@mail.co","telefono":"3001112233"}
+
+PUT /v1/clientes/7 HTTP/1.1
+Content-Type: application/json
+
+{"nombre":"Ana Ruiz","email":"ana@nuevo.co"}
+# → el teléfono se pierde: PUT reemplaza la representación completa
+
+PATCH /v1/clientes/7 HTTP/1.1
+Content-Type: application/merge-patch+json
+
+{"email":"ana@nuevo.co"}
+# → solo cambia el email; el teléfono queda igual`,
+ py:`class ClienteIn(BaseModel):            # PUT: todos los campos obligatorios
+    nombre: str
+    email: str
+    telefono: str
+
+class ClientePatch(BaseModel):         # PATCH: todos opcionales
+    nombre: str | None = None
+    email: str | None = None
+    telefono: str | None = None
+
+@app.put("/v1/clientes/{id}")
+def reemplazar(id: int, data: ClienteIn): ...
+
+@app.patch("/v1/clientes/{id}")
+def actualizar(id: int, data: ClientePatch):
+    cambios = data.model_dump(exclude_unset=True)   # solo lo que llegó
+    ...`,
+ prob:"Los métodos le dicen a toda la infraestructura qué puede hacer con la petición: los cachés solo guardan GET, los clientes reintentan automáticamente los idempotentes, y los navegadores hacen preflight según el método. Usar POST para todo te hace perder caché, reintentos seguros y claridad.",
+ bad:`POST /v1/clientes/7/eliminar
+GET  /v1/clientes/7/borrar        ← un crawler o un prefetch lo ejecuta
+POST /v1/actualizarCliente`,
+ good:`DELETE /v1/clientes/7
+PATCH  /v1/clientes/7
+PUT    /v1/clientes/7`,
+ bridge:"La petición <code>OPTIONS</code> que ves en Network antes de tu <code>PUT</code> no la hiciste tú: es el preflight de CORS que lanza el navegador (tema 10). Y cuando usas <code>http.put</code> para editar un formulario a medias, estás borrando en el servidor los campos que no enviaste, si el backend implementa PUT correctamente.",
+ myths:["Usar PUT y PATCH como sinónimos. PUT reemplaza el recurso completo; PATCH aplica cambios parciales.","Creer que PUT solo actualiza. Con PUT el cliente también puede crear un recurso en una URI que él elige (<code>PUT /archivos/foto.png</code>).","Pensar que DELETE debe devolver el recurso borrado. Lo común es 204 sin body."],
+ ans:"GET obtiene un recurso sin modificarlo; POST crea un recurso en una colección o dispara un procesamiento; PUT reemplaza por completo la representación del recurso en esa URI, así que los campos que no envíes se pierden; PATCH aplica una modificación parcial; DELETE elimina; HEAD es como GET pero sin body, útil para revisar headers o existencia; y OPTIONS describe qué métodos admite el recurso, y es el que usa el navegador en el preflight de CORS. La diferencia clave entre PUT y PATCH es reemplazo total frente a cambio parcial, y que PUT es idempotente por definición mientras que PATCH no necesariamente.",
+ demo:"builder",
+ ex:[
+  {q:"Quieres cambiar solo la dirección de envío de un pedido existente.",o:["GET","POST","PUT","PATCH"],a:3,w:"Es una modificación parcial de un recurso existente. Con PUT tendrías que enviar el pedido completo."},
+  {q:"El cliente hace clic en «Confirmar compra» y se crea un pedido nuevo con id generado por el servidor.",o:["POST","PUT","PATCH","GET"],a:0,w:"Crear en una colección donde el servidor asigna el id es el caso clásico de POST a /v1/pedidos."},
+  {q:"Un health check solo quiere saber si /v1/productos/42 existe y cuándo cambió, sin descargar el body.",o:["GET","HEAD","OPTIONS","POST"],a:1,w:"HEAD devuelve los mismos headers que GET (Content-Length, ETag, Last-Modified) sin body."},
+  {q:"Un formulario de administración envía todos los campos de un producto para sobrescribirlo.",o:["PATCH","POST","PUT","DELETE"],a:2,w:"Se reemplaza la representación completa en una URI conocida: PUT."}
+ ]
+});
+T.push({
+ t:"Métodos seguros e idempotentes", f:"casi",
+ def:"Un método es <b>seguro</b> si no modifica el estado del servidor (GET, HEAD, OPTIONS). Es <b>idempotente</b> si enviarlo una vez o diez veces deja el servidor en el mismo estado (los seguros, más PUT y DELETE). POST y PATCH no garantizan ninguna de las dos cosas.",
+ ana:"El botón del ascensor es <b>idempotente</b>: oprimirlo cinco veces no llama cinco ascensores. Un dispensador de dulces con monedas <b>no lo es</b>: cada moneda saca otro dulce. Mirar el tablero de pisos es <b>seguro</b>: no cambia nada.",
+ raw:`# La red se cae justo después de enviar. ¿Reintento?
+DELETE /v1/pedidos/1093   → 204    reintento → 404 o 204   estado final: borrado   ✔ seguro reintentar
+PUT /v1/clientes/7 {...}  → 200    reintento → 200        estado final: igual     ✔ seguro reintentar
+POST /v1/pagos {"monto":76000}  → 201 (id 501)
+     reintento → 201 (id 502)     ✘ ¡dos cobros!`,
+ py:`# Idempotencia se refiere al EFECTO en el servidor, no a la respuesta.
+@app.delete("/v1/pedidos/{id}", status_code=204)
+def borrar(id: int):
+    pedidos.pop(id, None)   # si ya no existe, el estado final es el mismo
+    # Algunos equipos devuelven 404 la segunda vez; sigue siendo idempotente.`,
+ prob:"Es la base de los reintentos. Los clientes HTTP, los balanceadores y las colas reintentan automáticamente cuando hay timeouts. Si el método es idempotente, reintentar no causa daño; si no lo es (POST), el reintento puede duplicar pedidos o cobros, y hay que protegerlo con claves de idempotencia (tema 17).",
+ bad:`GET /v1/carrito/agregar?producto=42   ← GET con efecto: el prefetch del navegador lo dispara
+PUT /v1/cuentas/7/saldo  {"sumar": 5000}  ← PUT no idempotente: cada reintento suma`,
+ good:`POST /v1/carrito/items  {"producto_id":42}
+PUT  /v1/cuentas/7/saldo  {"saldo": 125000}   ← valor absoluto: idempotente`,
+ bridge:"El operador <code>retry()</code> de RxJS en un interceptor aplicado a todo es peligroso justo por esto: reintentar un GET está bien, pero reintentar un POST de pago puede cobrar dos veces. Un interceptor bien hecho solo reintenta métodos idempotentes o peticiones con clave de idempotencia.",
+ myths:["Creer que idempotente significa «devuelve siempre la misma respuesta». Un DELETE puede responder 204 y luego 404; lo que no cambia es el estado.","Pensar que GET es seguro porque el framework lo garantiza. Es una promesa que tú cumples o rompes en tu código.","Asumir que PATCH nunca es idempotente. Puede serlo (poner email = x), pero el estándar no lo garantiza (sumar 1 al stock)."],
+ ans:"Un método seguro es de solo lectura: no debe cambiar el estado del servidor, como GET, HEAD y OPTIONS. Idempotente significa que el efecto de N peticiones iguales es el mismo que el de una; lo son todos los seguros más PUT y DELETE. POST no lo es y PATCH no está garantizado. Importa porque en sistemas distribuidos hay timeouts y reintentos automáticos: un reintento de un método idempotente es inofensivo, pero uno de POST puede duplicar un pedido o un pago, por eso para esas operaciones se usan claves de idempotencia.",
+ demo:"idem",
+ ex:[
+  {q:"¿Cuál de estas operaciones es idempotente?",o:["POST /pedidos","PATCH /productos/42 {\"stock\": \"+1\"}","DELETE /pedidos/9","POST /pagos"],a:2,w:"Borrar el pedido 9 dos veces deja el mismo estado: el pedido no existe."},
+  {q:"Un GET /v1/reportes/generar crea un archivo nuevo cada vez que se llama. ¿Qué principio rompe?",o:["Solo la idempotencia","La seguridad del método (y también la idempotencia)","Ninguno, es válido","Solo el cacheo"],a:1,w:"GET debe ser seguro. Si genera un archivo cada vez, además deja de ser idempotente. Debería ser POST /v1/reportes."}
+ ]
+});
+T.push({
+ t:"Códigos de estado y sus confusiones clásicas", f:"casi",
+ def:"Número de tres dígitos que resume el resultado. La familia la da el primer dígito: <b>1xx</b> informativo, <b>2xx</b> éxito, <b>3xx</b> redirección, <b>4xx</b> error del cliente (la petición está mal) y <b>5xx</b> error del servidor (la petición estaba bien, pero el servidor falló).",
+ ana:"Los semáforos de una ventanilla: verde (<b>2xx</b>) «listo»; amarillo (<b>3xx</b>) «vaya a la otra ventanilla»; rojo con tu nombre (<b>4xx</b>) «tu formulario está mal llenado»; rojo con el letrero de la oficina (<b>5xx</b>) «se cayó el sistema, no es culpa tuya».",
+ raw:`HTTP/1.1 201 Created            ← creado; incluye Location
+Location: /v1/pedidos/1093
+
+HTTP/1.1 204 No Content         ← éxito sin body (DELETE, PUT sin retorno)
+
+HTTP/1.1 401 Unauthorized       ← no sé quién eres (falta token o es inválido)
+WWW-Authenticate: Bearer
+
+HTTP/1.1 403 Forbidden          ← sé quién eres, pero no tienes permiso
+
+HTTP/1.1 422 Unprocessable Content
+Content-Type: application/json
+
+{"detail":[{"loc":["body","cantidad"],"msg":"Input should be greater than 0"}]}`,
+ py:`from fastapi import HTTPException, status
+
+@app.get("/v1/pedidos/{id}")
+def obtener(id: int, usuario = Depends(usuario_actual)):   # sin token → 401
+    pedido = repo.buscar(id)
+    if pedido is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+    if pedido.cliente_id != usuario.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "No es tu pedido")
+    return pedido
+# FastAPI devuelve 422 automáticamente si Pydantic no puede validar el body.`,
+ prob:"El código es lo primero que leen el cliente, los reintentos, los monitores y las alertas. Responder <code>200</code> con <code>{\"error\": true}</code> hace que el frontend tenga que inspeccionar el body, que el monitoreo no vea los errores y que las cachés guarden respuestas de error como si fueran válidas.",
+ bad:`HTTP/1.1 200 OK
+{"ok": false, "error": "Pedido no encontrado"}`,
+ good:`HTTP/1.1 404 Not Found
+Content-Type: application/problem+json
+{"title":"Pedido no encontrado","status":404}`,
+ bridge:"En Angular, <code>HttpClient</code> lanza el error al <code>catchError</code> o al callback de error solo cuando el código es 4xx o 5xx. Cuando un backend responde 200 con un error dentro, tienes que revisar <code>res.ok</code> en cada <code>subscribe</code>: eso es síntoma de una API mal diseñada. Y tu interceptor que redirige al login debería reaccionar a <b>401</b>, no a 403.",
+ myths:["401 vs. 403: 401 significa «no autenticado» (a pesar del nombre Unauthorized); 403 es «autenticado pero sin permiso».","400 vs. 422: 400 es una petición mal formada (JSON roto, tipos imposibles); 422 es sintaxis correcta pero contenido inválido (cantidad negativa). FastAPI usa 422 para validación.","200 vs. 201 vs. 204: 200 éxito con body; 201 se creó un recurso (con Location); 204 éxito sin body.","301 vs. 302: 301 es permanente (buscadores y navegadores lo guardan); 302 es temporal. 307 y 308 son sus versiones que no permiten cambiar el método.","404 vs. 410: 404 no existe (o no te digo); 410 existió y se eliminó para siempre.","500 vs. 502 vs. 503 vs. 504: 500 tu app falló; 502 el proxy recibió una respuesta inválida de tu app; 503 el servicio no está disponible (mantenimiento o sobrecarga, con Retry-After); 504 el proxy se cansó de esperar a tu app."],
+ ans:"Los códigos se agrupan por familias: 2xx éxito, 3xx redirección, 4xx el cliente se equivocó y 5xx el servidor falló. Los que más uso son 200, 201 con Location al crear, 204 sin contenido, 400 y 422 para validación, 401 cuando falta autenticación, 403 cuando el usuario no tiene permiso, 404, 409 para conflictos como un email duplicado, 429 por rate limit, 500 para errores internos, y 502, 503 y 504 que suelen venir del proxy o del balanceador. La regla es que el código refleje el resultado real, porque clientes, reintentos y monitoreo dependen de él.",
+ demo:"status",
+ ex:[
+  {q:"Un usuario con token válido intenta ver el pedido de otro cliente.",o:["401","403","404","400"],a:1,w:"Ya sabemos quién es (autenticado), pero no tiene permiso: 403. Algunas APIs devuelven 404 a propósito para no revelar que el recurso existe."},
+  {q:"El body es JSON válido, pero el campo cantidad viene en -3.",o:["400","422","500","409"],a:1,w:"La sintaxis es correcta; el contenido no cumple las reglas. FastAPI responde 422 automáticamente."},
+  {q:"Intentas registrar un cliente con un email que ya existe.",o:["400","409","422","500"],a:1,w:"409 Conflict: la petición choca con el estado actual del recurso."},
+  {q:"El balanceador esperó 60 s a tu API de pagos y nunca respondió.",o:["500","502","503","504"],a:3,w:"504 Gateway Timeout: el intermediario no recibió respuesta a tiempo del servidor de origen."},
+  {q:"POST /v1/pedidos se procesó y el pedido quedó creado.",o:["200","201","202","204"],a:1,w:"201 Created, con el header Location apuntando al nuevo recurso."},
+  {q:"La petición llega sin header Authorization a un endpoint protegido.",o:["401","403","400","404"],a:0,w:"401: no hay credenciales. Se acompaña de WWW-Authenticate."},
+  {q:"Recibes la orden de generar un reporte pesado; lo encolas y lo procesarás después.",o:["200","201","202","204"],a:2,w:"202 Accepted: se aceptó, pero aún no se completó. Se suele devolver una URL para consultar el estado."}
+ ]
+});
+T.push({
+ t:"Cabeceras esenciales y negociación de contenido", f:"seguido",
+ def:"Los headers son metadatos del mensaje. Unos describen el body (<code>Content-Type</code>), otros dicen qué espera el cliente (<code>Accept</code>), quién es (<code>Authorization</code>, <code>User-Agent</code>), cómo cachear (<code>Cache-Control</code>, <code>ETag</code>) o dónde quedó algo (<code>Location</code>).",
+ ana:"Las instrucciones en el sobre de un pedido a domicilio: «contiene sopa» (<b>Content-Type</b>), «prefiero en español o inglés» (<b>Accept-Language</b>), «muestro mi carné de cliente» (<b>Authorization</b>), «consumir antes de 1 hora» (<b>Cache-Control</b>).",
+ raw:`GET /v1/productos/42 HTTP/1.1
+Accept: application/json;q=1.0, application/xml;q=0.5
+Accept-Language: es-CO, es;q=0.9
+Authorization: Bearer eyJ...
+User-Agent: Mozilla/5.0 (Macintosh...)
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Language: es-CO
+Cache-Control: private, max-age=60
+ETag: "v7-42"
+Vary: Accept, Accept-Language
+
+{"id":42,"nombre":"Café de origen Tolima"}`,
+ py:`from fastapi import Response, Header
+
+@app.post("/v1/productos", status_code=201)
+def crear(data: ProductoIn, response: Response):
+    p = repo.crear(data)
+    response.headers["Location"] = f"/v1/productos/{p.id}"
+    return p
+
+@app.get("/v1/productos/{id}")
+def obtener(id: int, accept: str = Header(default="application/json")):
+    if "application/json" not in accept and "*/*" not in accept:
+        raise HTTPException(406, "Solo servimos JSON")
+    ...`,
+ prob:"La <b>negociación de contenido</b> permite que el mismo recurso se sirva en varios formatos o idiomas según lo que pida el cliente, sin inventar rutas como <code>/productos.xml</code>. <code>Vary</code> avisa a las cachés que la respuesta depende de ciertos headers, para que no le sirvan a un usuario en inglés la versión en español.",
+ bridge:"Cuando en DevTools miras <b>Response Headers</b>, la mayoría la pone el backend o el proxy. <code>Content-Type</code> de la petición lo pone Angular solo si el body es un objeto; si envías <code>FormData</code>, el navegador lo arma con su <code>boundary</code>, y si lo fijas a mano rompes la subida de archivos.",
+ myths:["Confundir Content-Type y Accept: el primero describe lo que <b>envío</b>; el segundo lo que <b>quiero recibir</b>.","Confiar en User-Agent para seguridad: el cliente lo puede falsificar.","Olvidar Location en el 201: el cliente tiene que adivinar dónde quedó el recurso."],
+ ans:"Content-Type describe el formato del body que se envía; Accept es lo que el cliente quiere recibir, y si el servidor no puede cumplir responde 406. Authorization lleva las credenciales, normalmente un Bearer token. Cache-Control y ETag controlan el caché y la validación condicional. Location indica la URL del recurso creado en un 201 o el destino de una redirección. User-Agent identifica al cliente, pero no es confiable para seguridad. La negociación de contenido es el mecanismo por el cual el servidor elige la representación según Accept, Accept-Language o Accept-Encoding, y debe responder con Vary para que las cachés lo respeten.",
+ demo:"builder"
+});
+T.push({
+ t:"HTTP no guarda estado: cookies, sesiones y tokens", f:"casi",
+ def:"HTTP es <b>stateless</b>: cada petición es independiente y el servidor no recuerda la anterior. Para «recordar» al usuario, cada petición debe llevar una prueba de identidad: una cookie con un id de sesión (el estado vive en el servidor) o un token autocontenido (el estado viaja con el cliente).",
+ ana:"<b>Sesión</b>: el guardarropa de un teatro. Te dan una ficha con el número 47; el abrigo queda adentro, y el empleado lo busca con tu ficha. <b>Token</b>: una pulsera de festival que dice «VIP, válida hasta el domingo», firmada por el organizador. El guardia no consulta ninguna lista: verifica la firma y te deja pasar.",
+ raw:`# Sesión con cookie
+POST /v1/login            → HTTP/1.1 200 OK
+                            Set-Cookie: sid=a8f3c2; HttpOnly; Secure; SameSite=Lax
+GET /v1/pedidos
+Cookie: sid=a8f3c2        → el servidor busca "a8f3c2" en Redis → usuario 7
+
+# Token (JWT)
+POST /v1/login            → {"access_token":"eyJhbGc...","token_type":"bearer"}
+GET /v1/pedidos
+Authorization: Bearer eyJhbGc...   → el servidor verifica la firma; no consulta nada`,
+ py:`from fastapi import Cookie, Depends
+from fastapi.security import OAuth2PasswordBearer
+
+# Sesión: el id viaja en la cookie, el estado vive en un almacén
+def usuario_por_sesion(sid: str | None = Cookie(default=None)):
+    if not sid or sid not in sesiones:   # sesiones = Redis, BD...
+        raise HTTPException(401)
+    return sesiones[sid]
+
+# Token: el estado viaja firmado en el propio token
+oauth2 = OAuth2PasswordBearer(tokenUrl="/v1/login")
+def usuario_por_token(token: str = Depends(oauth2)):
+    return verificar_jwt(token)`,
+ prob:"Que el protocolo no guarde estado permite escalar horizontalmente: cualquier instancia puede atender cualquier petición. Pero si guardas sesiones en la memoria de una instancia, el usuario «pierde la sesión» cuando el balanceador lo envía a otra. Las sesiones necesitan un almacén compartido (Redis); los tokens no, pero son difíciles de revocar antes de que expiren.",
+ bad:`# Sesiones en memoria de cada proceso
+sesiones = {}   # instancia A sabe del usuario; instancia B no → 401 aleatorios`,
+ good:`# Almacén compartido (Redis) o tokens firmados verificables por cualquier instancia`,
+ bridge:"Tu interceptor que agrega <code>Authorization: Bearer</code> a cada petición existe justamente porque HTTP no tiene memoria. Con cookies no necesitas interceptor: el navegador las adjunta solo, y por eso en Angular necesitas <code>withCredentials: true</code> cuando la API está en otro dominio.",
+ myths:["Pensar que «stateless» significa que la aplicación no tiene estado. La base de datos tiene estado; lo que no hay es estado de conversación entre peticiones en el protocolo.","Creer que cookies y tokens se excluyen. Puedes guardar un JWT dentro de una cookie HttpOnly.","Creer que un JWT está cifrado. Por defecto solo está firmado: cualquiera puede leer el payload."],
+ ans:"HTTP es sin estado: el servidor no asocia una petición con la anterior. Para mantener una sesión hay dos enfoques: sesiones del lado del servidor, donde el cliente guarda solo un id en una cookie y el servidor guarda los datos en un almacén como Redis, lo que facilita revocar pero exige almacenamiento compartido; o tokens autocontenidos como JWT, donde el servidor solo verifica la firma, lo que escala muy bien pero complica revocar antes de la expiración. Las cookies son el mecanismo de transporte que el navegador envía automáticamente; los tokens normalmente viajan en el header Authorization.",
+ demo:"session"
+});
+T.push({
+ t:"Autenticación vs. autorización, JWT y OAuth2", f:"casi",
+ def:"<b>Autenticación</b> responde «¿quién eres?» (401 si falla). <b>Autorización</b> responde «¿puedes hacer esto?» (403 si falla). Los mecanismos más comunes son Basic, API keys, sesiones con cookies, JWT con refresh tokens y OAuth2 para delegar acceso.",
+ ana:"En un hotel, la recepción verifica tu cédula y te da una tarjeta (<b>autenticación</b>). La tarjeta abre tu habitación y el gimnasio, pero no la suite presidencial (<b>autorización</b>). La tarjeta deja de funcionar el día del checkout (<b>expiración</b>). <b>OAuth2</b> es darle al servicio de lavandería una tarjeta limitada que solo abre tu clóset, sin entregarle la tuya.",
+ raw:`# Basic: usuario:clave en Base64 (no es cifrado). Solo sobre HTTPS.
+Authorization: Basic YW5hOnNlY3JldG8=
+
+# API key: identifica a una aplicación, no a una persona
+X-API-Key: sk_live_9f2c...
+
+# JWT = header.payload.firma (Base64URL)
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6ImNsaWVudGUiLCJleHAiOjE3OTk5OTk5OTl9.Xb3...
+
+# Renovación con refresh token
+POST /v1/auth/refresh
+Cookie: refresh=rt_8c1f...; HttpOnly; Secure
+→ 200 {"access_token":"eyJ... (nuevo, 15 min)"}`,
+ py:`import jwt   # PyJWT
+from datetime import datetime, timedelta, timezone
+
+def crear_access_token(usuario_id: int, rol: str) -> str:
+    payload = {"sub": str(usuario_id), "role": rol,
+               "exp": datetime.now(timezone.utc) + timedelta(minutes=15)}
+    return jwt.encode(payload, SECRET, algorithm="HS256")
+
+def usuario_actual(token: str = Depends(oauth2)):
+    try:
+        datos = jwt.decode(token, SECRET, algorithms=["HS256"])  # valida firma y exp
+    except jwt.PyJWTError:
+        raise HTTPException(401, headers={"WWW-Authenticate": "Bearer"})
+    return datos
+
+def requiere_admin(u = Depends(usuario_actual)):
+    if u["role"] != "admin":
+        raise HTTPException(403)   # autorización
+    return u`,
+ prob:"Un JWT tiene tres partes: el <b>header</b> (algoritmo), el <b>payload</b> (claims como <code>sub</code>, <code>role</code>, <code>exp</code>) y la <b>firma</b>, que garantiza que nadie modificó las dos primeras. Como no se puede revocar fácilmente, el access token dura poco (5–15 min) y un <b>refresh token</b> de larga duración, guardado de forma segura y revocable en el servidor, sirve para pedir uno nuevo.",
+ bad:`# Guardar datos sensibles en el payload y confiar en el rol que manda el cliente
+{"sub":"7","role":"admin","password":"secreto"}   ← cualquiera lo lee
+jwt.decode(token, options={"verify_signature": False})   ← acepta tokens falsificados`,
+ good:`# Payload mínimo, firma verificada, expiración corta, algoritmo fijado
+jwt.decode(token, SECRET, algorithms=["HS256"])`,
+ bridge:"Tu interceptor que, ante un 401, llama a <code>/refresh</code> y reintenta la petición original es la mitad cliente del flujo de refresh token. Del lado del servidor, ese 401 aparece cuando <code>jwt.decode</code> detecta que <code>exp</code> ya pasó. Y cuando haces login con Google en una app, el backend está actuando como cliente de OAuth2.",
+ myths:["Creer que OAuth2 es un protocolo de autenticación. Es de <b>autorización delegada</b>; la autenticación encima la agrega OpenID Connect (el id_token).","Pensar que Base64 es cifrado. Basic y el payload del JWT se decodifican en un segundo.","Validar el rol solo en el frontend. Ocultar un botón no protege el endpoint."],
+ ans:"Autenticación es verificar la identidad, y si falla corresponde un 401; autorización es decidir si esa identidad puede hacer una acción, y si falla es 403. Basic envía usuario y contraseña en Base64 y solo es aceptable sobre HTTPS; las API keys identifican aplicaciones; las sesiones guardan el estado en el servidor con una cookie; y un JWT es un token firmado con header, payload y firma, que el servidor valida sin consultar la base de datos, revisando firma y expiración. Como un JWT es difícil de revocar, se usan access tokens cortos y refresh tokens largos y revocables. OAuth2 es un framework para que una aplicación obtenga acceso limitado a recursos de un usuario sin conocer su contraseña; el flujo recomendado para apps web es Authorization Code con PKCE.",
+ demo:"jwt",
+ ex:[
+  {q:"Un token con firma válida pero con exp en el pasado llega a tu API.",o:["200","401","403","419"],a:1,w:"El token ya no prueba la identidad: 401. El cliente debe usar el refresh token."},
+  {q:"Un usuario con rol «cliente» llama a DELETE /v1/productos/42, que exige rol admin.",o:["401","403","404","405"],a:1,w:"Está autenticado, pero no autorizado: 403."}
+ ]
+});
+T.push({
+ t:"CORS y el preflight con OPTIONS", f:"casi",
+ def:"CORS (Cross-Origin Resource Sharing) es un mecanismo del <b>navegador</b> que relaja la política de mismo origen: permite que JavaScript de <code>https://app.tienda.co</code> lea respuestas de <code>https://api.tienda.co</code> solo si el servidor lo autoriza con headers <code>Access-Control-Allow-*</code>.",
+ ana:"Un edificio con portero (el <b>navegador</b>). Tú llegas desde otra torre (otro origen) a visitar el apartamento 502. El portero llama arriba: «¿Recibe visitas de la torre B con paquete grande?» (<b>preflight</b>). Si el residente dice que sí, te deja subir. Pero el residente (el <b>servidor</b>) igual escuchó el timbre: el portero solo decide si te deja ver la respuesta.",
+ raw:`# Preflight: lo envía el navegador solo, antes de un PUT con Authorization
+OPTIONS /v1/pedidos/1093 HTTP/1.1
+Origin: https://app.tienda.co
+Access-Control-Request-Method: PUT
+Access-Control-Request-Headers: authorization, content-type
+
+HTTP/1.1 204 No Content
+Access-Control-Allow-Origin: https://app.tienda.co
+Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE
+Access-Control-Allow-Headers: authorization, content-type
+Access-Control-Max-Age: 600
+
+# Luego la petición real
+PUT /v1/pedidos/1093 HTTP/1.1
+Origin: https://app.tienda.co
+...
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: https://app.tienda.co`,
+ py:`from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://app.tienda.co", "http://localhost:4200"],
+    allow_methods=["*"],
+    allow_headers=["Authorization", "Content-Type"],
+    allow_credentials=True,   # necesario si usas cookies; incompatible con "*"
+)`,
+ prob:"Sin la política de mismo origen, cualquier página que visites podría leer con tus cookies tu correo o tu banco. CORS permite abrir esa puerta de forma controlada. Mal configurado (<code>allow_origins=[\"*\"]</code> con credenciales, o reflejar cualquier <code>Origin</code>) anula la protección.",
+ bad:`# Reflejar cualquier origen con credenciales
+Access-Control-Allow-Origin: <lo que venga en Origin>
+Access-Control-Allow-Credentials: true`,
+ good:`# Lista explícita de orígenes conocidos
+allow_origins=["https://app.tienda.co"]`,
+ bridge:"El mensaje rojo <code>blocked by CORS policy: No 'Access-Control-Allow-Origin' header</code> no significa que tu petición no llegó: en muchos casos el servidor sí la procesó, pero el navegador te ocultó la respuesta. El <code>proxy.conf.json</code> de Angular lo «resuelve» en desarrollo porque hace que la petición salga del mismo origen (el dev server), no porque arregle el backend. Por eso con Postman o curl nunca ves errores de CORS.",
+ myths:["Creer que CORS protege al servidor. Protege al usuario del navegador; un atacante con curl lo ignora.","Pensar que se arregla en el frontend. Se configura en el servidor (o en el proxy).","Creer que todas las peticiones tienen preflight. Las «simples» (GET o POST con Content-Type de formulario y sin headers propios) no lo tienen."],
+ ans:"CORS es un mecanismo del navegador que permite, bajo control del servidor, que una página de un origen lea respuestas de otro origen, entendiendo origen como esquema, host y puerto. Para peticiones no simples, como un PUT o cualquier petición con Authorization o con JSON, el navegador primero envía un preflight OPTIONS preguntando si el método y los headers están permitidos, y el servidor responde con Access-Control-Allow-Origin, Methods y Headers. Es un asunto del navegador: protege al usuario para que otros sitios no lean datos con sus credenciales, pero no protege la API de clientes como curl o Postman, así que no reemplaza la autenticación.",
+ demo:"cors"
+});
+T.push({
+ t:"Caché HTTP: Cache-Control, ETag y 304", f:"seguido",
+ def:"El servidor indica con <code>Cache-Control</code> si una respuesta se puede guardar, quién la puede guardar y por cuánto tiempo. Cuando expira, el cliente revalida con <code>If-None-Match</code> enviando el <code>ETag</code>; si no cambió, el servidor responde <code>304 Not Modified</code> sin body.",
+ ana:"El menú del día escrito en un tablero. Si dice «válido hasta las 3 p. m.» (<b>max-age</b>), no preguntas de nuevo. Después de las 3 preguntas: «¿Sigue el menú versión 7?» (<b>If-None-Match</b>). Si te dicen «sí, el mismo» (<b>304</b>), no te vuelven a leer todo el menú.",
+ raw:`GET /v1/productos/42 HTTP/1.1
+
+HTTP/1.1 200 OK
+Cache-Control: public, max-age=60
+ETag: "a1b2c3"
+{"id":42,"precio":38000}
+
+# 2 minutos después (expiró), el navegador revalida:
+GET /v1/productos/42 HTTP/1.1
+If-None-Match: "a1b2c3"
+
+HTTP/1.1 304 Not Modified
+ETag: "a1b2c3"
+# sin body: el cliente usa su copia`,
+ py:`import hashlib, json
+from fastapi import Request, Response
+
+@app.get("/v1/productos/{id}")
+def obtener(id: int, request: Request, response: Response):
+    p = repo.buscar(id)
+    etag = '"' + hashlib.md5(json.dumps(p).encode()).hexdigest() + '"'
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers={"ETag": etag})
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = "public, max-age=60"
+    return p`,
+ prob:"Evita trabajo y tráfico: sin caché, cada usuario descarga el mismo catálogo una y otra vez. Mal usado es peligroso: marcar como <code>public</code> una respuesta con datos del usuario puede hacer que un CDN le sirva a Pedro los pedidos de Ana. Para datos privados se usa <code>private</code> o <code>no-store</code>.",
+ bad:`GET /v1/clientes/me
+Cache-Control: public, max-age=3600   ← el CDN la comparte entre usuarios`,
+ good:`GET /v1/clientes/me
+Cache-Control: private, no-cache        ← solo el navegador, y revalidando`,
+ bridge:"En la pestaña Network, la columna <b>Size</b> muestra <code>(disk cache)</code> o <code>(memory cache)</code> cuando la respuesta no tocó la red, y el código <b>304</b> cuando hubo revalidación. La casilla <b>Disable cache</b> existe precisamente porque estos headers a veces te muestran datos «viejos» durante el desarrollo.",
+ myths:["<code>no-cache</code> no significa «no guardar»: significa «guarda, pero revalida antes de usar». El que prohíbe guardar es <code>no-store</code>.","Pensar que solo cachea el navegador. También lo hacen CDN, proxies inversos y gateways.","Creer que POST se cachea. En la práctica, solo GET y HEAD."],
+ ans:"El caché HTTP se controla con Cache-Control: max-age define cuánto tiempo la respuesta es fresca, public o private define si la pueden guardar intermediarios como un CDN o solo el navegador, no-cache obliga a revalidar y no-store prohíbe guardar. Para revalidar, el servidor envía un ETag, que es una huella de la versión del recurso; el cliente lo devuelve en If-None-Match y, si no cambió, recibe un 304 sin body, lo que ahorra ancho de banda. El caché ocurre en el navegador, en proxies y en CDN, y los datos privados nunca deben marcarse como public.",
+ demo:"etag"
+});
+T.push({
+ t:"HTTPS y TLS", f:"seguido",
+ def:"HTTPS es HTTP dentro de un canal TLS. TLS garantiza <b>confidencialidad</b> (nadie lee el tráfico), <b>integridad</b> (nadie lo modifica sin que se note) y <b>autenticidad del servidor</b> (el certificado prueba que hablas con el dominio real).",
+ ana:"Una caja fuerte con candado. El servidor manda un <b>candado abierto</b> que solo él puede cerrar y abrir, junto con un <b>certificado notariado</b> (firmado por una autoridad certificadora) que dice «este candado es de api.tienda.co». Tú usas ese candado para enviar de forma segura una llave compartida, y desde ahí ambos usan esa llave, que es mucho más rápida.",
+ raw:`# TLS 1.3 (alto nivel, 1 ida y vuelta)
+Cliente → ClientHello: versiones, cifrados, clave efímera, SNI=api.tienda.co
+Servidor → ServerHello: cifrado elegido, su clave efímera
+           Certificate: api.tienda.co, emitido por Let's Encrypt R11
+           CertificateVerify + Finished
+Cliente: valida la cadena del certificado → deriva claves simétricas → Finished
+# A partir de aquí viaja HTTP cifrado:
+GET /v1/pagos/501 HTTP/1.1 ...`,
+ py:`# Normalmente TLS NO se configura en FastAPI: lo termina el balanceador,
+# Nginx o el CDN, y tu app recibe HTTP plano en la red interna.
+# Si necesitas forzar HTTPS en la app:
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+app.add_middleware(HTTPSRedirectMiddleware)
+# y en la respuesta, que el navegador recuerde usar siempre HTTPS:
+# Strict-Transport-Security: max-age=31536000; includeSubDomains`,
+ prob:"Sin TLS, cualquiera en el Wi-Fi del café puede leer tokens, contraseñas y cookies, o inyectar contenido en la respuesta. Con HTTPS, la URL completa (ruta y query) también va cifrada; lo que sí queda visible es el dominio (por DNS y SNI) y la IP.",
+ bridge:"El candado del navegador y el error <code>NET::ERR_CERT_DATE_INVALID</code> son la validación del certificado. Por eso <code>ng serve --ssl</code> muestra advertencias: el certificado es autofirmado y ninguna autoridad de confianza lo respalda. La cookie con <code>Secure</code> solo se envía por HTTPS.",
+ myths:["Creer que HTTPS oculta qué sitio visitas. El dominio queda visible.","Pensar que HTTPS hace segura la API. Protege el transporte; no valida entradas ni permisos.","Creer que TLS usa solo cifrado asimétrico. Lo asimétrico sirve para el intercambio de claves y la autenticación; los datos viajan con cifrado simétrico, que es más rápido."],
+ ans:"HTTPS es HTTP sobre TLS. En el handshake, el cliente y el servidor acuerdan la versión y los algoritmos; el servidor presenta un certificado firmado por una autoridad certificadora que el cliente valida contra sus raíces de confianza, y con un intercambio de claves tipo Diffie-Hellman derivan una clave simétrica de sesión. A partir de ahí todo el tráfico viaja cifrado y con integridad. Protege contra espionaje y manipulación en la red, y autentica al servidor; no protege contra vulnerabilidades de la aplicación. En producción suele terminarse en el balanceador o el CDN, y se complementa con HSTS.",
+ demo:"tls"
+});
+T.push({
+ t:"HTTP/1.1 vs. HTTP/2 vs. HTTP/3", f:"aveces",
+ def:"<b>HTTP/1.1</b> es texto, con conexiones persistentes pero una petición a la vez por conexión. <b>HTTP/2</b> es binario y multiplexa muchas peticiones en una sola conexión TCP. <b>HTTP/3</b> hace lo mismo sobre <b>QUIC</b> (UDP), que evita que un paquete perdido bloquee todo.",
+ ana:"<b>1.1</b>: una caja de supermercado con fila; los navegadores abren hasta 6 cajas por tienda. <b>2</b>: una sola caja que atiende a todos intercalando productos, pero si se atasca la cinta (pérdida de paquete TCP), todos esperan. <b>3</b>: cada cliente tiene su propia cinta dentro de la misma caja; si una se atasca, las demás siguen.",
+ raw:`# HTTP/1.1: texto legible, una petición por conexión a la vez
+GET /v1/productos HTTP/1.1
+Host: api.tienda.co
+Connection: keep-alive
+
+# HTTP/2: los mismos campos viajan como frames binarios en streams numerados
+:method: GET   :path: /v1/productos   :authority: api.tienda.co   (stream 1)
+:method: GET   :path: /v1/clientes/me (stream 3)   ← en paralelo, misma conexión
+# Headers comprimidos con HPACK
+
+# HTTP/3: igual que HTTP/2 pero sobre QUIC (UDP), TLS 1.3 integrado
+Alt-Svc: h3=":443"; ma=86400   ← el servidor anuncia que soporta HTTP/3`,
+ py:`# Uvicorn habla HTTP/1.1. HTTP/2 y HTTP/3 normalmente los maneja
+# el CDN o el balanceador frente al cliente, y hacia tu app usa HTTP/1.1.
+# Tu código FastAPI no cambia: la semántica (métodos, códigos, headers) es la misma.`,
+ prob:"Con HTTP/1.1, las páginas con decenas de recursos sufrían por el límite de conexiones y el <b>head-of-line blocking</b>, lo que llevó a hacks como concatenar archivos y sprites. HTTP/2 lo resolvió a nivel HTTP; HTTP/3 lo resolvió también a nivel de transporte, lo que importa sobre todo en redes móviles inestables.",
+ bridge:"En la pestaña Network puedes activar la columna <b>Protocol</b> y verás <code>h2</code> o <code>h3</code>. Que hoy no haga falta empaquetar todo en un solo bundle gigante para reducir peticiones es en parte gracias a la multiplexación de HTTP/2.",
+ myths:["Creer que HTTP/2 cambia la API. La semántica es idéntica; cambia el formato en la red.","Pensar que HTTP/3 reemplaza TCP en todas partes. Es opcional y convive con HTTP/2 como alternativa.","Asumir que HTTP/2 elimina por completo el head-of-line blocking. Lo elimina en HTTP, no en TCP."],
+ ans:"HTTP/1.1 introdujo conexiones persistentes, pero cada conexión atiende una petición a la vez, así que los navegadores abren varias en paralelo. HTTP/2 mantiene la misma semántica pero usa un formato binario, multiplexa muchas peticiones en una sola conexión y comprime headers; su limitación es que corre sobre TCP, y una pérdida de paquete frena todos los streams. HTTP/3 corre sobre QUIC, basado en UDP, con streams independientes, TLS 1.3 integrado y un establecimiento de conexión más rápido. Para el desarrollador backend la API no cambia; normalmente lo maneja el CDN o el balanceador.",
+ demo:"versions"
+});
+T.push({
+ t:"REST: restricciones y modelo de Richardson", f:"casi",
+ def:"REST es un <b>estilo de arquitectura</b> (Roy Fielding, 2000), no un protocolo ni un estándar. Define restricciones: cliente-servidor, sin estado, cacheable, interfaz uniforme, sistema en capas y, opcionalmente, código bajo demanda. El modelo de Richardson mide qué tanto las cumple una API, del nivel 0 al 3.",
+ ana:"REST es como las reglas de una biblioteca pública: cada libro tiene una ubicación única (<b>URI</b>), todos se piden con el mismo formulario (<b>interfaz uniforme</b>), el bibliotecario no recuerda tu visita anterior (<b>sin estado</b>), puedes fotocopiar las páginas que dicen «se permite copiar» (<b>cacheable</b>) y no sabes si el libro viene del depósito o de otra sede (<b>capas</b>).",
+ raw:`# Nivel 3 (HATEOAS): la respuesta dice qué puedes hacer ahora
+GET /v1/pedidos/1093 HTTP/1.1
+
+HTTP/1.1 200 OK
+Content-Type: application/hal+json
+
+{"id":1093,"estado":"pendiente","total":76000,
+ "_links":{
+   "self":   {"href":"/v1/pedidos/1093"},
+   "pagar":  {"href":"/v1/pedidos/1093/pagos","method":"POST"},
+   "cancelar":{"href":"/v1/pedidos/1093","method":"DELETE"}}}`,
+ py:`# FastAPI te lleva naturalmente al nivel 2: recursos + métodos + códigos.
+router = APIRouter(prefix="/v1/pedidos", tags=["pedidos"])
+
+@router.get("")                     # colección
+@router.post("", status_code=201)   # crear en la colección
+@router.get("/{id}")                # elemento
+@router.patch("/{id}")
+@router.delete("/{id}", status_code=204)`,
+ prob:"Las restricciones existen por algo: <b>sin estado</b> permite escalar, <b>cacheable</b> reduce carga, <b>interfaz uniforme</b> hace que cualquier cliente entienda cualquier recurso, y <b>capas</b> permite poner CDN, balanceadores y gateways sin que el cliente lo note.",
+ bad:`# Nivel 0: un solo endpoint, todo por POST (estilo RPC/SOAP)
+POST /api   {"accion":"obtenerPedido","id":1093}
+POST /api   {"accion":"cancelarPedido","id":1093}`,
+ good:`# Nivel 2: recursos, métodos y códigos de estado
+GET    /v1/pedidos/1093   → 200
+DELETE /v1/pedidos/1093   → 204`,
+ bridge:"Un <code>resource</code> o un servicio de Angular con <code>getAll</code>, <code>getById</code>, <code>create</code>, <code>update</code> y <code>remove</code> mapea casi uno a uno con una API de nivel 2. Si tu servicio tiene métodos como <code>ejecutarAccion(tipo, payload)</code> contra un solo endpoint, estás consumiendo un nivel 0.",
+ myths:["Creer que REST es «HTTP + JSON». Puedes usar HTTP y JSON y no ser REST, y REST no exige JSON.","Pensar que la mayoría de las APIs «REST» cumplen REST completo. Casi todas están en el nivel 2, sin HATEOAS.","Confundir REST con CRUD. Los recursos pueden representar procesos (un pago, una aprobación), no solo tablas."],
+ ans:"REST es un estilo de arquitectura que definió Roy Fielding, basado en restricciones: separación cliente-servidor, comunicación sin estado, respuestas cacheables, interfaz uniforme (recursos identificados por URIs, manipulados mediante representaciones, mensajes autodescriptivos e hipermedia), sistema en capas y código bajo demanda como opcional. El modelo de madurez de Richardson lo hace práctico: nivel 0 es un único endpoint tipo RPC; nivel 1 introduce recursos con URIs propias; nivel 2 usa correctamente los métodos y códigos HTTP, que es donde está la mayoría de la industria; y nivel 3 agrega HATEOAS, con enlaces que indican las acciones posibles.",
+ demo:"richardson"
+});
+T.push({
+ t:"Diseño de una API REST", f:"casi",
+ def:"Diseñar una API REST es modelar el dominio como <b>recursos</b> (sustantivos en plural), con rutas predecibles, relaciones expresadas con anidamiento moderado, filtros y orden en la query string, paginación para colecciones y una estrategia de versionado desde el primer día.",
+ ana:"El sistema de señalización de un aeropuerto: nombres consistentes («Puertas A1–A20»), jerarquía clara («Terminal 2 → Puerta B5»), sin señales que digan «Camine-hacia-el-avión-ahora». Si cada terminal usara convenciones distintas, nadie llegaría a su vuelo.",
+ raw:`GET    /v1/clientes                         listar
+POST   /v1/clientes                         crear
+GET    /v1/clientes/7                       obtener uno
+GET    /v1/clientes/7/pedidos               pedidos de un cliente (anidado, 1 nivel)
+GET    /v1/pedidos/1093                     acceso directo al pedido
+GET    /v1/productos?categoria=cafe&precio_max=40000&orden=-precio&limit=20
+GET    /v1/productos?limit=20&cursor=eyJpZCI6NDJ9
+POST   /v1/pedidos/1093/cancelacion         acción como sub-recurso
+
+HTTP/1.1 200 OK
+{"data":[...],"next_cursor":"eyJpZCI6NjJ9","has_more":true}`,
+ py:`from typing import Literal
+from fastapi import Query
+
+@app.get("/v1/productos")
+def listar(categoria: str | None = None,
+           precio_max: int | None = Query(default=None, gt=0),
+           orden: Literal["precio", "-precio", "nombre"] = "nombre",
+           limit: int = Query(default=20, le=100),
+           cursor: str | None = None):
+    ...
+
+@app.get("/v1/clientes/{cliente_id}/pedidos")
+def pedidos_de_cliente(cliente_id: int, estado: str | None = None): ...`,
+ prob:"Una API mal diseñada es difícil de aprender, de documentar y de evolucionar sin romper clientes. <b>Paginación por offset</b> (<code>?page=3</code>) es simple y permite saltar a una página, pero se vuelve lenta con tablas grandes y repite o salta elementos cuando se insertan datos. <b>Paginación por cursor</b> es estable y rápida, pero no permite saltar a la página 50. <b>Versionado</b> en la URL (<code>/v1</code>) es el más común y visible; por header es más «puro» pero menos práctico.",
+ bad:`GET  /v1/getAllCustomers
+POST /v1/cliente/crear
+GET  /v1/clientes/7/pedidos/1093/items/3/producto/42   ← anidamiento excesivo
+GET  /v1/productos            ← devuelve 80.000 registros sin paginar`,
+ good:`GET  /v1/clientes
+POST /v1/clientes
+GET  /v1/pedidos/1093/items
+GET  /v1/productos?limit=20&cursor=...`,
+ bridge:"Las tablas de Angular Material con <code>MatPaginator</code> funcionan con offset porque necesitan saltar entre páginas y mostrar el total. Un scroll infinito, en cambio, encaja con cursor. Cuando diseñes la API para tu propio frontend, elige la paginación según la UI.",
+ myths:["Mezclar singular y plural (<code>/cliente/7</code> y <code>/pedidos</code>). La convención es plural siempre.","Creer que toda relación debe ir anidada. Más de un nivel suele indicar que el recurso merece ruta propia.","Romper contratos sin versionar: renombrar un campo es un cambio incompatible."],
+ ans:"Modelo el dominio como recursos con sustantivos en plural, por ejemplo /clientes, /pedidos y /productos, y dejo que el método HTTP exprese la acción. Uso anidamiento de un nivel para relaciones de pertenencia, como /clientes/7/pedidos, y acceso directo para todo lo demás. Filtros, ordenamiento y paginación van en la query string. Para paginar elijo offset cuando la UI necesita saltar entre páginas y la tabla es moderada, y cursor cuando hay mucho volumen o datos que cambian, porque es estable y eficiente. Versiono desde el inicio, normalmente en la URL como /v1, y solo subo de versión ante cambios incompatibles. Las acciones que no son CRUD las modelo como sub-recursos, por ejemplo POST /pedidos/1093/cancelacion.",
+ demo:"pagination",
+ review:[
+  {e:"GET /v1/clientes/7",ok:true,w:"Correcto: recurso en plural y un id."},
+  {e:"POST /v1/crearPedido",ok:false,w:"Verbo en la URL. Debería ser POST /v1/pedidos."},
+  {e:"GET /v1/productos?categoria=cafe",ok:true,w:"Correcto: filtro en la query string."},
+  {e:"GET /v1/pedidos/1093/eliminar",ok:false,w:"GET con efecto y verbo en la ruta. Debería ser DELETE /v1/pedidos/1093."},
+  {e:"PATCH /v1/clientes/7",ok:true,w:"Correcto: modificación parcial."},
+  {e:"GET /v1/cliente/7/pedido",ok:false,w:"Mezcla singulares y no indica qué pedido. Debería ser /v1/clientes/7/pedidos."},
+  {e:"POST /v1/pedidos/1093/pagos",ok:true,w:"Correcto: crea un pago como sub-recurso del pedido."},
+  {e:"GET /v1/pedidos?page=999999",ok:false,w:"Técnicamente válido, pero con offset a esa profundidad la consulta es costosa. En tablas grandes, cursor."}
+ ]
+});
+T.push({
+ t:"Diseño de respuestas y errores (Problem Details)", f:"seguido",
+ def:"Una buena API responde siempre con la misma forma: los éxitos con el recurso o un sobre consistente, y los errores con un código HTTP correcto más un cuerpo estructurado. El estándar para errores es <b>Problem Details</b> (RFC 9457), con <code>type</code>, <code>title</code>, <code>status</code>, <code>detail</code> e <code>instance</code>.",
+ ana:"El tablero de fallas de un carro: no basta con una luz roja que dice «error». Uno bueno te dice qué sistema falló, qué tan grave es y qué hacer. Y todos los carros de la marca usan los mismos símbolos.",
+ raw:`HTTP/1.1 409 Conflict
+Content-Type: application/problem+json
+
+{
+  "type": "https://api.tienda.co/errores/stock-insuficiente",
+  "title": "Stock insuficiente",
+  "status": 409,
+  "detail": "Pediste 5 unidades de 'Café de origen Tolima' y solo quedan 2.",
+  "instance": "/v1/pedidos",
+  "producto_id": 42,
+  "disponible": 2,
+  "trace_id": "4bf92f3577b34da6"
+}`,
+ py:`from fastapi import Request
+from fastapi.responses import JSONResponse
+
+class ErrorDeNegocio(Exception):
+    def __init__(self, status: int, titulo: str, detalle: str, tipo: str, **extra):
+        self.status, self.titulo, self.detalle, self.tipo, self.extra = status, titulo, detalle, tipo, extra
+
+@app.exception_handler(ErrorDeNegocio)
+async def manejar(request: Request, exc: ErrorDeNegocio):
+    return JSONResponse(status_code=exc.status, media_type="application/problem+json",
+        content={"type": exc.tipo, "title": exc.titulo, "status": exc.status,
+                 "detail": exc.detalle, "instance": request.url.path, **exc.extra})
+
+# En el servicio:
+raise ErrorDeNegocio(409, "Stock insuficiente", "Solo quedan 2.", "https://api.tienda.co/errores/stock-insuficiente", disponible=2)`,
+ prob:"Si cada endpoint devuelve errores con forma distinta, el frontend necesita un parser por endpoint. Si el mensaje es vago («Error»), soporte no puede ayudar. Si el mensaje expone internals (stack traces, consultas SQL), le das información a un atacante.",
+ bad:`HTTP/1.1 500 Internal Server Error
+{"error":"psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint \\"clientes_email_key\\""}`,
+ good:`HTTP/1.1 409 Conflict
+Content-Type: application/problem+json
+{"type":".../email-duplicado","title":"El email ya está registrado","status":409}`,
+ bridge:"El <code>HttpErrorResponse</code> que capturas en tu interceptor global trae <code>status</code> y <code>error</code> (el body). Con Problem Details en todo el backend, ese interceptor puede mostrar <code>error.title</code> en un toast sin un <code>switch</code> por endpoint.",
+ myths:["Devolver 500 por errores de validación o de negocio. 5xx significa que el servidor falló, no que el usuario envió algo inválido.","Exponer detalles internos en producción. El stack trace va a los logs, con un <code>trace_id</code> para correlacionar.","Creer que el formato de error de FastAPI (<code>{\"detail\": ...}</code>) es suficiente para todo. Sirve para validación, pero conviene un formato único para toda la API."],
+ ans:"Defino un formato de respuesta consistente para toda la API y uso el código HTTP correcto para cada caso. Para errores sigo Problem Details, el RFC 9457, con media type application/problem+json y los campos type, title, status, detail e instance, más campos propios cuando aportan, como los errores por campo en una validación. Los mensajes deben ser útiles para quien consume, pero sin exponer detalles internos: el stack trace queda en los logs con un trace_id que también devuelvo en la respuesta para correlacionar. En FastAPI lo centralizo con exception handlers, para que ningún endpoint arme su error a mano.",
+ demo:"errors"
+});
+T.push({
+ t:"Idempotencia en la práctica: claves y pagos duplicados", f:"seguido",
+ def:"Para operaciones no idempotentes (como crear un pago), el cliente genera una <b>clave de idempotencia</b> única y la envía en un header. El servidor guarda la clave con la respuesta; si llega un reintento con la misma clave, devuelve la respuesta guardada en lugar de procesar otra vez.",
+ ana:"El número de radicado de un trámite: si llevas el mismo formulario dos veces con el mismo radicado, la oficina te dice «ese trámite ya está en curso, aquí está tu comprobante» en lugar de abrir otro expediente.",
+ raw:`POST /v1/pagos HTTP/1.1
+Idempotency-Key: 8f14e45f-ceea-467a-9575-0b0d1b2c3a4f
+Content-Type: application/json
+
+{"pedido_id":1093,"monto":76000,"metodo":"tarjeta"}
+
+HTTP/1.1 201 Created
+{"id":"pay_501","estado":"aprobado"}
+
+# timeout → el cliente reintenta con la MISMA clave
+POST /v1/pagos HTTP/1.1
+Idempotency-Key: 8f14e45f-ceea-467a-9575-0b0d1b2c3a4f
+
+HTTP/1.1 201 Created
+Idempotent-Replayed: true
+{"id":"pay_501","estado":"aprobado"}   ← mismo pago, no se cobró dos veces`,
+ py:`@app.post("/v1/pagos", status_code=201)
+def crear_pago(data: PagoIn, idempotency_key: str = Header(...)):
+    previo = claves.get(idempotency_key)       # Redis o tabla con índice único
+    if previo:
+        if previo["hash_body"] != hash_de(data):
+            raise HTTPException(422, "Misma clave con un body distinto")
+        return previo["respuesta"]
+    # reservar la clave de forma atómica (SET NX) para evitar carreras
+    pago = pasarela.cobrar(data)
+    claves.set(idempotency_key, {"hash_body": hash_de(data), "respuesta": pago}, ttl=86400)
+    return pago`,
+ prob:"Entre el cliente y tu API hay redes que se caen. Si la respuesta del pago se pierde, el cliente no sabe si se cobró o no, y la reacción natural es reintentar. Sin clave, cada reintento es un cobro nuevo. Pasarelas como Stripe exigen este patrón.",
+ bad:`# Deshabilitar el botón en el frontend como única protección
+# (no cubre timeouts de red, reintentos del proxy ni doble pestaña)`,
+ good:`# Clave generada por el cliente + almacenamiento atómico en el servidor
+# + restricción única en BD como última línea de defensa`,
+ bridge:"Deshabilitar el botón «Pagar» después del clic y usar <code>exhaustMap</code> evitan el doble clic, pero no protegen de un reintento del interceptor ni de la red. La solución robusta es generar un <code>crypto.randomUUID()</code> al abrir el checkout y enviarlo en cada intento como <code>Idempotency-Key</code>.",
+ myths:["Generar una clave nueva en cada reintento. Entonces no sirve de nada: la clave identifica la intención, no el intento.","Comprobar y guardar la clave en dos pasos no atómicos. Dos peticiones simultáneas pueden pasar el chequeo a la vez.","Creer que basta con la validación del frontend."],
+ ans:"Para operaciones que no son naturalmente idempotentes, como crear un pago o un pedido, el cliente genera una clave única por intención y la envía en un header como Idempotency-Key. El servidor la reserva de forma atómica, procesa y guarda la respuesta asociada a la clave con un tiempo de vida. Si llega un reintento con la misma clave, devuelve la respuesta guardada sin volver a procesar; si llega la misma clave con un body distinto, rechaza la petición. Así los reintentos por timeouts son seguros. Lo complemento con restricciones únicas en la base de datos como última defensa.",
+ demo:"idemkey"
+});
+T.push({
+ t:"Rate limiting, 429 y Retry-After", f:"seguido",
+ def:"El <b>rate limiting</b> limita cuántas peticiones puede hacer un cliente en un período. Cuando se excede, el servidor responde <code>429 Too Many Requests</code> y, con <code>Retry-After</code>, dice cuánto esperar. Los headers <code>RateLimit-*</code> informan el cupo restante.",
+ ana:"Un dispensador de agua que llena tu vaso a un ritmo fijo: puedes tomar varios seguidos si el tanque está lleno (ráfaga), pero si lo vacías, tienes que esperar a que se recargue. Es el algoritmo <b>token bucket</b>.",
+ raw:`GET /v1/productos HTTP/1.1
+X-API-Key: sk_live_9f2c...
+
+HTTP/1.1 200 OK
+RateLimit-Limit: 100
+RateLimit-Remaining: 0
+RateLimit-Reset: 23
+
+GET /v1/productos HTTP/1.1
+
+HTTP/1.1 429 Too Many Requests
+Retry-After: 23
+Content-Type: application/problem+json
+
+{"title":"Demasiadas peticiones","status":429,"detail":"Límite de 100 por minuto. Reintenta en 23 s."}`,
+ py:`# Con la librería slowapi (basada en limits):
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address, storage_uri="redis://cache:6379")
+app.state.limiter = limiter
+
+@app.get("/v1/productos")
+@limiter.limit("100/minute")
+def listar(request: Request): ...
+# El contador va en Redis para que todas las instancias compartan el cupo.`,
+ prob:"Protege la API de abusos, scrapers, ataques de fuerza bruta al login y clientes con bugs que hacen peticiones en bucle. También reparte capacidad entre clientes y controla costos. Los algoritmos más comunes son <b>ventana fija</b>, <b>ventana deslizante</b> y <b>token bucket</b>.",
+ bad:`# Contador en memoria de cada instancia: con 5 instancias, el límite real es 5×
+# Responder 503 o 500 al exceder el límite`,
+ good:`# Contador compartido (Redis), clave por API key o usuario, 429 + Retry-After`,
+ bridge:"Un buscador con autocompletado sin <code>debounceTime</code> es el clásico generador de 429. Y un interceptor de reintentos debería leer <code>Retry-After</code> y usar <b>backoff exponencial con jitter</b> en lugar de reintentar de inmediato.",
+ myths:["Limitar solo por IP. Detrás de una oficina o un NAT hay cientos de usuarios con la misma IP; para APIs autenticadas es mejor limitar por usuario o API key.","Confundir 429 con 503. 429 es «tú en particular excediste tu cupo»; 503 es «el servicio no está disponible para nadie».","Reintentar inmediatamente al recibir 429."],
+ ans:"El rate limiting restringe la cantidad de peticiones por cliente en una ventana de tiempo para proteger la API de abusos y repartir la capacidad. Se implementa con algoritmos como ventana fija, ventana deslizante o token bucket, que permite ráfagas controladas, y en un entorno con varias instancias el contador debe vivir en un almacén compartido como Redis o en el API gateway. Cuando se excede el límite respondo 429 Too Many Requests con Retry-After, e informo el cupo con headers RateLimit. Del lado del cliente, lo correcto es respetar Retry-After y reintentar con backoff exponencial y jitter.",
+ demo:"ratelimit"
+});
+T.push({
+ t:"REST vs. GraphQL, gRPC, WebSockets, SSE y webhooks", f:"seguido",
+ def:"REST es el estándar para APIs públicas de recursos. <b>GraphQL</b> deja que el cliente pida exactamente los campos que necesita. <b>gRPC</b> es RPC binario y rápido entre servicios. <b>WebSockets</b> dan comunicación bidireccional persistente, <b>SSE</b> es un flujo del servidor al cliente, y los <b>webhooks</b> son peticiones HTTP que el servidor de otro te envía cuando ocurre un evento.",
+ ana:"<b>REST</b>: un restaurante con menú fijo. <b>GraphQL</b>: un buffet donde armas tu plato. <b>gRPC</b>: la comunicación interna entre cocina y barra con códigos cortos. <b>WebSocket</b>: una llamada telefónica abierta. <b>SSE</b>: la radio, solo escuchas. <b>Webhook</b>: «te llamamos cuando tu mesa esté lista».",
+ raw:`# GraphQL: un endpoint, el cliente elige los campos
+POST /graphql
+{"query":"{ pedido(id:1093){ total cliente{ nombre } } }"}
+
+# SSE: una respuesta que no termina
+GET /v1/pedidos/1093/eventos
+Accept: text/event-stream
+HTTP/1.1 200 OK
+Content-Type: text/event-stream
+
+event: estado
+data: {"estado":"en_preparacion"}
+
+event: estado
+data: {"estado":"enviado"}
+
+# Webhook: la pasarela de pagos llama a TU API
+POST https://api.tienda.co/v1/webhooks/pagos
+X-Signature: t=1731456000,v1=5257a869e7...
+{"evento":"pago.aprobado","pago_id":"pay_501"}`,
+ py:`from fastapi.responses import StreamingResponse
+
+@app.get("/v1/pedidos/{id}/eventos")
+async def eventos(id: int):
+    async def stream():
+        async for estado in escuchar_cambios(id):
+            yield f"event: estado\\ndata: {estado}\\n\\n"
+    return StreamingResponse(stream(), media_type="text/event-stream")
+
+@app.websocket("/ws/soporte")
+async def chat(ws: WebSocket):
+    await ws.accept()
+    while True:
+        msg = await ws.receive_text()
+        await ws.send_text(f"Agente: recibido '{msg}'")`,
+ prob:"Elegir mal cuesta: GraphQL en una API pública simple agrega complejidad (caché HTTP difícil, consultas costosas); polling cada segundo en lugar de SSE gasta recursos; WebSockets para algo que solo fluye en una dirección complica el escalado; y no verificar la firma de un webhook permite que cualquiera marque pedidos como pagados.",
+ bridge:"Ya conoces el lado cliente de casi todos: Apollo para GraphQL, <code>new WebSocket()</code>, <code>new EventSource()</code> para SSE, que es justo lo que usan las interfaces de chat con IA para mostrar la respuesta token por token. Los webhooks no tienen lado frontend: son servidor a servidor.",
+ myths:["Creer que GraphQL reemplaza a REST. Resuelve otros problemas: muchos clientes con necesidades de datos distintas.","Pensar que gRPC funciona directo desde el navegador. Necesita gRPC-Web y un proxy.","Usar WebSockets para notificaciones unidireccionales cuando SSE basta."],
+ ans:"REST es mi opción por defecto para APIs de recursos, sobre todo públicas, por simplicidad, caché HTTP y ecosistema. GraphQL lo considero cuando hay muchos clientes con necesidades de datos muy distintas y quiero evitar traer datos de más o hacer varias llamadas, aceptando más complejidad en caché, autorización por campo y control de costo de consultas. gRPC lo uso entre microservicios internos por rendimiento y contratos tipados con Protocol Buffers. WebSockets para comunicación bidireccional en tiempo real, como chat. SSE cuando solo el servidor envía actualizaciones, como progreso o streaming de IA. Y webhooks para notificar eventos a otros sistemas, siempre firmados y procesados de forma idempotente.",
+ demo:"compare"
+});
+T.push({
+ t:"Seguridad básica de una API", f:"seguido",
+ def:"Las bases son: HTTPS obligatorio, <b>nunca confiar en la entrada</b> (validarla y usar consultas parametrizadas), autenticar y autorizar en cada endpoint, protegerse de CSRF cuando se usan cookies, evitar que la API sirva contenido que permita XSS, limitar peticiones y decidir con cuidado dónde guarda el cliente el token.",
+ ana:"La seguridad de un edificio por capas: rejas (<b>HTTPS</b>), portero que revisa el carné en cada piso, no solo en la entrada (<b>autorización en cada endpoint</b>), revisión de paquetes (<b>validación</b>) y no dejar las llaves maestras debajo del tapete (<b>almacenamiento de tokens</b>).",
+ raw:`# Inyección SQL: la entrada nunca se concatena
+GET /v1/productos?nombre=café' OR '1'='1
+
+# CSRF: otra página envía una petición a tu API usando las cookies del usuario
+<form action="https://api.tienda.co/v1/clientes/me/email" method="POST">
+  <input name="email" value="atacante@mal.co">
+</form>
+# Defensa: SameSite=Lax/Strict + token CSRF + verificar Origin
+
+# Headers defensivos en las respuestas
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'none'
+Set-Cookie: refresh=rt_8c1f; HttpOnly; Secure; SameSite=Strict; Path=/v1/auth`,
+ py:`# 1. Validación con Pydantic: tipos, rangos y longitudes
+class ClienteIn(BaseModel):
+    nombre: str = Field(min_length=2, max_length=80)
+    email: EmailStr
+
+# 2. Consultas parametrizadas (SQLAlchemy lo hace por ti)
+session.execute(select(Producto).where(Producto.nombre == nombre))   # ✔
+session.execute(text(f"SELECT * FROM productos WHERE nombre = '{nombre}'"))  # ✘
+
+# 3. Autorización a nivel de objeto, no solo de ruta
+if pedido.cliente_id != usuario.id: raise HTTPException(404)
+
+# 4. No devolver campos sensibles: response_model filtra
+@app.get("/v1/clientes/me", response_model=ClienteOut)   # sin password_hash`,
+ prob:"La vulnerabilidad más común en APIs (OWASP API Top 10) es la <b>autorización rota a nivel de objeto</b>: cambiar <code>/pedidos/1093</code> por <code>/pedidos/1094</code> y ver el pedido de otro. Le siguen la autenticación débil, la exposición excesiva de datos y la falta de límites.",
+ bad:`# Token en localStorage + endpoint que confía en el id del body
+localStorage.setItem("token", jwt)       ← cualquier XSS lo roba
+PATCH /v1/clientes {"id": 8, "rol": "admin"}   ← mass assignment`,
+ good:`# Access token corto en memoria + refresh en cookie HttpOnly/Secure/SameSite
+# El id del usuario sale del token, nunca del body; response_model y modelos de entrada explícitos`,
+ bridge:"Guardar el token en <code>localStorage</code> es lo más común en SPAs y es vulnerable a XSS: cualquier script inyectado lo lee. Una cookie <code>HttpOnly</code> no es accesible desde JavaScript, pero reabre la puerta a CSRF, que se mitiga con <code>SameSite</code> y tokens CSRF. Un patrón equilibrado es el access token en memoria (en un servicio de Angular) y el refresh token en cookie HttpOnly. El <code>DomSanitizer</code> de Angular te protege del XSS en el render; del lado del servidor, la defensa es validar entradas y devolver JSON con el <code>Content-Type</code> correcto, nunca HTML armado con datos del usuario.",
+ myths:["Creer que el frontend valida y por eso el backend no necesita hacerlo. Cualquiera llama la API con curl.","Pensar que CSRF afecta a APIs con Bearer token en header. Afecta cuando la credencial viaja automáticamente, es decir, con cookies.","Creer que HTTPS cubre todo. Solo protege el transporte."],
+ ans:"Empiezo por HTTPS obligatorio con HSTS. Toda entrada se valida en el servidor con tipos, rangos y longitudes, y las consultas a la base de datos son parametrizadas para evitar inyección. Autentico en cada petición y autorizo a nivel de objeto, verificando que el recurso pertenece al usuario, porque es la vulnerabilidad más común en APIs. Devuelvo solo los campos necesarios con modelos de respuesta explícitos, aplico rate limiting y no expongo errores internos. Si uso cookies para autenticar, me protejo de CSRF con SameSite, tokens CSRF y verificación de Origin. Sobre el token en el cliente: localStorage es vulnerable a XSS; prefiero un access token corto en memoria y el refresh token en una cookie HttpOnly, Secure y SameSite.",
+ demo:"security"
+});
+/* ---------- utilidades ---------- */
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function hl(raw){
+  let inHead = false;
+  return raw.split("\n").map(l=>{
+    const e = esc(l);
+    if (/^\s*#/.test(l)) return '<span class="c">'+e+'</span>';
+    if (/^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) \/|^HTTP\/[\d.]+ \d{3}/.test(l)){ inHead = true; return '<span class="s">'+e+'</span>'; }
+    if (l.trim()===""){ inHead = false; return e; }
+    const m = l.match(/^([A-Za-z][\w-]*|:[a-z]+):( .*)$/);
+    if (inHead && m) return '<span class="k">'+esc(m[1])+':</span>'+esc(m[2]);
+    return e;
+  }).join("\n");
+}
+const pre = raw => '<pre class="wire">'+hl(raw)+'</pre>';
+const $ = (root, sel) => root.querySelector(sel);
+let timers = [];
+function clearTimers(){ timers.forEach(clearInterval); timers = []; }
+function stepper(el, title, steps){
+  let i = 0;
+  el.innerHTML = '<h3>'+title+'</h3><div class="steps"></div><div class="d"></div><div class="r"></div><div class="row"><button class="btn" data-a="p">← Anterior</button><button class="btn pri" data-a="n">Siguiente paso →</button></div>';
+  const draw = () => {
+    $(el,".steps").innerHTML = steps.map((s,k)=>'<span class="'+(k===i?"on":k<i?"past":"")+'">'+(k+1)+'. '+s.n+'</span>').join("");
+    $(el,".d").innerHTML = '<p style="margin:0">'+steps[i].d+'</p>';
+    $(el,".r").innerHTML = steps[i].raw ? pre(steps[i].raw) : "";
+    $(el,'[data-a="p"]').disabled = i===0;
+    $(el,'[data-a="n"]').disabled = i===steps.length-1;
+  };
+  el.addEventListener("click", e=>{ const a=e.target.dataset.a; if(a==="p"&&i>0)i--; if(a==="n"&&i<steps.length-1)i++; if(a)draw(); });
+  draw();
+}
+function choice(name, opts, cur){
+  return '<div class="row"><span class="lbl">'+name+'</span>'+opts.map(o=>'<button class="btn'+(o[0]===cur?' sel':'')+'" data-k="'+name+'" data-v="'+esc(o[0])+'">'+esc(o[1]||o[0])+'</button>').join("")+'</div>';
+}
+
+/* ---------- demos ---------- */
+const DEMOS = {};
+DEMOS.journey = el => stepper(el, "Recorre el viaje de una petición", [
+  {n:"Caché local", d:"El navegador revisa si ya conoce la IP de <code>api.tienda.co</code> (caché del navegador y del sistema operativo). Si la conoce, salta el DNS.", raw:"# chrome://net-internals/#dns\napi.tienda.co → (no está en caché)"},
+  {n:"DNS", d:"Pregunta al resolver (tu ISP, 8.8.8.8 o 1.1.1.1). Si no la tiene, consulta la raíz, luego el servidor de <code>.co</code> y por último el servidor autoritativo de <code>tienda.co</code>. La respuesta trae la IP y un TTL.", raw:"; consulta\napi.tienda.co.  IN  A\n; respuesta\napi.tienda.co.  300  IN  A  104.21.33.10"},
+  {n:"TCP", d:"Abre una conexión confiable al puerto 443 con el handshake de tres pasos. TCP garantiza orden y entrega.", raw:"cliente → SYN\nservidor → SYN-ACK\ncliente → ACK      (conexión establecida)"},
+  {n:"TLS", d:"Negocian cifrado, el servidor presenta su certificado y se derivan claves de sesión. Desde aquí todo va cifrado.", raw:"ClientHello (SNI: api.tienda.co)\nServerHello + Certificate (api.tienda.co, Let's Encrypt)\nFinished ↔ Finished"},
+  {n:"Petición", d:"Se envía el mensaje HTTP. Primero pasa por el CDN o el balanceador, que puede responder desde caché o reenviarlo a una instancia de tu app.", raw:"GET /v1/productos/42 HTTP/1.1\nHost: api.tienda.co\nAccept: application/json\nAuthorization: Bearer eyJ..."},
+  {n:"Servidor", d:"El proxy reenvía a Uvicorn; FastAPI ejecuta middlewares (CORS, logs), resuelve dependencias (<code>Depends</code>: auth, sesión de BD), valida con Pydantic, ejecuta tu función y consulta PostgreSQL.", raw:"# log de Uvicorn\nINFO: 10.0.3.7:52114 - \"GET /v1/productos/42 HTTP/1.1\" 200 OK\n# SQL generado\nSELECT id, nombre, precio FROM productos WHERE id = 42;"},
+  {n:"Respuesta", d:"Vuelve por el mismo camino. El navegador lee el código y los headers, guarda en caché si se permite y entrega el body a tu código JavaScript.", raw:"HTTP/1.1 200 OK\nContent-Type: application/json\nCache-Control: public, max-age=60\nETag: \"v7-42\"\n\n{\"id\":42,\"nombre\":\"Café de origen Tolima\",\"precio\":38000}"}
+]);
+
+DEMOS.builder = el => {
+  const s = {m:"GET", p:"/v1/productos/42", auth:true, acc:"json", ct:true};
+  const paths = [["/v1/productos","/v1/productos (colección)"],["/v1/productos/42"],["/v1/productos/999","/v1/productos/999 (no existe)"]];
+  function respond(){
+    const item = '{"id":42,"nombre":"Café de origen Tolima","precio":38000}';
+    const col = s.p==="/v1/productos", miss = s.p.endsWith("999"), hasBody = ["POST","PUT","PATCH"].includes(s.m);
+    if (s.m==="OPTIONS") return ["204 No Content", "Allow: "+(col?"GET, POST, HEAD, OPTIONS":"GET, PUT, PATCH, DELETE, HEAD, OPTIONS"), "", "OPTIONS describe qué métodos admite el recurso. El navegador lo usa en el preflight de CORS."];
+    if (s.acc==="xml") return ["406 Not Acceptable","Content-Type: application/problem+json",'{"title":"Solo servimos application/json","status":406}',"Pediste XML con Accept y el servidor no puede producirlo."];
+    if (!s.auth && !["GET","HEAD"].includes(s.m)) return ["401 Unauthorized","WWW-Authenticate: Bearer",'{"title":"Falta autenticación","status":401}',"Leer el catálogo es público, pero modificarlo exige token."];
+    if (col && ["PUT","PATCH","DELETE"].includes(s.m)) return ["405 Method Not Allowed","Allow: GET, POST, HEAD, OPTIONS","","No se reemplaza ni se borra la colección completa. 405 indica que el recurso existe, pero no admite ese método."];
+    if (!col && s.m==="POST") return ["405 Method Not Allowed","Allow: GET, PUT, PATCH, DELETE, HEAD, OPTIONS","","Se crea con POST en la colección (/v1/productos), no sobre un elemento."];
+    if (hasBody && !s.ct) return ["415 Unsupported Media Type","Content-Type: application/problem+json",'{"title":"Envía el body como application/json","status":415}',"Sin Content-Type, el servidor no sabe cómo interpretar el body."];
+    if (miss) return ["404 Not Found","Content-Type: application/problem+json",'{"title":"Producto no encontrado","status":404}',"El recurso no existe."];
+    if (s.m==="GET") return ["200 OK","Content-Type: application/json\nETag: \"v7-42\"", col?'[{"id":42,...},{"id":43,...}]':item, "Lectura segura e idempotente."];
+    if (s.m==="HEAD") return ["200 OK","Content-Type: application/json\nContent-Length: 58\nETag: \"v7-42\"","","Los mismos headers que GET, sin body."];
+    if (s.m==="POST") return ["201 Created","Content-Type: application/json\nLocation: /v1/productos/43",'{"id":43,"nombre":"Café descafeinado","precio":32000}',"Se creó un recurso: 201 con Location."];
+    if (s.m==="PUT") return ["200 OK","Content-Type: application/json",'{"id":42,"nombre":"Café descafeinado","precio":32000}',"Reemplazo completo. Algunos equipos responden 204 sin body."];
+    if (s.m==="PATCH") return ["200 OK","Content-Type: application/json",'{"id":42,"nombre":"Café de origen Tolima","precio":35000}',"Cambio parcial: solo el precio."];
+    if (s.m==="DELETE") return ["204 No Content","","","Eliminado. Sin body."];
+  }
+  function draw(){
+    const r = respond();
+    const bodies = {POST:'{"nombre":"Café descafeinado","precio":32000}', PUT:'{"nombre":"Café descafeinado","precio":32000}', PATCH:'{"precio":35000}'};
+    let req = s.m+" "+s.p+" HTTP/1.1\nHost: api.tienda.co\nAccept: application/"+s.acc;
+    if (s.auth) req += "\nAuthorization: Bearer eyJhbGciOiJIUzI1NiJ9...";
+    if (bodies[s.m] && s.ct) req += "\nContent-Type: application/json";
+    if (bodies[s.m]) req += "\n\n"+bodies[s.m];
+    let res = "HTTP/1.1 "+r[0]+(r[1]?"\n"+r[1]:"")+(r[2]?"\n\n"+r[2]:"");
+    el.innerHTML = '<h3>Arma una petición y mira la respuesta cruda</h3>'
+      + choice("Método",[["GET"],["POST"],["PUT"],["PATCH"],["DELETE"],["HEAD"],["OPTIONS"]],s.m)
+      + choice("Ruta",paths,s.p)
+      + choice("Accept",[["json","application/json"],["xml","application/xml"]],s.acc)
+      + choice("Token",[["si","Con Authorization"],["no","Sin token"]],s.auth?"si":"no")
+      + choice("Body",[["si","Con Content-Type"],["no","Sin Content-Type"]],s.ct?"si":"no")
+      + '<div class="cols"><div><div class="tag mute">Petición</div>'+pre(req)+'</div><div><div class="tag mute">Respuesta</div>'+pre(res)+'</div></div>'
+      + '<div class="res '+(r[0][0]==="2"?"ok":"bad")+'"><b>'+r[0]+'.</b> '+r[3]+'</div>';
+  }
+  el.addEventListener("click", e=>{
+    const k=e.target.dataset.k, v=e.target.dataset.v; if(!k) return;
+    if(k==="Método") s.m=v; if(k==="Ruta") s.p=v; if(k==="Accept") s.acc=v; if(k==="Token") s.auth=v==="si"; if(k==="Body") s.ct=v==="si";
+    draw();
+  });
+  draw();
+};
+
+DEMOS.url = el => {
+  const parts = [
+    ["https","Esquema","El protocolo. https implica TLS y puerto 443 por defecto."],
+    ["://",null,""],
+    ["api.tienda.co","Host","El dominio. Se resuelve por DNS y viaja en el header Host, que permite que una misma IP sirva varios sitios."],
+    [":443","Puerto","Casi siempre se omite porque es el valor por defecto del esquema. En desarrollo verás :8000 (Uvicorn) o :4200 (Angular)."],
+    ["/v1/productos","Ruta","Identifica el recurso. FastAPI la compara con tus decoradores para elegir la función."],
+    ["?categoria=cafe&orden=-precio","Query string","Pares clave=valor separados por &. Filtran, ordenan o paginan. En FastAPI son los parámetros de la función que no están en la ruta."],
+    ["#reseñas","Fragmento","Solo lo usa el navegador para ir a una parte de la página o para el routing en modo hash. Nunca se envía al servidor."]
+  ];
+  let sel = 4;
+  function draw(){
+    el.innerHTML = '<h3>Toca cada parte de la URL</h3><div class="url">'+parts.map((p,i)=>p[1]?'<button data-i="'+i+'" class="'+(i===sel?"sel":"")+'">'+esc(p[0])+'</button>':'<span>'+p[0]+'</span>').join("")+'</div>'
+      + '<div class="res ok"><b>'+parts[sel][1]+'.</b> '+parts[sel][2]+'</div>'
+      + '<div class="note">¿Llega al servidor? '+(sel===6?'<b>No.</b>':'<b>Sí</b>'+(sel===0||sel===3?', pero como parte de la conexión, no dentro del mensaje HTTP.':sel===2?', en el header Host.':', en la línea inicial: <code>GET /v1/productos?categoria=cafe&amp;orden=-precio HTTP/1.1</code>'))+'</div>';
+  }
+  el.addEventListener("click", e=>{ if(e.target.dataset.i){ sel=+e.target.dataset.i; draw(); } });
+  draw();
+};
+
+DEMOS.idem = el => {
+  let st, log;
+  const reset = () => { st = {pedidos:[1093], sig:1094, email:"ana@mail.co", stock:10}; log = []; };
+  const ops = [
+    ["GET /v1/pedidos", s=>{} ],
+    ["POST /v1/pedidos", s=>{ s.pedidos.push(s.sig++); }],
+    ['PUT /v1/clientes/7 {"email":"ana@nuevo.co"}', s=>{ s.email="ana@nuevo.co"; }],
+    ['PATCH /v1/productos/42 {"stock":"+1"}', s=>{ s.stock++; }],
+    ["DELETE /v1/pedidos/1093", s=>{ s.pedidos = s.pedidos.filter(x=>x!==1093); }]
+  ];
+  const snap = () => JSON.stringify(st);
+  let verdict = "";
+  function draw(){
+    el.innerHTML = '<h3>Envía la misma petición tres veces</h3><p class="note" style="margin:0">Simula un cliente que reintenta por timeout. Observa si el estado del servidor cambia después del primer envío.</p>'
+      + '<div class="row">'+ops.map((o,i)=>'<button class="btn" data-o="'+i+'">'+esc(o[0])+' ×3</button>').join("")+'<button class="btn" data-o="r">Reiniciar estado</button></div>'
+      + '<div class="cols"><div><div class="tag mute">Estado del servidor</div><div class="state">pedidos: ['+st.pedidos.join(", ")+']\ncliente 7 email: '+st.email+'\nproducto 42 stock: '+st.stock+'</div></div>'
+      + '<div><div class="tag mute">Registro</div><div class="log">'+(log.length?log.map(l=>'<div class="'+(l.c?"ch":"")+'">'+esc(l.t)+'</div>').join(""):'<div>Sin peticiones aún</div>')+'</div></div></div>'
+      + (verdict ? verdict : "");
+  }
+  el.addEventListener("click", e=>{
+    const o = e.target.dataset.o; if(o===undefined) return;
+    if (o==="r"){ reset(); verdict=""; draw(); return; }
+    const op = ops[+o]; let after1 = null, changedAfter = false;
+    for (let k=1;k<=3;k++){
+      const before = snap(); op[1](st); const after = snap();
+      if (k===1) after1 = after; else if (after!==after1) changedAfter = true;
+      log.unshift({t:"#"+k+" "+op[0]+" → "+(before===after?"estado sin cambios":"estado CAMBIÓ"), c:before!==after});
+      if (k>1) after1 = after;
+    }
+    const safe = +o===0;
+    verdict = safe ? '<div class="res ok"><b>Seguro e idempotente.</b> GET nunca cambió el estado.</div>'
+      : changedAfter ? '<div class="res bad"><b>No idempotente.</b> Cada reintento volvió a cambiar el estado. Con un pago, esto serían cobros duplicados.</div>'
+      : '<div class="res ok"><b>Idempotente.</b> Solo el primer envío cambió el estado; los reintentos no.</div>';
+    draw();
+  });
+  reset(); draw();
+};
+
+DEMOS.status = el => {
+  const C = {
+    "200":"OK. Éxito con body.","201":"Created. Se creó un recurso; incluye Location.","202":"Accepted. Se aceptó para procesar después (asíncrono).","204":"No Content. Éxito sin body.",
+    "301":"Moved Permanently. La URL cambió para siempre; los clientes la recuerdan.","302":"Found. Redirección temporal.","304":"Not Modified. Tu copia en caché sigue vigente.","307":"Temporary Redirect. Temporal y conserva el método.","308":"Permanent Redirect. Permanente y conserva el método.",
+    "400":"Bad Request. Petición mal formada (JSON roto, parámetro imposible).","401":"Unauthorized. No autenticado: falta el token o es inválido.","403":"Forbidden. Autenticado, pero sin permiso.","404":"Not Found. No existe (o no se revela).","405":"Method Not Allowed. El recurso no admite ese método; incluye Allow.","406":"Not Acceptable. No se puede producir el formato pedido en Accept.","409":"Conflict. Choca con el estado actual (email duplicado, versión desactualizada).","410":"Gone. Existió y se eliminó para siempre.","415":"Unsupported Media Type. El Content-Type del body no se admite.","422":"Unprocessable Content. Sintaxis correcta, contenido inválido (validación).","429":"Too Many Requests. Superaste el rate limit; mira Retry-After.",
+    "500":"Internal Server Error. Tu aplicación falló (excepción no controlada).","502":"Bad Gateway. El proxy recibió una respuesta inválida de tu app (se cayó el proceso).","503":"Service Unavailable. Sin capacidad o en mantenimiento; suele traer Retry-After.","504":"Gateway Timeout. El proxy se cansó de esperar a tu app."
+  };
+  let sel = "401";
+  const fam = c => c[0]==="2"?"ok":c[0]==="3"?"warn":"bad";
+  function draw(){
+    el.innerHTML = '<h3>Explora los códigos por familia</h3><div class="row">'+Object.keys(C).map(c=>'<button class="btn'+(c===sel?" sel":"")+'" data-c="'+c+'">'+c+'</button>').join("")+'</div>'
+      + '<div class="res '+fam(sel)+'"><b>'+sel+'</b> · '+C[sel]+'</div>';
+  }
+  el.addEventListener("click", e=>{ if(e.target.dataset.c){ sel=e.target.dataset.c; draw(); } });
+  draw();
+};
+
+DEMOS.session = el => {
+  let mode = "mem", logged = false, n = 0, out = "";
+  const modes = [["mem","Sesión en memoria"],["redis","Sesión en Redis"],["jwt","JWT"]];
+  function draw(){
+    el.innerHTML = '<h3>Dos instancias detrás de un balanceador</h3><p class="note" style="margin:0">Haz login (lo atiende la instancia A) y luego envía peticiones: el balanceador alterna entre A y B.</p>'
+      + choice("Modo",modes,mode)
+      + '<div class="row"><button class="btn pri" data-a="login">POST /v1/login</button><button class="btn" data-a="get"'+(logged?"":" disabled")+'>GET /v1/pedidos</button></div>'
+      + out;
+  }
+  el.addEventListener("click", e=>{
+    const t = e.target;
+    if (t.dataset.k){ mode=t.dataset.v; logged=false; n=0; out=""; draw(); return; }
+    if (t.dataset.a==="login"){
+      logged = true; n = 0;
+      const h = mode==="jwt" ? "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\"access_token\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3In0.sig\"}"
+        : "HTTP/1.1 200 OK\nSet-Cookie: sid=a8f3c2; HttpOnly; Secure; SameSite=Lax";
+      const where = mode==="mem" ? "La instancia A guardó la sesión en su propia memoria." : mode==="redis" ? "La sesión quedó en Redis, compartido por A y B." : "Nadie guardó nada: el token lleva los datos firmados.";
+      out = pre("# atendió: instancia A\n"+h) + '<div class="res ok">'+where+'</div>';
+      draw(); return;
+    }
+    if (t.dataset.a==="get"){
+      n++; const inst = n%2===1 ? "B" : "A";
+      const cred = mode==="jwt" ? "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." : "Cookie: sid=a8f3c2";
+      const fail = mode==="mem" && inst==="B";
+      const res = fail ? "HTTP/1.1 401 Unauthorized" : "HTTP/1.1 200 OK\n\n[{\"id\":1093,\"total\":76000}]";
+      const why = fail ? "La instancia B no conoce la sesión <code>a8f3c2</code>: estaba en la memoria de A. El usuario «pierde la sesión» al azar."
+        : mode==="mem" ? "Esta vez tocó la instancia A, que sí tiene la sesión en memoria. Vuelve a intentar."
+        : mode==="redis" ? "La instancia "+inst+" buscó la sesión en Redis y la encontró."
+        : "La instancia "+inst+" verificó la firma del token con la clave secreta, sin consultar a nadie.";
+      out = pre("# atendió: instancia "+inst+"\nGET /v1/pedidos HTTP/1.1\n"+cred+"\n\n"+res) + '<div class="res '+(fail?"bad":"ok")+'">'+why+'</div>';
+      draw();
+    }
+  });
+  draw();
+};
+
+DEMOS.jwt = el => {
+  const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/,"").replace(/\+/g,"-").replace(/\//g,"_");
+  const fakeSig = str => { let h=2166136261; for(const ch of "clave-secreta|"+str){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619);} let s=""; for(let i=0;i<6;i++){ h=Math.imul(h^(h>>>13),2654435761); s+=(h>>>0).toString(36);} return s.slice(0,43); };
+  const header = {alg:"HS256",typ:"JWT"};
+  const base = {sub:"7",name:"Ana Ruiz",role:"cliente",iat:1731456000,exp:1731456900};
+  let payload, sig, note, expired;
+  const reset = () => { payload = {...base}; sig = fakeSig(b64(header)+"."+b64(payload)); note=""; expired=false; };
+  function draw(){
+    const h = b64(header), p = b64(payload), valid = sig===fakeSig(h+"."+p);
+    const status = !valid ? ["bad","401 · La firma no coincide: el payload fue modificado sin la clave secreta."]
+      : expired ? ["bad","401 · Firma válida, pero exp ya pasó. El cliente debe usar el refresh token."]
+      : ["ok","200 · Firma válida y token vigente. El servidor confía en sub y role sin consultar la base de datos."];
+    el.innerHTML = '<h3>Decodifica un JWT</h3>'
+      + '<div class="jwt"><span class="h">'+h+'</span>.<span class="p">'+p+'</span>.<span class="g">'+sig+'</span></div>'
+      + '<div class="cols"><div><div class="tag" style="color:var(--bad)">Header</div><div class="state">'+esc(JSON.stringify(header,null,2))+'</div></div>'
+      + '<div><div class="tag" style="color:var(--accent)">Payload (cualquiera lo lee)</div><div class="state">'+esc(JSON.stringify(payload,null,2))+'</div></div>'
+      + '<div><div class="tag" style="color:var(--ok)">Firma</div><div class="state">HMACSHA256(\n  base64url(header) + "." +\n  base64url(payload),\n  clave_secreta)</div></div></div>'
+      + '<div class="row"><button class="btn" data-a="admin">Cambiar role a "admin" sin la clave</button><button class="btn" data-a="exp">Simular que pasaron 20 minutos</button><button class="btn" data-a="reset">Restaurar token</button></div>'
+      + '<div class="res '+status[0]+'"><b>Verificación del servidor:</b> '+status[1]+'</div>'
+      + '<p class="note" style="margin:0">La firma de esta demo es simulada; la lógica es la misma que la de HMAC. exp = iat + 900 s (15 minutos).</p>';
+  }
+  el.addEventListener("click", e=>{ const a=e.target.dataset.a; if(!a) return; if(a==="admin") payload.role="admin"; if(a==="exp") expired=true; if(a==="reset") reset(); draw(); });
+  reset(); draw();
+};
+DEMOS.cors = el => {
+  const s = {o:"https://app.tienda.co", t:"put"};
+  const allowed = ["https://app.tienda.co","http://localhost:4200"];
+  function draw(){
+    const ok = allowed.includes(s.o), simple = s.t==="get";
+    let raw = "", msg;
+    const real = (s.t==="get"?"GET /v1/productos":"PUT /v1/pedidos/1093")+" HTTP/1.1\nHost: api.tienda.co\nOrigin: "+s.o+(simple?"":"\nAuthorization: Bearer eyJ...\nContent-Type: application/json");
+    if (simple){
+      raw = "# Petición simple: no hay preflight\n"+real+"\n\nHTTP/1.1 200 OK\nContent-Type: application/json"+(ok?"\nAccess-Control-Allow-Origin: "+s.o:"\n# (sin Access-Control-Allow-Origin)");
+      msg = ok ? ["ok","El navegador entrega la respuesta a tu JavaScript."] : ["bad","El servidor <b>sí procesó</b> la petición y respondió 200, pero el navegador bloquea la lectura. En consola: <code>blocked by CORS policy: No 'Access-Control-Allow-Origin' header</code>."];
+    } else {
+      raw = "# 1. Preflight automático del navegador\nOPTIONS /v1/pedidos/1093 HTTP/1.1\nOrigin: "+s.o+"\nAccess-Control-Request-Method: PUT\nAccess-Control-Request-Headers: authorization, content-type\n\n"
+        + (ok ? "HTTP/1.1 204 No Content\nAccess-Control-Allow-Origin: "+s.o+"\nAccess-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE\nAccess-Control-Allow-Headers: authorization, content-type\nAccess-Control-Max-Age: 600\n\n# 2. Petición real\n"+real+"\n\nHTTP/1.1 200 OK\nAccess-Control-Allow-Origin: "+s.o
+              : "HTTP/1.1 400 Bad Request\n# (sin Access-Control-Allow-Origin)\n\n# 2. La petición real NUNCA se envía");
+      msg = ok ? ["ok","El preflight autorizó el método y los headers; el navegador envía el PUT y entrega la respuesta. Con Max-Age, no repite el preflight durante 10 minutos."]
+               : ["bad","El preflight falló, así que el navegador no envía el PUT. Aquí el servidor no llega a modificar nada."];
+    }
+    el.innerHTML = '<h3>Simula CORS</h3><p class="note" style="margin:0">El servidor (FastAPI con CORSMiddleware) permite <code>https://app.tienda.co</code> y <code>http://localhost:4200</code>.</p>'
+      + choice("Origen",[["https://app.tienda.co"],["http://localhost:4200"],["https://ofertas-falsas.co"]],s.o)
+      + choice("Petición",[["get","GET simple"],["put","PUT con Authorization y JSON"]],s.t)
+      + pre(raw) + '<div class="res '+msg[0]+'">'+msg[1]+'</div>'
+      + '<p class="note" style="margin:0">Desde curl o Postman nada de esto aplica: no hay navegador que haga cumplir la política.</p>';
+  }
+  el.addEventListener("click", e=>{ const k=e.target.dataset.k; if(!k) return; if(k==="Origen") s.o=e.target.dataset.v; else s.t=e.target.dataset.v; draw(); });
+  draw();
+};
+
+DEMOS.etag = el => {
+  let ver = 7, copy = null, bytes = 0, log = [], price = 38000;
+  function draw(){
+    el.innerHTML = '<h3>Pide el mismo recurso varias veces</h3>'
+      + '<div class="row"><button class="btn pri" data-a="get">GET /v1/productos/42</button><button class="btn" data-a="mod">Cambiar el precio en el servidor</button><button class="btn" data-a="r">Vaciar caché del navegador</button></div>'
+      + '<div class="note">Copia en caché del navegador: <b>'+(copy?'ETag "v'+copy+'"':"vacía")+'</b> · Versión en el servidor: <b>"v'+ver+'"</b> · Bytes de body descargados: <b>'+bytes+'</b></div>'
+      + (log[0]?log[0]:"");
+  }
+  el.addEventListener("click", e=>{
+    const a = e.target.dataset.a; if(!a) return;
+    if (a==="mod"){ ver++; price -= 2000; log=['<div class="res warn">El servidor actualizó el producto. Su ETag ahora es "v'+ver+'".</div>']; }
+    if (a==="r"){ copy=null; log=[]; }
+    if (a==="get"){
+      const body = '{"id":42,"nombre":"Café de origen Tolima","precio":'+price+'}';
+      if (copy===ver){
+        log = [pre('GET /v1/productos/42 HTTP/1.1\nIf-None-Match: "v'+copy+'"\n\nHTTP/1.1 304 Not Modified\nETag: "v'+ver+'"')+'<div class="res ok"><b>304.</b> No viajó body: el navegador reutiliza su copia.</div>'];
+      } else {
+        log = [pre('GET /v1/productos/42 HTTP/1.1'+(copy?'\nIf-None-Match: "v'+copy+'"':'')+'\n\nHTTP/1.1 200 OK\nCache-Control: no-cache\nETag: "v'+ver+'"\n\n'+body)+'<div class="res '+(copy?"warn":"ok")+'"><b>200.</b> '+(copy?'El ETag no coincide: el recurso cambió y viaja la versión nueva.':'Primera vez: viaja el body completo y el navegador guarda el ETag.')+'</div>'];
+        copy = ver; bytes += body.length;
+      }
+    }
+    draw();
+  });
+  draw();
+};
+
+DEMOS.tls = el => stepper(el, "El handshake de TLS 1.3, paso a paso", [
+  {n:"ClientHello", d:"El cliente dice qué versiones y algoritmos soporta, envía su parte del intercambio de claves (Diffie-Hellman efímero) e indica el dominio con SNI.", raw:"ClientHello\n  versiones: TLS 1.3\n  cifrados: TLS_AES_128_GCM_SHA256, TLS_CHACHA20_POLY1305_SHA256\n  key_share: x25519 (clave pública efímera del cliente)\n  SNI: api.tienda.co"},
+  {n:"ServerHello", d:"El servidor elige el cifrado y envía su parte del intercambio. Desde aquí, ambos pueden calcular el mismo secreto sin haberlo enviado nunca por la red.", raw:"ServerHello\n  cifrado: TLS_AES_128_GCM_SHA256\n  key_share: x25519 (clave pública efímera del servidor)"},
+  {n:"Certificado", d:"El servidor envía su certificado y firma el handshake con su clave privada, lo que prueba que es el dueño del certificado.", raw:"Certificate\n  sujeto: CN=api.tienda.co\n  emisor: Let's Encrypt R11 → ISRG Root X1\n  válido: 2026-10-01 a 2026-12-30\nCertificateVerify (firma con la clave privada)"},
+  {n:"Validación", d:"El cliente valida la cadena hasta una raíz de confianza instalada en el sistema, revisa fechas y que el dominio coincida. Si algo falla, el navegador muestra la pantalla de advertencia.", raw:"✔ cadena hasta ISRG Root X1 (confiable)\n✔ fechas vigentes\n✔ api.tienda.co coincide con el CN/SAN"},
+  {n:"Finished", d:"Ambos confirman que vieron el mismo handshake. A partir de aquí, el HTTP viaja con cifrado simétrico (AES-GCM), rápido y con integridad.", raw:"Finished ↔ Finished\n\n[datos de aplicación cifrados]\nGET /v1/pagos/501 HTTP/1.1 ..."}
+]);
+
+DEMOS.versions = el => {
+  let v = "1.1", loss = false;
+  function lanes(){
+    const R = []; // [label, start, dur, cls]
+    if (v==="1.1"){
+      const conns=[[0],[0]];
+      for (let i=0;i<6;i++){ const c=i%2; let st = conns[c][0]===0 ? 1 : conns[c][0]; if(conns[c][0]===0) R.push(["Conexión "+(c+1),0,1,"x","TCP+TLS"]); let d = (loss&&i===0)?2.5:1; R.push(["Petición "+(i+1),st,d,"a","#"+(i+1)]); conns[c][0]=st+d; }
+    } else {
+      const hs = v==="2" ? 1 : 0.5;
+      R.push(["Conexión", 0, hs, "x", v==="2"?"TCP+TLS":"QUIC"]);
+      for (let i=0;i<6;i++){
+        let d = 1.2;
+        if (loss && v==="2") d = 2.7;
+        if (loss && v==="3" && i===0) d = 2.7;
+        R.push(["Stream "+(i*2+1), hs, d, i===0&&loss?"c":"b", "#"+(i+1)]);
+      }
+    }
+    return R;
+  }
+  function draw(){
+    const R = lanes(); const max = 6;
+    const end = Math.max(...R.map(r=>r[1]+r[2]));
+    el.innerHTML = '<h3>Seis peticiones a la misma API</h3>'
+      + choice("Versión",[["1.1","HTTP/1.1 (2 conexiones)"],["2","HTTP/2"],["3","HTTP/3"]],v)
+      + choice("Red",[["no","Estable"],["si","Se pierde un paquete"]],loss?"si":"no")
+      + '<div style="display:flex;flex-direction:column;gap:5px">'+R.map(r=>'<div class="lane"><span>'+r[0]+'</span><div class="track"><i class="'+r[3]+'" style="left:'+(r[1]/max*100)+'%;width:'+(r[2]/max*100)+'%">'+r[4]+'</i></div></div>').join("")+'</div>'
+      + '<div class="res '+(end>4?"warn":"ok")+'">Tiempo total: <b>'+end.toFixed(1)+' unidades</b>. '
+      + (v==="1.1" ? (loss?"La pérdida retrasa todas las peticiones que esperan en esa conexión (head-of-line blocking).":"Cada conexión atiende una petición a la vez; las demás hacen fila.")
+        : v==="2" ? (loss?"Un solo paquete perdido en TCP frena los seis streams: TCP entrega en orden y todos esperan.":"Una sola conexión, todos los streams en paralelo.")
+        : (loss?"QUIC recupera el paquete solo en el stream afectado; los demás siguen.":"Handshake más corto (QUIC + TLS 1.3 juntos) y streams independientes.")) + '</div>';
+  }
+  el.addEventListener("click", e=>{ const k=e.target.dataset.k; if(!k) return; if(k==="Versión") v=e.target.dataset.v; else loss=e.target.dataset.v==="si"; draw(); });
+  draw();
+};
+
+DEMOS.richardson = el => {
+  const L = [
+    ["Nivel 0","Un solo endpoint, todo por POST. HTTP es solo un túnel (estilo RPC/SOAP).",'POST /api HTTP/1.1\nContent-Type: application/json\n\n{"accion":"cancelarPedido","pedido_id":1093}\n\nHTTP/1.1 200 OK\n\n{"ok":false,"error":"Pedido ya enviado"}'],
+    ["Nivel 1","Recursos con URIs propias, pero todo sigue siendo POST y los errores van en el body.",'POST /api/pedidos/1093 HTTP/1.1\n\n{"accion":"cancelar"}\n\nHTTP/1.1 200 OK\n\n{"ok":false,"error":"Pedido ya enviado"}'],
+    ["Nivel 2","Recursos + métodos HTTP con su semántica + códigos de estado correctos. Aquí está la mayoría de la industria.",'DELETE /v1/pedidos/1093 HTTP/1.1\n\nHTTP/1.1 409 Conflict\nContent-Type: application/problem+json\n\n{"title":"El pedido ya fue enviado","status":409}'],
+    ["Nivel 3","Lo anterior + HATEOAS: la respuesta incluye enlaces a las acciones posibles según el estado.",'GET /v1/pedidos/1093 HTTP/1.1\n\nHTTP/1.1 200 OK\nContent-Type: application/hal+json\n\n{"id":1093,"estado":"pendiente",\n "_links":{"self":{"href":"/v1/pedidos/1093"},\n           "cancelar":{"href":"/v1/pedidos/1093","method":"DELETE"}}}']
+  ];
+  let i = 0;
+  function draw(){
+    el.innerHTML = '<h3>La misma operación (cancelar el pedido 1093) en cada nivel</h3><div class="row">'+L.map((l,k)=>'<button class="btn'+(k===i?" sel":"")+'" data-i="'+k+'">'+l[0]+'</button>').join("")+'</div><p style="margin:0">'+L[i][1]+'</p>'+pre(L[i][2]);
+  }
+  el.addEventListener("click", e=>{ if(e.target.dataset.i){ i=+e.target.dataset.i; draw(); } });
+  draw();
+};
+
+DEMOS.pagination = el => {
+  let mode="offset", data, page, cursor, prev=null, seen, shown, next=31, msg="";
+  const reset = () => { data = Array.from({length:30},(_,k)=>30-k); page=0; cursor=null; seen=new Set(); shown=[]; next=31; msg=""; load(); };
+  function load(){
+    let items, req;
+    if (mode==="offset"){ items = data.slice(page*5, page*5+5); req = "GET /v1/productos?limit=5&offset="+(page*5); }
+    else { prev = cursor; const start = cursor===null ? 0 : data.findIndex(x=>x<cursor); items = start<0?[]:data.slice(start,start+5); req = "GET /v1/productos?limit=5"+(cursor!==null?"&cursor="+btoa('{"id":'+cursor+'}'):""); }
+    const dup = items.filter(x=>seen.has(x));
+    items.forEach(x=>seen.add(x));
+    shown = items.map(x=>({id:x,dup:dup.includes(x)}));
+    if (items.length) cursor = items[items.length-1];
+    const sql = mode==="offset" ? "SELECT * FROM productos ORDER BY id DESC LIMIT 5 OFFSET "+(page*5)+";   -- la BD lee y descarta "+(page*5)+" filas"
+      : "SELECT * FROM productos "+(req.includes("cursor")?"WHERE id < "+prev+" ":"")+"ORDER BY id DESC LIMIT 5;   -- usa el índice, sin descartar filas";
+    msg = pre(req+" HTTP/1.1\n\n# "+sql) + (dup.length ? '<div class="res bad"><b>Duplicado:</b> el producto '+dup.join(", ")+' ya lo habías visto en la página anterior. Al insertar un registro, todos se corrieron una posición.</div>' : "");
+  }
+  function draw(){
+    el.innerHTML = '<h3>Offset vs. cursor (lista ordenada por id, el más nuevo primero)</h3>'
+      + choice("Modo",[["offset","Paginación por offset"],["cursor","Paginación por cursor"]],mode)
+      + '<div class="row"><button class="btn pri" data-a="next">Siguiente página</button><button class="btn" data-a="ins">Otro usuario crea un producto</button><button class="btn" data-a="r">Reiniciar</button></div>'
+      + '<div class="chips">'+shown.map(x=>'<span class="chip" style="'+(x.dup?"background:var(--bad-soft);color:var(--bad);border-color:var(--bad)":"")+'">producto '+x.id+'</span>').join("")+'</div>'
+      + msg
+      + '<p class="note" style="margin:0">Prueba: página siguiente, luego «Otro usuario crea un producto», luego otra página. Repite en ambos modos.</p>';
+  }
+  el.addEventListener("click", e=>{
+    const t = e.target;
+    if (t.dataset.k){ mode=t.dataset.v; reset(); draw(); return; }
+    if (t.dataset.a==="next"){ page++; load(); }
+    if (t.dataset.a==="ins"){ data.unshift(next++); msg='<div class="res warn">Se insertó el producto '+(next-1)+' al inicio de la lista.</div>'; }
+    if (t.dataset.a==="r") reset();
+    draw();
+  });
+  reset(); draw();
+};
+
+DEMOS.errors = el => {
+  const E = {
+    "Validación":['422 Unprocessable Content','{\n  "type": "https://api.tienda.co/errores/validacion",\n  "title": "La petición tiene campos inválidos",\n  "status": 422,\n  "errors": [\n    {"campo": "items[0].cantidad", "mensaje": "Debe ser mayor que 0"},\n    {"campo": "cliente_id", "mensaje": "Es obligatorio"}\n  ]\n}'],
+    "Sin token":['401 Unauthorized\nWWW-Authenticate: Bearer','{\n  "type": "https://api.tienda.co/errores/no-autenticado",\n  "title": "Necesitas iniciar sesión",\n  "status": 401\n}'],
+    "Sin permiso":['403 Forbidden','{\n  "type": "https://api.tienda.co/errores/sin-permiso",\n  "title": "No puedes modificar productos",\n  "status": 403,\n  "detail": "Esta acción requiere el rol administrador."\n}'],
+    "No existe":['404 Not Found','{\n  "type": "https://api.tienda.co/errores/no-encontrado",\n  "title": "Pedido no encontrado",\n  "status": 404,\n  "instance": "/v1/pedidos/99999"\n}'],
+    "Email duplicado":['409 Conflict','{\n  "type": "https://api.tienda.co/errores/email-duplicado",\n  "title": "El email ya está registrado",\n  "status": 409\n}'],
+    "Rate limit":['429 Too Many Requests\nRetry-After: 30','{\n  "type": "https://api.tienda.co/errores/limite",\n  "title": "Demasiadas peticiones",\n  "status": 429,\n  "detail": "Reintenta en 30 segundos."\n}'],
+    "Falla interna":['500 Internal Server Error','{\n  "type": "about:blank",\n  "title": "Error interno",\n  "status": 500,\n  "trace_id": "4bf92f3577b34da6"\n}\n# El stack trace va al log con ese trace_id, nunca a la respuesta']
+  };
+  let sel = "Validación";
+  function draw(){
+    el.innerHTML = '<h3>El mismo formato para todos los errores</h3><div class="row">'+Object.keys(E).map(k=>'<button class="btn'+(k===sel?" sel":"")+'" data-e="'+k+'">'+k+'</button>').join("")+'</div>'
+      + pre("HTTP/1.1 "+E[sel][0]+"\nContent-Type: application/problem+json\n\n"+E[sel][1])
+      + '<p class="note" style="margin:0">El frontend siempre lee <code>title</code> para mostrar el mensaje y <code>status</code> para decidir qué hacer.</p>';
+  }
+  el.addEventListener("click", e=>{ if(e.target.dataset.e){ sel=e.target.dataset.e; draw(); } });
+  draw();
+};
+DEMOS.idemkey = el => {
+  let useKey = true, lose = true, charges = [], log = [], key = null, sent = false, nextId = 501;
+  const store = {};
+  function draw(){
+    el.innerHTML = '<h3>Paga, pierde la respuesta y reintenta</h3>'
+      + choice("Header",[["si","Enviar Idempotency-Key"],["no","Sin clave"]],useKey?"si":"no")
+      + choice("Red",[["si","La respuesta se pierde (timeout)"],["no","La respuesta llega"]],lose?"si":"no")
+      + '<div class="row"><button class="btn pri" data-a="pay"'+(sent?" disabled":"")+'>Pagar $76.000</button><button class="btn" data-a="retry"'+(sent?"":" disabled")+'>Reintentar</button><button class="btn" data-a="r">Reiniciar</button></div>'
+      + '<div class="cols"><div><div class="tag mute">Cobros reales en la tarjeta</div><div class="state">'+(charges.length?charges.map(c=>c+" · $76.000").join("\n"):"ninguno")+'</div></div><div><div class="tag mute">Registro</div><div class="log">'+(log.length?log.map(l=>'<div class="'+(l.c?"ch":"")+'">'+esc(l.t)+'</div>').join(""):'<div>Sin intentos</div>')+'</div></div></div>'
+      + (charges.length>1 ? '<div class="res bad"><b>Cobro duplicado.</b> Cada reintento sin clave fue tratado como un pago nuevo.</div>' : charges.length===1 && log.length>1 ? '<div class="res ok"><b>Un solo cobro.</b> El servidor reconoció la clave y devolvió la respuesta guardada.</div>' : "");
+  }
+  function attempt(){
+    let reply;
+    if (useKey && store[key]){ reply = "201 (repetida) "+store[key]; log.unshift({t:"Idempotency-Key "+key.slice(0,8)+"… ya existe → devuelve "+store[key]+" sin cobrar"}); }
+    else { const id = "pay_"+(nextId++); charges.push(id); if (useKey) store[key]=id; reply = "201 "+id; log.unshift({t:"Procesa y cobra → "+id+(useKey?" (guarda la clave)":""), c:true}); }
+    if (lose) log.unshift({t:"✘ timeout: el cliente no recibió «"+reply+"»"});
+    else log.unshift({t:"✔ el cliente recibió "+reply});
+  }
+  el.addEventListener("click", e=>{
+    const t = e.target;
+    if (t.dataset.k){ if(t.dataset.k==="Header") useKey=t.dataset.v==="si"; else lose=t.dataset.v==="si"; draw(); return; }
+    if (t.dataset.a==="pay"){ key = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); sent = true; attempt(); }
+    if (t.dataset.a==="retry") attempt();
+    if (t.dataset.a==="r"){ charges=[]; log=[]; sent=false; key=null; for (const k in store) delete store[k]; }
+    draw();
+  });
+  draw();
+};
+
+DEMOS.ratelimit = el => {
+  const CAP = 5; let tokens = CAP, last = "";
+  function draw(){
+    el.innerHTML = '<h3>Token bucket: 5 de capacidad, se recarga 1 cada 2 segundos</h3>'
+      + '<div class="row"><button class="btn pri" data-a="1">Enviar 1 petición</button><button class="btn" data-a="8">Enviar 8 seguidas</button></div>'
+      + '<div class="row" aria-label="Cupo disponible">'+Array.from({length:CAP},(_,k)=>'<span style="width:28px;height:28px;border-radius:6px;background:'+(k<tokens?"var(--ok)":"var(--line)")+'"></span>').join("")+'<span class="note">'+tokens+' de '+CAP+' disponibles</span></div>'
+      + last;
+  }
+  function send(){
+    if (tokens>0){ tokens--; return "HTTP/1.1 200 OK\nRateLimit-Limit: 5\nRateLimit-Remaining: "+tokens; }
+    return "HTTP/1.1 429 Too Many Requests\nRetry-After: 2\nContent-Type: application/problem+json\n\n{\"title\":\"Demasiadas peticiones\",\"status\":429}";
+  }
+  el.addEventListener("click", e=>{
+    const n = +e.target.dataset.a; if(!n) return;
+    let out = [], ok = 0, rej = 0;
+    for (let i=0;i<n;i++){ const r = send(); r.includes("429")?rej++:ok++; out.push(r); }
+    last = pre(out[out.length-1]) + '<div class="res '+(rej?"bad":"ok")+'">'+ok+' aceptadas, '+rej+' rechazadas con 429.'+(rej?' Un cliente bien hecho espera lo que dice Retry-After antes de reintentar.':'')+'</div>';
+    draw();
+  });
+  timers.push(setInterval(()=>{ if (tokens<CAP && document.body.contains(el)){ tokens++; draw(); } }, 2000));
+  draw();
+};
+
+DEMOS.compare = el => {
+  const S = [
+    ["API pública de catálogo para terceros","REST","Simple, cacheable con HTTP, fácil de documentar con OpenAPI y conocida por todos."],
+    ["App móvil y web con pantallas que necesitan campos muy distintos","GraphQL","Cada cliente pide exactamente lo que necesita en una sola llamada. Costo: caché más difícil y límites de complejidad de consultas."],
+    ["Microservicio de inventario que llama 2.000 veces por segundo al de precios","gRPC","Binario, contratos tipados con Protocol Buffers, HTTP/2 y streaming. No es para el navegador."],
+    ["Chat de soporte entre cliente y agente","WebSockets","Ambos lados envían mensajes en cualquier momento por una conexión persistente."],
+    ["Mostrar el estado del pedido mientras avanza, o la respuesta de una IA token por token","SSE","Solo el servidor envía datos. Funciona sobre HTTP normal y el navegador reconecta solo."],
+    ["La pasarela de pagos debe avisarte cuando un pago se aprueba","Webhook","Ellos llaman a tu endpoint cuando ocurre el evento. Verifica la firma y procésalo de forma idempotente, porque pueden reenviarlo."]
+  ];
+  let i = 0;
+  function draw(){
+    el.innerHTML = '<h3>¿Qué tecnología usarías?</h3><div class="row">'+S.map((s,k)=>'<button class="btn'+(k===i?" sel":"")+'" data-i="'+k+'">'+(k+1)+'. '+esc(s[0])+'</button>').join("")+'</div>'
+      + '<div class="res ok"><b>'+S[i][1]+'.</b> '+S[i][2]+'</div>';
+  }
+  el.addEventListener("click", e=>{ if(e.target.dataset.i){ i=+e.target.dataset.i; draw(); } });
+  draw();
+};
+
+DEMOS.security = el => {
+  const O = {
+    "localStorage":["Alto: cualquier script inyectado lo lee y lo envía","Ninguno: no viaja solo","Sí","Lo más común en SPAs. Si lo usas, el access token debe durar poco y la app debe tener una CSP estricta."],
+    "sessionStorage":["Alto: igual que localStorage","Ninguno","No (se borra al cerrar la pestaña)","Reduce la ventana de exposición, pero no protege de XSS."],
+    "Memoria (variable en un servicio)":["Medio: un XSS activo podría usarlo mientras la página está abierta, pero no robarlo para después tan fácil","Ninguno","No","Buen lugar para el access token corto, combinado con refresh en cookie."],
+    "Cookie HttpOnly + Secure + SameSite":["Bajo: JavaScript no puede leerla","Sí, mitigado con SameSite y token CSRF","Sí","Recomendado para el refresh token (o para la sesión completa si el frontend y la API comparten dominio)."]
+  };
+  let sel = "localStorage";
+  function draw(){
+    const o = O[sel];
+    el.innerHTML = '<h3>¿Dónde guarda el cliente el token?</h3><div class="row">'+Object.keys(O).map(k=>'<button class="btn'+(k===sel?" sel":"")+'" data-o="'+esc(k)+'">'+esc(k)+'</button>').join("")+'</div>'
+      + '<div class="tw"><table class="t"><tbody><tr><th>Riesgo XSS</th><td>'+o[0]+'</td></tr><tr><th>Riesgo CSRF</th><td>'+o[1]+'</td></tr><tr><th>Sobrevive recargar</th><td>'+o[2]+'</td></tr><tr><th>Veredicto</th><td>'+o[3]+'</td></tr></tbody></table></div>';
+  }
+  el.addEventListener("click", e=>{ if(e.target.dataset.o){ sel=e.target.dataset.o; draw(); } });
+  draw();
+};
+
+/* ---------- simulacro ---------- */
+const OPEN = [
+  ["Explica qué pasa desde que escribes una URL hasta que ves la página.",T[0].ans],
+  ["¿Cuál es la diferencia entre PUT y PATCH?","PUT reemplaza la representación completa del recurso: los campos que no envíes se pierden, y es idempotente. PATCH aplica un cambio parcial y su idempotencia depende de cómo esté definido el cambio. Uso PUT cuando el cliente envía el recurso completo y PATCH para actualizaciones de pocos campos, como cambiar el email de un cliente."],
+  ["¿Qué significa que un método sea idempotente y por qué importa?",T[4].ans],
+  ["¿Cuál es la diferencia entre 401 y 403?","401 significa que la petición no está autenticada: falta el token o es inválido o expiró, y el cliente debe autenticarse de nuevo. 403 significa que el servidor sabe quién eres, pero no tienes permiso para esa acción, y reautenticarte no cambia nada. En la práctica, el interceptor del frontend redirige al login o refresca el token ante un 401, y muestra un mensaje de permiso ante un 403."],
+  ["¿Qué es CORS y cómo lo solucionas?",T[9].ans],
+  ["¿Qué es un JWT y cuáles son sus ventajas y desventajas frente a las sesiones?",T[8].ans+" La ventaja frente a sesiones es que no necesita almacenamiento compartido y escala fácil; la desventaja es que no se puede revocar fácilmente y que el payload es legible."],
+  ["¿Qué hace que una API sea RESTful?",T[13].ans],
+  ["¿Cómo diseñarías la paginación de un endpoint con millones de registros?","Usaría paginación por cursor: el cliente envía un cursor opaco que codifica la posición, por ejemplo el último id o la combinación de fecha e id, y la consulta usa WHERE id < cursor ORDER BY id DESC LIMIT n, apoyada en un índice. Es estable cuando se insertan registros y no degrada con la profundidad, a diferencia de OFFSET, que obliga a la base de datos a leer y descartar filas. Devuelvo next_cursor y has_more, y fijo un límite máximo por página."],
+  ["¿Cómo evitas cobros duplicados si el cliente reintenta un pago?",T[16].ans],
+  ["¿Cómo funciona el caché HTTP?",T[10].ans],
+  ["¿Cuándo usarías GraphQL, gRPC o WebSockets en lugar de REST?",T[18].ans],
+  ["¿Qué medidas de seguridad básicas aplicarías a una API nueva?",T[19].ans]
+];
+const MCQ = [
+  {q:"¿Qué parte de la URL nunca llega al servidor?",o:["La query string","El puerto","El fragmento (#)","El host"],a:2},
+  {q:"¿Cuál de estos métodos NO es idempotente por definición?",o:["PUT","DELETE","POST","GET"],a:2},
+  {q:"Un endpoint responde 200 con {\"error\":\"no encontrado\"}. ¿Qué está mal?",o:["Nada, es una práctica válida","Debería ser 404: el código debe reflejar el resultado","Debería ser 500","Debería ser 204"],a:1},
+  {q:"¿Qué header envía el cliente para indicar el formato que quiere recibir?",o:["Content-Type","Accept","Vary","Location"],a:1},
+  {q:"Cache-Control: no-cache significa…",o:["No guardar nunca la respuesta","Guardar, pero revalidar antes de usarla","Guardar solo en el CDN","Expira en 0 segundos y se borra"],a:1},
+  {q:"¿Quién hace cumplir la política de CORS?",o:["El servidor","El navegador","El CDN","El framework del frontend"],a:1},
+  {q:"El payload de un JWT…",o:["Está cifrado y nadie lo puede leer","Está codificado en Base64URL y cualquiera lo puede leer","Solo lo puede leer el servidor","Contiene la clave secreta"],a:1},
+  {q:"El balanceador no recibió respuesta de tu app a tiempo. Código:",o:["500","502","503","504"],a:3},
+  {q:"¿En qué nivel de Richardson está una API con recursos, métodos y códigos correctos, pero sin enlaces?",o:["Nivel 0","Nivel 1","Nivel 2","Nivel 3"],a:2},
+  {q:"¿Cuál es la principal ventaja de la paginación por cursor?",o:["Permite saltar a cualquier página","Es estable ante inserciones y eficiente en tablas grandes","Devuelve el total de registros","No necesita índices"],a:1},
+  {q:"OAuth2 es principalmente un framework de…",o:["Autenticación","Autorización delegada","Cifrado de transporte","Rate limiting"],a:1},
+  {q:"¿Qué mejora principal trajo HTTP/3?",o:["Formato de texto legible","Transporte sobre QUIC: una pérdida de paquete no bloquea todos los streams","Elimina los headers","Reemplaza los métodos HTTP"],a:1},
+  {q:"Recibes 429 con Retry-After: 30. ¿Qué hace un cliente bien diseñado?",o:["Reintenta de inmediato","Espera 30 s y luego reintenta con backoff","Muestra un error 500","Cambia de método"],a:1},
+  {q:"¿Qué vulnerabilidad es la más común en APIs según OWASP?",o:["Inyección SQL","Autorización rota a nivel de objeto","CORS abierto","HTTP/1.1"],a:1}
+];
+
+/* ---------- render ---------- */
+let done = new Set();
+try { done = new Set(JSON.parse(localStorage.getItem("httpGuiaRepasados")||"[]")); } catch(e){}
+const saveDone = () => { try { localStorage.setItem("httpGuiaRepasados", JSON.stringify([...done])); } catch(e){} };
+const FREQ = {casi:"Casi siempre en entrevistas", seguido:"Seguido en entrevistas", aveces:"A veces en entrevistas"};
+
+function quiz(list, title){
+  const box = document.createElement("div"); box.className="ex";
+  box.innerHTML = '<h3>'+title+'</h3>' + list.map((q,i)=>'<div class="q" data-q="'+i+'"><p>'+esc(q.q)+'</p><div class="opts">'+q.o.map((o,k)=>'<button class="btn" data-k2="'+k+'">'+esc(o)+'</button>').join("")+'</div><div class="why" hidden></div></div>').join("");
+  box.addEventListener("click", e=>{
+    const b = e.target.closest("[data-k2]"); if(!b) return;
+    const qel = b.closest(".q"), q = list[+qel.dataset.q], k = +b.dataset.k2;
+    if (qel.dataset.ans) return; qel.dataset.ans = "1";
+    qel.querySelectorAll("[data-k2]").forEach(x=>{ if(+x.dataset.k2===q.a) x.classList.add("right"); });
+    if (k!==q.a) b.classList.add("wrong");
+    const w = qel.querySelector(".why"); w.hidden=false; w.innerHTML = (k===q.a?"<b>Correcto.</b> ":"<b>No es esa.</b> ")+esc(q.w);
+  });
+  return box;
+}
+function review(list){
+  const box = document.createElement("div"); box.className="ex";
+  box.innerHTML = '<h3>Revisa este diseño: ¿cada endpoint está bien o tiene un error?</h3>' + list.map((r,i)=>'<div class="q" data-r="'+i+'"><p><code>'+esc(r.e)+'</code></p><div class="opts"><button class="btn" data-v2="1">Está bien</button><button class="btn" data-v2="0">Tiene un error</button></div><div class="why" hidden></div></div>').join("");
+  box.addEventListener("click", e=>{
+    const b = e.target.closest("[data-v2]"); if(!b) return;
+    const qel = b.closest(".q"), r = list[+qel.dataset.r]; if (qel.dataset.ans) return; qel.dataset.ans="1";
+    const right = (b.dataset.v2==="1")===r.ok;
+    b.classList.add(right?"right":"wrong");
+    const w = qel.querySelector(".why"); w.hidden=false; w.innerHTML = (right?"<b>Correcto.</b> ":"<b>Revisa.</b> ")+esc(r.w);
+  });
+  return box;
+}
+function sec(title, html){ return '<section class="sec"><h3>'+title+'</h3>'+html+'</section>'; }
+
+function renderTopic(i){
+  const t = T[i], v = document.getElementById("view");
+  v.innerHTML =
+    '<div class="head"><span class="eyebrow">TEMA '+(i+1)+' DE 20</span><h1>'+t.t+'</h1><span class="pill '+t.f+'"><i class="dot '+t.f+'"></i>'+FREQ[t.f]+'</span></div>'
+    + '<p class="def">'+t.def+'</p>'
+    + sec("Analogía", '<p class="analogy">'+t.ana+'</p>')
+    + sec("Así viaja por la red", pre(t.raw))
+    + (t.py ? sec("Del lado del servidor en FastAPI", '<pre class="wire">'+esc(t.py)+'</pre>') : "")
+    + sec("Qué problema resuelve", '<p>'+t.prob+'</p>' + (t.bad ? '<div class="cols"><div><div class="tag bad">Mal</div>'+pre(t.bad)+'</div><div><div class="tag good">Bien</div>'+pre(t.good)+'</div></div>' : ""))
+    + '<div class="bridge"><div class="tag">Puente con tu frontend</div><p style="margin:0">'+t.bridge+'</p></div>'
+    + sec("Malentendidos comunes de quien solo consume APIs", '<ul>'+t.myths.map(m=>'<li>'+m+'</li>').join("")+'</ul>')
+    + '<div class="demo" id="demoBox"><div class="tag">Demo interactiva</div><div id="demoIn" style="display:flex;flex-direction:column;gap:12px"></div></div>'
+    + '<div id="exBox"></div>'
+    + '<details class="reveal"><summary>Respuesta modelo para la entrevista (intenta decirla en voz alta primero)</summary><div class="answer"><div class="tag">Respuesta modelo</div><p style="margin:0">'+t.ans+'</p></div></details>'
+    + '<div class="markdone"><button class="btn'+(done.has(i)?" sel":"")+'" id="markBtn">'+(done.has(i)?"✔ Repasado":"Marcar como repasado")+'</button><div class="row">'
+    + (i>0?'<button class="btn" data-go="t'+i+'">← Anterior</button>':"")
+    + '<button class="btn pri" data-go="'+(i<19?"t"+(i+2):"simulacro")+'">'+(i<19?"Siguiente tema →":"Ir al simulacro →")+'</button></div></div>';
+  DEMOS[t.demo]($(v,"#demoIn"));
+  const ex = $(v,"#exBox");
+  if (t.ex) ex.appendChild(quiz(t.ex, t.demo==="status"||t.ex.some(q=>/^\d{3}$/.test(q.o[0]))?"¿Qué código de estado devuelve este caso?":"¿Qué método o respuesta corresponde?"));
+  if (t.review) ex.appendChild(review(t.review));
+  $(v,"#markBtn").addEventListener("click", ()=>{ done.has(i)?done.delete(i):done.add(i); saveDone(); renderTopic(i); nav(); });
+}
+
+function renderSim(){
+  const v = document.getElementById("view");
+  let answers = {};
+  v.innerHTML = '<div class="head"><span class="eyebrow">SIMULACRO FINAL</span><h1>Simulacro de entrevista</h1></div>'
+    + '<p class="def">Primero responde en voz alta las preguntas abiertas, como si estuvieras frente al entrevistador, y solo después abre la respuesta modelo. Luego haz el test.</p>'
+    + sec("Preguntas abiertas", '<div class="ex">'+OPEN.map((o,k)=>'<details class="reveal"><summary>'+(k+1)+'. '+o[0]+'</summary><div class="answer"><div class="tag">Respuesta modelo</div><p style="margin:0">'+o[1]+'</p></div></details>').join("")+'</div>')
+    + '<section class="sec"><h3>Test de opción múltiple</h3><div class="ex" id="mcq"></div><div class="box" id="scoreBox" style="margin-top:14px"></div></section>'
+    + '<div class="markdone"><span class="note">'+done.size+' de 20 temas repasados</span><button class="btn" data-go="t20">← Volver al tema 20</button></div>';
+  const m = $(v,"#mcq");
+  function drawScore(){
+    const n = Object.keys(answers).length, ok = Object.values(answers).filter(Boolean).length;
+    $(v,"#scoreBox").innerHTML = '<div class="row" style="justify-content:space-between"><div><div class="score">'+ok+' / '+MCQ.length+'</div><div class="note">'+(n<MCQ.length?"Respondidas "+n+" de "+MCQ.length:(ok>=12?"Listo para la entrevista en este tema.":ok>=9?"Bien. Repasa los temas de las preguntas que fallaste.":"Vuelve a los temas marcados como «casi siempre» antes de repetir."))+'</div></div><button class="btn" id="resetMcq">Reiniciar test</button></div>';
+    $(v,"#resetMcq").onclick = ()=>{ answers={}; drawMcq(); };
+  }
+  function drawMcq(){
+    m.innerHTML = MCQ.map((q,i)=>'<div class="q" data-q="'+i+'"><p>'+(i+1)+'. '+esc(q.q)+'</p><div class="opts">'+q.o.map((o,k)=>'<button class="btn" data-k3="'+k+'">'+esc(o)+'</button>').join("")+'</div></div>').join("");
+    drawScore();
+  }
+  m.addEventListener("click", e=>{
+    const b = e.target.closest("[data-k3]"); if(!b) return;
+    const qel = b.closest(".q"), i = +qel.dataset.q; if (i in answers) return;
+    answers[i] = +b.dataset.k3===MCQ[i].a;
+    qel.querySelectorAll("[data-k3]").forEach(x=>{ if(+x.dataset.k3===MCQ[i].a) x.classList.add("right"); });
+    if (!answers[i]) b.classList.add("wrong");
+    drawScore();
+  });
+  drawMcq();
+}
+
+function nav(){
+  const cur = location.hash.slice(1) || "t1";
+  document.getElementById("nav").innerHTML = T.map((t,i)=>'<li><button data-go="t'+(i+1)+'" class="'+(cur==="t"+(i+1)?"on ":"")+(done.has(i)?"done":"")+'"><span class="n">'+(done.has(i)?"✔":String(i+1).padStart(2,"0"))+'</span><span>'+t.t+'</span><i class="dot '+t.f+'"></i></button></li>').join("")
+    + '<li class="navsep">Cierre</li><li><button data-go="simulacro" class="'+(cur==="simulacro"?"on":"")+'"><span class="n">★</span><span>Simulacro de entrevista</span><span></span></button></li>';
+  document.getElementById("msel").innerHTML = T.map((t,i)=>'<option value="t'+(i+1)+'"'+(cur==="t"+(i+1)?" selected":"")+'>'+(done.has(i)?"✔ ":"")+(i+1)+'. '+t.t.replace(/<[^>]+>/g,"")+'</option>').join("") + '<option value="simulacro"'+(cur==="simulacro"?" selected":"")+'>★ Simulacro de entrevista</option>';
+  const pct = done.size/20*100;
+  document.getElementById("progTxt").textContent = done.size+" de 20 repasados";
+  document.getElementById("progBar").style.width = pct+"%";
+  document.getElementById("progBar2").style.width = pct+"%";
+}
+function route(){
+  clearTimers();
+  const h = location.hash.slice(1);
+  const m = /^t(\d+)$/.exec(h);
+  if (h==="simulacro") renderSim();
+  else renderTopic(m && +m[1]>=1 && +m[1]<=20 ? +m[1]-1 : 0);
+  nav();
+  window.scrollTo(0,0);
+}
+document.addEventListener("click", e=>{ const g = e.target.closest("[data-go]"); if(g){ location.hash = g.dataset.go; } });
+document.getElementById("msel").addEventListener("change", e=>{ location.hash = e.target.value; });
+window.addEventListener("hashchange", route);
+route();
+</script>
+
+</body></html>

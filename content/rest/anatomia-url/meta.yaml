@@ -1,0 +1,10 @@
+id: anatomia-url
+track: rest
+order: 3
+freq: often
+concepts:
+  - query-string
+  - parametro-de-ruta
+  - fragmento
+related:
+  - diseno-api-rest

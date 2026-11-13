@@ -1,0 +1,63 @@
+.top {
+  position: fixed;
+  top: var(--gap);
+  left: var(--gap);
+  right: var(--gap);
+  height: var(--top-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  z-index: 30;
+  border-radius: 28px !important;
+}
+.brand {
+  font: 700 12px var(--mono);
+  letter-spacing: 0.32em;
+  background: linear-gradient(90deg, var(--green), var(--cyan), var(--violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap;
+}
+.seg {
+  display: flex;
+  padding: 3px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--edge-soft);
+  flex: none;
+}
+.seg button {
+  padding: 5px 12px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.25s;
+}
+.seg button.on {
+  background: rgba(167, 139, 250, 0.2);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(167, 139, 250, 0.25);
+}
+@media (max-width: 1080px) {
+  .brand {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .toggle {
+    display: none;
+  }
+  .top {
+    gap: 6px;
+    padding: 0 8px;
+  }
+  .seg button {
+    padding: 5px 8px;
+  }
+}

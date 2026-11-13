@@ -1,0 +1,10 @@
+id: https-tls
+track: rest
+order: 12
+freq: often
+concepts:
+  - tls
+  - certificado
+related:
+  - url-a-respuesta
+  - seguridad-api

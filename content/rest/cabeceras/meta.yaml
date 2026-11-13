@@ -1,0 +1,10 @@
+id: cabeceras
+track: rest
+order: 7
+freq: often
+concepts:
+  - content-type
+  - negociacion-de-contenido
+related:
+  - anatomia-peticion-respuesta
+  - cache-http

@@ -1,0 +1,203 @@
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.6 var(--sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+button:disabled {
+  cursor: default;
+}
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+a {
+  color: var(--track);
+}
+
+/* ---------- Fondo: auroras ---------- */
+.aurora {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(110px);
+  opacity: 0.34;
+  pointer-events: none;
+}
+.aurora.a1 {
+  width: 58vw;
+  height: 58vw;
+  left: -14vw;
+  top: -22vw;
+  background: radial-gradient(circle, #1f9d6b, transparent 62%);
+  animation: drift1 70s ease-in-out infinite alternate;
+}
+.aurora.a2 {
+  width: 52vw;
+  height: 52vw;
+  right: -12vw;
+  bottom: -24vw;
+  background: radial-gradient(circle, #6d40d9, transparent 62%);
+  animation: drift2 90s ease-in-out infinite alternate;
+}
+.aurora.a3 {
+  width: 36vw;
+  height: 36vw;
+  left: 38vw;
+  top: 26vh;
+  background: radial-gradient(circle, #0e7490, transparent 64%);
+  opacity: 0.22;
+  animation: aurora-pulse 16s ease-in-out infinite;
+}
+@keyframes drift1 {
+  to {
+    transform: translate(9vw, 7vh) scale(1.12);
+  }
+}
+@keyframes drift2 {
+  to {
+    transform: translate(-8vw, -6vh) scale(1.1);
+  }
+}
+@keyframes aurora-pulse {
+  50% {
+    opacity: 0.34;
+    transform: scale(1.08);
+  }
+}
+:root[data-reading] .aurora,
+:root[data-motion='off'] .aurora {
+  animation-play-state: paused;
+}
+
+/* Velo sobre el cerebro con el lector abierto (modos del lector) */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 55% 50%, rgba(4, 5, 10, 0.5), rgba(4, 5, 10, 0.3));
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+  z-index: 1;
+}
+:root[data-reading] .scrim {
+  opacity: 0.7;
+}
+:root[data-reading][data-reader-mode='solid'] .scrim {
+  opacity: 0.55;
+}
+:root[data-reading][data-reader-mode='pure'] .scrim {
+  opacity: 0;
+}
+
+/* ---------- Cristal ---------- */
+.glass {
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--edge);
+  border-radius: var(--r);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ---------- Bloques de código (Shiki) ---------- */
+pre,
+pre.shiki {
+  margin: 0;
+  font: 400 12.5px/1.65 var(--mono);
+  background: var(--code-bg) !important;
+  border: 1px solid var(--edge-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+  overflow: auto;
+  color: var(--code-ink);
+  text-shadow: none;
+  max-width: 100%;
+}
+code {
+  font: 500 13px var(--mono);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+pre code {
+  font: inherit;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* ---------- Comunes ---------- */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 10px var(--c);
+  flex: none;
+}
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  flex: none;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--ink);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

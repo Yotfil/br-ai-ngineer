@@ -1,0 +1,12 @@
+id: rate-limiting
+track: rest
+order: 18
+freq: often
+concepts:
+  - token-bucket-concepto
+  - "429"
+  - retry-after
+related:
+  - reintentos
+  - codigos-de-estado
+demo: token-bucket

@@ -1,0 +1,101 @@
+:root {
+  --brain-inset-left: var(--sw);
+}
+:root[data-collapsed] {
+  --sw: var(--sw-collapsed);
+}
+@media (max-width: 760px) {
+  :root {
+    --brain-inset-left: 0px;
+  }
+}
+
+.stage {
+  position: fixed;
+  top: calc(var(--gap) + var(--top-h) + var(--gap));
+  bottom: var(--gap);
+  left: calc(var(--sw) + 2 * var(--gap));
+  right: var(--gap);
+  z-index: 10;
+  display: flex;
+  gap: var(--gap);
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  transition:
+    opacity 0.28s,
+    transform 0.28s var(--ease-out),
+    left 0.3s var(--ease-std);
+}
+.stage.open {
+  opacity: 1;
+  transform: none;
+}
+.stage.open > * {
+  pointer-events: auto;
+}
+.inlineRelated {
+  display: none;
+}
+
+@media (max-width: 1080px) {
+  .stage {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .sideRelated {
+    display: none;
+  }
+  .inlineRelated {
+    display: block;
+  }
+}
+@media (max-width: 760px) {
+  .stage {
+    left: var(--gap);
+    bottom: calc(var(--gap) + 72px + var(--gap));
+  }
+}
+
+/* Decisión 18: ayuda de gestos (leyenda de la maqueta sin los colores de las pistas). */
+.gestureHint {
+  position: fixed;
+  left: calc(var(--sw) + 2 * var(--gap));
+  right: var(--gap);
+  bottom: 20px;
+  z-index: 5;
+  margin: 0;
+  text-align: center;
+  font: 500 11px var(--mono);
+  color: var(--muted);
+  pointer-events: none;
+  user-select: none;
+  transition:
+    opacity 0.28s,
+    transform 0.28s var(--ease-out),
+    left 0.3s var(--ease-std);
+}
+.gestureHint.hintHidden {
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+}
+@media (max-width: 1080px) {
+  .gestureHint {
+    display: none;
+  }
+}
+
+.toast {
+  position: fixed;
+  top: calc(var(--gap) + var(--top-h) + 2 * var(--gap));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  padding: 10px 18px;
+  font-size: 14px;
+  animation: rise 0.3s var(--ease-out) both;
+}

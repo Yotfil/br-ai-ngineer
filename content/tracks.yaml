@@ -1,0 +1,26 @@
+# Pistas. Una pista sin temas se muestra como "Próximamente".
+- id: rest
+  abbr: RE
+  color: "#22d3ee"
+  order: 1
+  name: { es: HTTP y REST, en: HTTP & REST }
+- id: python
+  abbr: PY
+  color: "#4ade80"
+  order: 2
+  name: { es: Python y FastAPI, en: Python & FastAPI }
+- id: sql
+  abbr: SQ
+  color: "#fbbf24"
+  order: 3
+  name: { es: SQL, en: SQL }
+- id: git
+  abbr: GI
+  color: "#fb7a4a"
+  order: 4
+  name: { es: Git, en: Git }
+- id: oop
+  abbr: OO
+  color: "#a78bfa"
+  order: 5
+  name: { es: POO, en: OOP }

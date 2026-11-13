@@ -1,0 +1,79 @@
+{
+  "brand": "CEREBRO",
+  "langName": "English",
+  "top": {
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "language": "Language",
+    "motionStop": "Stop animations",
+    "motionResume": "Resume animations"
+  },
+  "search": {
+    "placeholder": "Search a concept: idempotency, CORS, 429…",
+    "label": "Search a concept",
+    "shortcut": "Ctrl K",
+    "empty": "No results",
+    "topic": "Topic",
+    "concept": "Concept",
+    "conceptOf": "Concept · {{topic}}"
+  },
+  "side": {
+    "tracks": "Tracks",
+    "soon": "Coming soon",
+    "topics": "{{track}} topics"
+  },
+  "freq": {
+    "always": "almost always",
+    "often": "often",
+    "sometimes": "sometimes"
+  },
+  "reader": {
+    "close": "Close",
+    "loading": "Loading…",
+    "prev": "← Previous",
+    "next": "Next topic →",
+    "tabs": {
+      "understand": "Understand",
+      "code": "In code",
+      "practice": "Practice",
+      "interview": "In the interview"
+    },
+    "mode": {
+      "label": "Reader background mode",
+      "glass": "◻ Glass",
+      "pure": "○ No background",
+      "solid": "◼ Solid"
+    },
+    "notFound": "Topic not found."
+  },
+  "section": {
+    "analogy": "Analogy",
+    "problem": "What problem it solves",
+    "code:wire": "How it travels over the wire",
+    "code:server": "On the server (FastAPI)",
+    "bad": "Risky",
+    "good": "Correct",
+    "bridge:typescript": "Frontend bridge (TypeScript)",
+    "interview": "What to say in the interview",
+    "myths": "Common misconceptions"
+  },
+  "exercise": {
+    "right": "Correct.",
+    "wrongChoice": "Not that one.",
+    "wrongVerdict": "Check again.",
+    "isOk": "It is fine",
+    "hasError": "It has an error"
+  },
+  "related": {
+    "concepts": "Concepts in this topic",
+    "related": "Related",
+    "none": "—"
+  },
+  "brain": {
+    "label": "Concept map",
+    "gestures": "click: open · drag: rotate · Shift + drag: pan · wheel: zoom"
+  },
+  "demo": {
+    "label": "Interactive demo"
+  }
+}

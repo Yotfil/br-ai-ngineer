@@ -1,0 +1,109 @@
+.wrap {
+  position: fixed;
+  left: var(--gap);
+  right: var(--gap);
+  bottom: var(--gap);
+  z-index: 25;
+  transform: translateY(calc(100% + 2 * var(--gap)));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.35s var(--ease-std),
+    opacity 0.3s;
+}
+@media (max-width: 760px) {
+  .wrap {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.bar {
+  height: 72px;
+  border-radius: 28px !important;
+  overflow: hidden;
+}
+.scroller {
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+.track {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+  width: max-content;
+}
+.icon {
+  --s: 1;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  scroll-snap-align: center;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font: 700 12px var(--mono);
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  transform: scale(calc(var(--s) * 0.82));
+  transition:
+    box-shadow 0.25s,
+    opacity 0.25s,
+    transform 0.12s linear;
+}
+.center {
+  box-shadow: 0 0 22px color-mix(in srgb, var(--c) 50%, transparent);
+}
+.empty {
+  opacity: 0.45;
+}
+/* Decisión 19: la hoja no es de cristal; fondo casi opaco en cualquier modo del lector. */
+.sheet {
+  background: var(--glass-strong);
+  border: 1px solid var(--edge);
+  border-radius: var(--r);
+  box-shadow: var(--glass-shadow);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 10px);
+  max-height: 52vh;
+  overflow: auto;
+  padding: 12px 8px;
+  animation: rise 0.3s var(--ease-out) both;
+}
+.sheet h6 {
+  margin: 0 10px 8px;
+  font: 500 10px var(--mono);
+  letter-spacing: 0.2em;
+  color: var(--c);
+  text-transform: uppercase;
+}
+.sub {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.sub:hover,
+.cur {
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+}
+.soon {
+  margin: 4px 10px;
+  color: var(--muted);
+}

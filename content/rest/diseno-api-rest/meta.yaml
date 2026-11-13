@@ -1,0 +1,12 @@
+id: diseno-api-rest
+track: rest
+order: 15
+freq: always
+concepts:
+  - paginacion
+  - paginacion-por-cursor
+  - versionado-de-api
+related:
+  - rest-richardson
+  - anatomia-url
+  - errores-problem-details

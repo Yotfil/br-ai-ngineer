@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git a fondo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Plan: manual de campo de terminal. Índice lateral fijo + columna de lectura de ~70ch. Acento naranja Git para main, verde azulado para feature. */
+  --bg:#f2f5f7; --surface:#ffffff; --surface-2:#e9eef2; --ink:#14202b; --muted:#536373; --line:#d3dce4;
+  --accent:#cf4519; --accent-soft:#fbe3d9; --on-accent:#ffffff;
+  --teal:#1c7686; --teal-soft:#d8edf0; --violet:#6a4cbf; --violet-soft:#e7e1f7;
+  --good:#1b7a44; --good-soft:#dcf0e3; --bad:#b32f2f; --bad-soft:#f6dcdc; --warn:#8f620e; --warn-soft:#f6ecd5;
+  --code-bg:#0f1a24; --code-ink:#d6e2ec; --code-muted:#7d93a6; --code-key:#ff9a6e;
+  --on-node:#ffffff;
+  --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1218; --surface:#121c25; --surface-2:#192530; --ink:#e1e9f0; --muted:#97a8b7; --line:#26343f;
+    --accent:#ff7448; --accent-soft:#3a1d13; --on-accent:#1a0b05;
+    --teal:#4ab3c4; --teal-soft:#123038; --violet:#a58ff2; --violet-soft:#241c3d;
+    --good:#4cc27e; --good-soft:#0f2e1c; --bad:#f07272; --bad-soft:#3a1616; --warn:#e3b553; --warn-soft:#33270c;
+    --code-bg:#070e14; --code-ink:#d6e2ec; --code-muted:#7d93a6; --code-key:#ff9a6e;
+    --on-node:#0b1218;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b1218; --surface:#121c25; --surface-2:#192530; --ink:#e1e9f0; --muted:#97a8b7; --line:#26343f;
+  --accent:#ff7448; --accent-soft:#3a1d13; --on-accent:#1a0b05;
+  --teal:#4ab3c4; --teal-soft:#123038; --violet:#a58ff2; --violet-soft:#241c3d;
+  --good:#4cc27e; --good-soft:#0f2e1c; --bad:#f07272; --bad-soft:#3a1616; --warn:#e3b553; --warn-soft:#33270c;
+  --code-bg:#070e14; --code-ink:#d6e2ec; --code-muted:#7d93a6; --code-key:#ff9a6e;
+  --on-node:#0b1218;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--font-body)}
+a{color:var(--teal)}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--surface-2);padding:.1em .35em;border-radius:4px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;line-height:1.2;margin:0}
+h2{font-size:1.65rem;font-weight:800}
+h3{font-size:1.02rem;font-weight:600;margin:1.6rem 0 .6rem;letter-spacing:.01em}
+p{margin:0 0 .8rem}
+.skip{position:absolute;left:-999px}.skip:focus{left:16px;top:16px;background:var(--surface);padding:8px;z-index:10}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+
+/* layout */
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100%}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface);border-right:1px solid var(--line);padding:20px 16px 40px}
+.side-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{font-family:var(--font-display);font-weight:800;font-size:1.3rem}
+.brand span{color:var(--accent)}
+.menu-btn{display:none}
+.progress{margin:14px 0 10px}
+.bar{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--good);transition:width .4s}
+.progress p{font-size:.82rem;color:var(--muted);margin:6px 0 0;font-variant-numeric:tabular-nums}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{font:500 .76rem var(--font-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:3px 10px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+nav .ng{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:14px 0 4px;font-weight:600}
+nav a{display:grid;grid-template-columns:24px 1fr auto;gap:6px;align-items:center;text-decoration:none;color:var(--ink);font-size:.88rem;padding:5px 6px;border-radius:6px;line-height:1.3}
+nav a:hover{background:var(--surface-2)}
+nav a .nn{font:600 .72rem var(--font-mono);color:var(--muted)}
+nav a .dot{width:8px;height:8px;border-radius:50%}
+nav a.done .nt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--good)}
+nav a.done .nn{color:var(--good)}
+nav a.hidden{display:none}
+.dot.f-casi{background:var(--accent)}.dot.f-seguido{background:transparent;border:2px solid var(--accent)}.dot.f-aveces{background:var(--line)}
+main{padding:32px clamp(16px,4vw,56px) 80px;max-width:1040px;width:100%}
+
+/* hero */
+.hero{padding:8px 0 24px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .lede{font-size:1.1rem;max-width:62ch;color:var(--muted);margin-top:10px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:.88rem}
+.legend div{display:flex;gap:8px;align-items:center}
+.howto{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:20px}
+.howto div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.9rem}
+.howto b{display:block;font-family:var(--font-display)}
+
+/* pills */
+.pill{font:600 .74rem var(--font-body);padding:3px 10px;border-radius:99px;white-space:nowrap;align-self:start}
+.pill.f-casi{background:var(--accent);color:var(--on-accent)}
+.pill.f-seguido{border:1.5px solid var(--accent);color:var(--accent)}
+.pill.f-aveces{background:var(--surface-2);color:var(--muted)}
+
+/* sections */
+.block{padding:40px 0;border-bottom:1px solid var(--line)}
+.topic{padding:44px 0;border-bottom:1px solid var(--line)}
+.t-head{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
+.t-num{font:800 2.2rem/1 var(--font-display);color:var(--accent);font-variant-numeric:tabular-nums}
+.t-group{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 2px;font-weight:600}
+.t-intro{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:20px;margin-top:18px}
+.t-intro h3{margin-top:0}
+.analogy{background:var(--teal-soft);border-radius:10px;padding:14px 16px;font-size:.95rem}
+.prose{max-width:72ch}
+.prose ul{padding-left:1.2rem;margin:.2rem 0 .8rem}
+.prose li{margin-bottom:.3rem}
+pre{margin:0;font:13px/1.55 var(--font-mono);overflow-x:auto}
+pre.code{background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:10px}
+pre.code .c{color:var(--code-muted)}
+pre.code .k{color:var(--code-key);font-weight:600}
+.diagrams{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:0}
+figcaption{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:6px}
+pre.diagram{color:var(--ink);font-size:12.5px}
+.rs{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.rs > div{border-radius:10px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);min-width:0}
+.rs .risky{border-top:4px solid var(--bad)}
+.rs .safe{border-top:4px solid var(--good)}
+.rs h4{margin:0 0 8px;font:600 .85rem var(--font-body)}
+.rs .risky h4{color:var(--bad)}.rs .safe h4{color:var(--good)}
+.rs pre.code{font-size:12.5px;margin-bottom:8px}
+.rs p{font-size:.9rem;margin:0}
+.lead{margin-top:22px;border-left:4px solid var(--violet);background:var(--violet-soft);padding:2px 18px 10px;border-radius:0 10px 10px 0}
+.lead h3{margin-top:12px}
+.lead ul{padding-left:1.2rem;margin:.2rem 0}
+.myths{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.myths li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:.92rem}
+.myths p{margin:0}
+.myths .m::before{content:"Malentendido";display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--bad);font-weight:600}
+.myths .r::before{content:"Realidad";display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--good);font-weight:600}
+.answer blockquote{margin:0;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;font-size:.98rem}
+.done{display:inline-flex;gap:8px;align-items:center;margin-top:20px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);padding:8px 14px;border-radius:99px}
+.done input{width:18px;height:18px;accent-color:var(--good)}
+.rescue-inline{background:var(--warn-soft);border-radius:10px;padding:2px 16px 12px;margin-top:18px}
+.rescue-inline h3{margin-top:12px;color:var(--warn)}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+.tbl{overflow-x:auto;margin:.4rem 0 1rem}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{font-weight:600;background:var(--surface-2)}
+td code{white-space:nowrap}
+
+/* labs */
+.lab{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px 18px;box-shadow:0 1px 0 var(--line)}
+.lab-title{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.lab-title h3{margin:0;font-size:1.15rem}
+.lab-tag{font:600 .7rem var(--font-body);text-transform:uppercase;letter-spacing:.08em;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:4px}
+.lab .hint{font-size:.9rem;color:var(--muted);max-width:70ch}
+.btn{font:500 .82rem var(--font-mono);border:1px solid var(--line);background:var(--surface-2);color:var(--ink);padding:6px 10px;border-radius:7px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.danger{border-color:var(--bad);color:var(--bad);background:var(--bad-soft)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.toolbar{display:flex;flex-wrap:wrap;gap:14px;margin:12px 0}
+.tgroup{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;border:1px dashed var(--line);border-radius:10px}
+.tgroup > span{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;width:100%}
+select{font:500 .82rem var(--font-mono);padding:5px 8px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.graph-wrap{overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px}
+.graph-wrap svg{display:block}
+.explain{margin-top:10px;background:var(--surface-2);border-radius:10px;padding:10px 14px;font-size:.92rem}
+.explain code{background:var(--code-bg);color:var(--code-key)}
+.explain.err{background:var(--bad-soft)}
+.outs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px}
+.outs figure pre{font-size:12px}
+.status-line{font:600 .85rem var(--font-mono);margin:4px 0 8px}
+.g-edge{fill:none;stroke:var(--muted);stroke-width:2}
+.g-edge.orphan{stroke-dasharray:4 4;opacity:.45}
+.g-node circle{stroke:var(--bg);stroke-width:3}
+.g-node.l0 circle{fill:var(--accent)}.g-node.l1 circle{fill:var(--teal)}.g-node.l2 circle{fill:var(--violet)}.g-node.l3 circle{fill:var(--muted)}
+.g-node.orphan circle{fill:var(--bg);stroke:var(--muted);stroke-dasharray:3 3;stroke-width:2}
+.g-node.orphan text.id{fill:var(--muted)}
+.g-node.orphan text.msg{opacity:.6}
+.g-node.head circle{stroke:var(--ink);stroke-width:3.5}
+.g-node text.id{fill:var(--on-node);font:600 11px var(--font-mono);text-anchor:middle;dominant-baseline:central}
+.g-node text.msg{fill:var(--muted);font:10.5px var(--font-body);text-anchor:middle}
+.g-node.new{animation:pop .5s ease-out;transform-box:fill-box;transform-origin:center}
+@keyframes pop{0%{transform:scale(.2);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.g-lbl text{font:600 11px var(--font-mono);dominant-baseline:central;text-anchor:middle}
+.g-lbl.b0 rect{fill:var(--accent)}.g-lbl.b1 rect{fill:var(--teal)}.g-lbl.b2 rect{fill:var(--violet)}
+.g-lbl text{fill:var(--on-node)}
+.g-lbl.hd rect{stroke:var(--ink);stroke-width:2.5}
+.g-lbl.det rect{fill:var(--ink)}.g-lbl.det text{fill:var(--bg)}
+.g-lbl.moved{animation:slide .55s cubic-bezier(.2,.8,.2,1)}
+@keyframes slide{from{transform:translate(var(--dx),var(--dy))}to{transform:translate(0,0)}}
+
+.areas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.area{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}
+.area h4{margin:0 0 2px;font:600 .9rem var(--font-display)}
+.area .sub{font:11px var(--font-mono);color:var(--muted);margin-bottom:8px}
+.fcard{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:8px;padding:8px;margin-bottom:8px}
+.fcard .fn{font:600 .84rem var(--font-mono);display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.fcard .st{font:500 .72rem var(--font-body);color:var(--muted)}
+.fcard.mod{border-left-color:var(--accent)}.fcard.staged{border-left-color:var(--teal)}.fcard.clean{border-left-color:var(--good)}
+.fcard .acts{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.fcard .acts .btn{font-size:.72rem;padding:4px 7px}
+.flash{animation:flash 1s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 4px var(--teal);transform:translateY(-3px)}100%{box-shadow:0 0 0 0 transparent;transform:none}}
+.hist{font:12px var(--font-mono);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.hist span{padding:2px 6px;border-radius:5px;background:var(--surface-2)}
+.hist span.h{background:var(--ink);color:var(--bg)}
+.hist span.o{opacity:.5;text-decoration:line-through}
+.arrows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;font:11px var(--font-mono);color:var(--muted);text-align:center;margin-top:8px}
+
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.cmp > div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}
+.cmp h4{margin:0 0 6px;font:700 1rem var(--font-display)}
+.cmp .graph-wrap{background:var(--surface)}
+.cmp pre{font-size:11.5px;margin-top:8px;background:var(--code-bg);color:var(--code-ink);padding:8px;border-radius:8px}
+.cmp ul{padding-left:1.1rem;font-size:.84rem;margin:.5rem 0 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);color:var(--ink);font:500 .82rem var(--font-body);padding:6px 14px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg)}
+
+.conf-file{background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:12px 14px;font:13px/1.6 var(--font-mono);overflow-x:auto}
+.conf-file .mk{color:var(--code-key);font-weight:600}
+.conf-file .ours{background:rgba(255,116,72,.16);display:block}
+.conf-file .theirs{background:rgba(74,179,196,.18);display:block}
+.conf-file .base{background:rgba(160,160,160,.16);display:block}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.fb{border-radius:10px;padding:10px 14px;font-size:.92rem;margin-top:8px}
+.fb.ok{background:var(--good-soft);border-left:4px solid var(--good)}
+.fb.no{background:var(--bad-soft);border-left:4px solid var(--bad)}
+.fb.info{background:var(--surface-2)}
+.check{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+
+.bis{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.bis div{font:600 .8rem var(--font-mono);padding:8px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);min-width:52px;text-align:center}
+.bis div small{display:block;font:400 .62rem var(--font-body);color:var(--muted)}
+.bis .good{background:var(--good-soft);border-color:var(--good)}
+.bis .bad{background:var(--bad-soft);border-color:var(--bad)}
+.bis .cur{outline:3px solid var(--ink);outline-offset:1px}
+.bis .out{opacity:.4}
+
+/* practice */
+.ex-list{display:grid;gap:12px;margin-top:12px}
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.ex .q{font-weight:600;margin-bottom:8px}
+.ex .q small{display:block;font-weight:400;color:var(--muted)}
+.ex .op{display:grid;gap:6px}
+.ex .op button{text-align:left;font:500 .86rem var(--font-mono);border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 10px;border-radius:8px;cursor:pointer;white-space:pre;overflow-x:auto}
+.ex .op button.right{background:var(--good-soft);border-color:var(--good)}
+.ex .op button.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.ex .op button:disabled{cursor:default}
+.score{font:600 .9rem var(--font-body);font-variant-numeric:tabular-nums}
+.sub-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.sub-head h3{margin:0}
+details.open-q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+details.open-q summary{cursor:pointer;font-weight:600;list-style:none;display:grid;grid-template-columns:auto 1fr;gap:10px}
+details.open-q summary::-webkit-details-marker{display:none}
+details.open-q summary .qn{font:600 .8rem var(--font-mono);color:var(--accent);padding-top:2px}
+details.open-q .reveal{font-size:.8rem;color:var(--teal);font-weight:500;display:block}
+details.open-q[open] .reveal{display:none}
+details.open-q .ma{margin-top:10px;border-left:4px solid var(--accent);padding-left:12px;font-size:.95rem}
+.mc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.mc fieldset{border:0;padding:0;margin:0}
+.mc legend{font-weight:600;margin-bottom:8px;padding:0}
+.mc label{display:flex;gap:8px;align-items:flex-start;padding:5px 8px;border-radius:6px;font-size:.92rem;cursor:pointer}
+.mc label.right{background:var(--good-soft)}.mc label.wrong{background:var(--bad-soft)}
+.mc .why{display:none;font-size:.86rem;color:var(--muted);margin-top:6px}
+.mc.graded .why{display:block}
+.result{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--ink);color:var(--bg);font-weight:600}
+.rescue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:14px}
+.rcard{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--warn);border-radius:10px;padding:12px 16px;min-width:0}
+.rcard h4{margin:0 0 6px;font:700 1rem var(--font-display)}
+.rcard p{font-size:.9rem}
+.rcard pre.code{font-size:12px}
+.rcard .warn{font-size:.85rem;background:var(--warn-soft);padding:6px 10px;border-radius:6px;margin-top:8px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .side{position:sticky;height:auto;max-height:none;border-right:0;border-bottom:1px solid var(--line);z-index:5;padding:12px 16px}
+  .menu-btn{display:inline-block;font:600 .85rem var(--font-body);background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:6px 12px}
+  .side .collapsible{display:none}
+  .side.open .collapsible{display:block;max-height:70vh;overflow-y:auto}
+  .t-intro{grid-template-columns:1fr}
+  .areas,.cmp,.arrows{grid-template-columns:1fr}
+  .arrows{display:none}
+  .myths li{grid-template-columns:1fr;gap:6px}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<div class="layout">
+  <aside class="side" id="side">
+    <div class="side-head">
+      <div class="brand">git <span>a fondo</span></div>
+      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sideBody">Temas</button>
+    </div>
+    <div class="collapsible" id="sideBody">
+      <div class="progress"><div class="bar"><span id="progBar"></span></div><p id="progText">0 de 19 temas repasados</p></div>
+      <div class="filters" role="group" aria-label="Filtrar temas por frecuencia en entrevistas">
+        <button class="chip on" data-f="all">Todos</button>
+        <button class="chip" data-f="casi">Casi siempre</button>
+        <button class="chip" data-f="seguido">Seguido</button>
+        <button class="chip" data-f="aveces">A veces</button>
+      </div>
+      <nav id="nav" aria-label="Temas de la guía"></nav>
+    </div>
+  </aside>
+  <main id="contenido">
+    <header class="hero">
+      <h1>Git <span>a fondo</span></h1>
+      <p class="lede">El modelo mental detrás de los comandos que ya usas de memoria, y los criterios para defender un flujo de trabajo frente a un equipo o en una entrevista técnica.</p>
+      <div class="legend" aria-label="Frecuencia en entrevistas">
+        <div><span class="pill f-casi">Casi siempre</span> aparece en casi toda entrevista</div>
+        <div><span class="pill f-seguido">Seguido</span> sale con frecuencia</div>
+        <div><span class="pill f-aveces">A veces</span> repaso ligero</div>
+      </div>
+      <div class="howto">
+        <div><b>1. Lee el modelo</b>Definición, analogía y el grafo antes y después de cada comando.</div>
+        <div><b>2. Juega en los laboratorios</b>Pulsa comandos y mira cómo se mueven commits, ramas y HEAD.</div>
+        <div><b>3. Responde en voz alta</b>Cada tema cierra con una respuesta modelo. Al final, simulacro con puntaje.</div>
+        <div><b>4. Marca tu avance</b>Marca cada tema como repasado; tu progreso se guarda en este navegador.</div>
+      </div>
+    </header>
+
+    <section class="block" id="repo">
+      <h2>El repositorio de ejemplo: tienda-online</h2>
+      <p class="prose" style="margin-top:10px">Toda la guía usa el mismo historial. En los diagramas y comandos uso letras en lugar de hashes para que se lean rápido. <code>main</code> recibió un fix de precios mientras tú construías el carrito en <code>feature</code>: las dos ramas divergieron desde <code>B</code>.</p>
+      <div class="diagrams">
+        <figure><figcaption>Grafo de partida</figcaption><pre class="diagram">      C---D   feature
+     /
+A---B---E     main ← HEAD</pre></figure>
+        <figure><figcaption>git log --oneline --all</figcaption><pre class="diagram">e5a0c66 (HEAD -&gt; main) fix: precios con IVA 19 %
+d93f1b7 (feature) feat(carrito): calcular total
+c2d4e8a feat(carrito): agregar productos
+b7e91d4 feat: catálogo de productos
+a1f3c02 init: estructura de la tienda</pre></figure>
+      </div>
+    </section>
+
+    <div id="topics"></div>
+    <section class="block" id="rescate"></section>
+    <section class="block" id="practica"></section>
+    <section class="block" id="simulacro"></section>
+  </main>
+</div>
+<script>
+const BASE_ART = `      C---D   feature
+     /
+A---B---E     main ← HEAD`;
+
+const TOPICS = [
+{
+n:1, id:'tres-areas', nav:'Las tres áreas', group:'Modelo interno', freq:'casi',
+title:'Las tres áreas: working directory, staging e historial',
+def:`Git trabaja con tres lugares. El <b>working directory</b> son tus archivos en disco. El <b>staging</b> (o <i>index</i>, el archivo <code>.git/index</code>) es la foto propuesta de tu próximo commit. El <b>repositorio</b> (la carpeta <code>.git</code>) guarda los commits. <code>git add</code> copia contenido del working directory al index y <code>git commit</code> convierte el index en un commit nuevo.`,
+analogy:`Una mudanza. La habitación es el working directory: ahí desordenas. La caja abierta en la puerta es el staging: eliges con cuidado qué va en el próximo viaje. El camión cerrado y etiquetado es el repositorio. Puedes tener media habitación revuelta y despachar solo una caja bien armada.`,
+cmds:`# en feature: editaste carrito.ts y pago.ts
+git status -s              #  M carrito.ts    M pago.ts   (columna derecha = sin stage)
+git add carrito.ts         # solo carrito.ts pasa al index
+git status -s              # M  carrito.ts    M pago.ts   (columna izquierda = staged)
+git diff                   # working directory vs index -> muestra pago.ts
+git diff --staged          # index vs HEAD              -> muestra carrito.ts
+git commit -m "fix(carrito): validar stock"
+git add -p pago.ts         # elige bloques (hunks) sueltos de pago.ts`,
+diagrams:[
+{label:'Antes de git commit', art:`working dir : carrito.ts*  pago.ts*
+index       : HEAD + carrito.ts
+HEAD        : D
+
+      C---D   feature ← HEAD`},
+{label:'Después de git commit', art:`working dir : pago.ts*   (sigue sin commit)
+index       : = F
+HEAD        : F
+
+      C---D---F   feature ← HEAD`}],
+problem:`<p>El staging te deja construir <b>commits atómicos</b>: un commit, un cambio lógico. Así cada commit se revisa, se revierte y se cherry-pickea solo. Si siempre haces <code>git add .</code> o <code>commit -a</code>, mezclas el fix con el refactor y con el <code>console.log</code> de depuración, y después no puedes deshacer una cosa sin deshacer las otras.</p>
+<p>Detalle clave: <code>git add</code> copia el <b>contenido actual</b>. Si editas el archivo después del add, el commit lleva la versión del add, no la del disco.</p>`,
+risky:{title:'Forma riesgosa', code:`git add .
+git commit -m "cambios"`, note:'Sube archivos de depuración, quizá un .env no ignorado, y mezcla cambios sin relación en un solo commit.'},
+safe:{title:'Forma segura', code:`git status
+git add -p
+git diff --staged
+git commit`, note:'Revisas exactamente lo que va antes de confirmarlo y escribes un mensaje que describe un solo cambio.'},
+rescue:`<p><b>“Hice add de un archivo que no debía”.</b> <code>git restore --staged archivo</code> lo saca del index y conserva tus cambios en disco. Es lo mismo que el antiguo <code>git reset archivo</code>.</p>`,
+lead:`<ul><li>Política: un commit por cambio lógico, revisado con <code>git diff --staged</code> antes de confirmar.</li><li>Enseñar <code>git add -p</code> en el onboarding; es la herramienta que más mejora la calidad de los PR.</li><li>Un hook de pre-commit bloquea archivos sensibles (<code>.env</code>, llaves) aunque alguien haga <code>add .</code>.</li></ul>`,
+myths:[
+['<code>git add</code> sirve para “rastrear” un archivo la primera vez.','Cada <code>add</code> copia el contenido de ese momento al index. Por eso hay que repetirlo después de cada edición.'],
+['El staging es una lista de archivos modificados.','Es una foto completa del árbol propuesto: contiene todos los archivos rastreados, no solo los cambiados.'],
+['<code>git commit</code> guarda mi carpeta.','Guarda el index. Lo que está solo en el working directory no entra.']],
+answer:`“Git tiene tres áreas. El working directory son los archivos que edito; el index o staging es la versión propuesta del próximo commit; y el repositorio guarda los commits. <code>git add</code> copia contenido del working directory al index y <code>git commit</code> convierte el index en un commit y avanza la rama. El staging existe para que yo decida exactamente qué entra en cada commit, por ejemplo con <code>git add -p</code>. Eso me permite hacer commits atómicos, fáciles de revisar y de revertir.”`,
+lab:'lab-areas'
+},
+{
+n:2, id:'objetos', nav:'Blobs, trees y commits', group:'Modelo interno', freq:'seguido',
+title:'Cómo guarda Git la información: blobs, trees, commits y hashes',
+def:`Git es una base de datos clave-valor direccionada por contenido. Guarda objetos de cuatro tipos: <b>blob</b> (el contenido de un archivo, sin nombre), <b>tree</b> (un directorio: nombres y permisos que apuntan a blobs y a otros trees), <b>commit</b> (un tree raíz, sus padres, autor, fecha y mensaje) y <b>tag anotado</b>. La clave de cada objeto es el hash (SHA-1, o SHA-256 en repos nuevos que lo activen) de su contenido.`,
+analogy:`Un álbum de fotos completas en el que, si una persona sale idéntica en dos fotos, el álbum guarda su recorte una sola vez y lo reutiliza. Cada foto lleva una huella digital calculada a partir de todo lo que contiene, incluida la huella de la foto anterior: cambia un pixel y cambian todas las huellas que vienen después.`,
+cmds:`git cat-file -t HEAD           # commit
+git cat-file -p HEAD           # tree 9c1e4a...  parent d93f1b...  author ...  mensaje
+git cat-file -p HEAD^{tree}    # 100644 blob 7f3d2a...  carrito.ts
+                               # 040000 tree 1a9b07...  src
+git cat-file -p 7f3d2a         # el contenido de carrito.ts
+git hash-object carrito.ts     # el hash que tendría ese contenido
+git count-objects -vH          # objetos sueltos y empaquetados (packfiles)`,
+diagrams:[
+{label:'Commit C', art:`commit C
+  └─ tree T1
+       ├─ carrito.ts → blob 11a (v1)
+       └─ pago.ts    → blob 22b (v1)`},
+{label:'Commit D: solo cambió carrito.ts', art:`commit D ── parent → C
+  └─ tree T2                 (tree nuevo)
+       ├─ carrito.ts → blob 33c (v2, nuevo)
+       └─ pago.ts    → blob 22b (el mismo, reutilizado)`}],
+problem:`<p>Este modelo explica casi todo lo demás:</p>
+<ul><li><b>Un commit es una foto completa</b>, no un diff: apunta a un tree con todo el proyecto. Los diffs se calculan al vuelo comparando dos fotos. Los archivos que no cambian no se duplican porque su blob tiene el mismo hash.</li>
+<li><b>Reescribir historia cambia hashes</b>: el hash de un commit incluye el hash de su padre. Si tocas un commit antiguo, todos los siguientes reciben hashes nuevos. Eso son <code>amend</code> y <code>rebase</code>.</li>
+<li><b>Integridad</b>: si un byte se corrompe, el hash ya no coincide y Git lo detecta.</li>
+<li><b>Compresión</b>: los packfiles sí guardan deltas entre objetos parecidos, pero es un detalle de almacenamiento. El modelo sigue siendo de fotos.</li></ul>`,
+lead:`<ul><li>Explicar este modelo en el onboarding en 15 minutos cambia cómo el equipo entiende rebase y force push: un hash nuevo es, para todos los demás, un commit distinto.</li><li>Para repos grandes, el modelo explica por qué subir binarios pesados es caro: cada versión es un blob completo que todos clonan para siempre (ver tema 19).</li></ul>`,
+myths:[
+['Git guarda diffs entre versiones.','Guarda fotos (trees y blobs). Los deltas de los packfiles son compresión, no el modelo.'],
+['Un commit pertenece a una rama.','El commit no sabe nada de ramas. Solo conoce su tree y su padre o padres.'],
+['Git registra cuando renombras un archivo.','No guarda renombres. Los detecta al mostrar diff o log comparando la similitud del contenido.']],
+answer:`“Git es un almacén de objetos direccionado por contenido. Un blob guarda el contenido de un archivo, un tree guarda un directorio apuntando a blobs y a otros trees, y un commit apunta a un tree raíz y a su padre o padres, con autor y mensaje. Cada objeto se identifica por el hash de su contenido. Por eso un commit es una foto completa: si un archivo no cambió, el nuevo tree reutiliza el mismo blob y no se duplica nada. Y como el hash del commit incluye el del padre, modificar un commit antiguo cambia el hash de todos los posteriores. Eso es exactamente reescribir historia.”`
+},
+{
+n:3, id:'ramas-head', nav:'Ramas, HEAD y detached HEAD', group:'Modelo interno', freq:'casi',
+title:'Qué es realmente una rama: un puntero. HEAD y detached HEAD',
+def:`Una rama es un archivo de texto con el hash de un commit (<code>.git/refs/heads/feature</code>). Cuando haces commit estando en ella, avanza sola al commit nuevo. <b>HEAD</b> indica dónde estás: normalmente apunta a una rama (<code>ref: refs/heads/feature</code>). Si apunta directo a un commit, estás en <b>detached HEAD</b>.`,
+analogy:`Un separador de libro. Crear o mover un separador no copia páginas. HEAD es tu dedo: normalmente está sobre un separador que avanza contigo cuando escribes. En detached HEAD tu dedo está sobre una página sin separador: si escribes páginas nuevas y te vas, nada marca dónde quedaron.`,
+cmds:`cat .git/HEAD                    # ref: refs/heads/main
+git switch -c feature            # crea la rama y te mueve (≈ git checkout -b)
+git rev-parse feature            # hash al que apunta
+git branch -m feature carrito    # renombrar
+git branch -d carrito            # borrar si ya está integrada
+git branch -D carrito            # borrar a la fuerza (puede dejar commits huérfanos)
+git switch --detach HEAD~1       # detached HEAD: inspeccionar un commit
+git switch -c rescate            # si hiciste commits en detached, dales una rama`,
+diagrams:[
+{label:'Antes', art:`A---B   main ← HEAD`},
+{label:'git switch -c feature + 2 commits', art:`      C---D   feature ← HEAD
+     /
+A---B         main`},
+{label:'git switch --detach B', art:`      C---D   feature
+     /
+A---B         main
+    ↑
+   HEAD (detached)`}],
+problem:`<p>Como una rama son 41 bytes, crearla es instantáneo y gratis. Eso habilita ramas por tarea. Entender que HEAD es otro puntero explica <code>HEAD~1</code> (primer padre de HEAD), <code>HEAD^2</code> (segundo padre de un merge) y por qué en detached HEAD los commits nuevos no quedan en ninguna rama.</p>`,
+risky:{title:'Forma riesgosa', code:`git switch --detach v1.2.0
+# arreglas algo y haces 2 commits
+git switch main`, note:'Los dos commits quedan sin ningún puntero. Solo los encuentras con el reflog, y el recolector de basura los borra con el tiempo.'},
+safe:{title:'Forma segura', code:`git switch --detach v1.2.0
+# arreglas algo y haces 2 commits
+git switch -c hotfix/1.2.1
+git switch main`, note:'Antes de salir les das un separador. Git además te avisa del hash al salir de detached HEAD.'},
+rescue:`<p><b>“Hice commits en detached HEAD y me cambié de rama”.</b> <code>git reflog</code>, busca la línea del último commit y ejecuta <code>git branch rescate &lt;hash&gt;</code>.</p>`,
+lead:`<ul><li>Convención de nombres: <code>feat/TIENDA-42-carrito</code>, <code>fix/…</code>, <code>chore/…</code>. Facilita filtros, automatizaciones y enlaces al ticket.</li><li>Borrar la rama remota automáticamente al hacer merge del PR y <code>fetch.prune = true</code> local para no acumular ramas muertas.</li><li>Ramas de vida corta: si una rama vive más de unos días, acumula divergencia y conflictos.</li></ul>`,
+myths:[
+['Crear ramas es costoso; mejor tener pocas.','Es escribir un hash en un archivo. Lo costoso es dejarlas vivir mucho tiempo.'],
+['Borrar una rama borra sus commits.','Borra el puntero. Si los commits no estaban integrados, quedan huérfanos y se recuperan un tiempo con el reflog.'],
+['Detached HEAD es un error.','Es un estado normal para inspeccionar un tag o un commit. Solo es un riesgo si haces commits y te vas sin crear una rama.']],
+answer:`“Una rama es solo un puntero móvil a un commit: un archivo con un hash. Cuando hago commit en ella, el puntero avanza al commit nuevo. HEAD indica dónde estoy; normalmente apunta a una rama y por eso esa rama es la que avanza. Si hago checkout de un commit o de un tag, HEAD apunta directo al commit: eso es detached HEAD. Ahí puedo hacer commits, pero si me voy sin crear una rama quedan huérfanos y solo los recupero por el reflog.”`
+},
+{
+n:4, id:'merge', nav:'Merge: fast-forward y tres vías', group:'Integrar cambios', freq:'casi',
+title:'Merge: fast-forward vs. merge de tres vías',
+def:`<code>git merge</code> integra la historia de otra rama en la actual. Si la rama actual es ancestro de la otra, Git solo mueve el puntero: es un <b>fast-forward</b> y no crea commit. Si divergieron, hace un <b>merge de tres vías</b>: compara la base común (merge-base) con las dos puntas y crea un <b>merge commit</b> con dos padres.`,
+analogy:`Si tu compañero solo agregó páginas al final del cuaderno y tú no tocaste nada, basta con mover el separador (fast-forward). Si los dos escribieron en copias distintas a partir de la página 10, alguien se sienta con la página 10 original y las dos versiones, combina, y deja una nota: “aquí se unieron estas dos copias” (merge commit).`,
+cmds:`git switch main
+git merge-base main feature    # B: la base común
+git merge feature              # tres vías: crea el merge commit M
+git merge --no-ff feature      # fuerza merge commit aunque pudiera ser fast-forward
+git merge --ff-only feature    # falla si no puede ser fast-forward
+git merge --abort              # vuelve atrás si hay conflictos y no quieres seguir
+git log --oneline --graph --first-parent main   # solo la línea de main`,
+diagrams:[
+{label:'Antes (ramas divergentes)', art:BASE_ART},
+{label:'Después de git merge feature', art:`      C---D      feature
+     /     \\
+A---B---E---M    main ← HEAD
+(M tiene dos padres: E y D)`},
+{label:'Caso fast-forward (main no avanzó)', art:`antes:   A---B          main ← HEAD
+              \\
+               C---D    feature
+
+después: A---B---C---D  main ← HEAD, feature`}],
+problem:`<p>El merge de tres vías es la razón de que Git sepa quién cambió qué: si una línea solo cambió en un lado respecto a la base, gana ese lado sin preguntar. Solo pregunta (conflicto) si ambos lados cambiaron la misma zona.</p>
+<p>El merge commit no reescribe nada: es seguro en ramas compartidas. Su costo es una historia con más bifurcaciones. <code>--no-ff</code> conserva la evidencia de que existió una rama de PR; <code>--first-parent</code> te deja leer main como una lista de PR integrados.</p>`,
+risky:{title:'Forma riesgosa', code:`git pull     # en una rama que divergió
+# Merge branch 'main' of github.com:tienda/tienda`, note:'Cada pull crea un merge commit sin valor que ensucia la historia y confunde a quien revisa.'},
+safe:{title:'Forma segura', code:`git config --global pull.ff only
+# o bien
+git config --global pull.rebase true`, note:'El pull falla si no puede ser fast-forward, o rebasea tus commits locales encima de lo que trajo.'},
+lead:`<ul><li>Decidir y configurar en el repositorio cómo entran los PR a main (merge commit, squash o rebase) y permitir solo ese método.</li><li>Configuración local recomendada para el equipo: <code>pull.rebase true</code> o <code>pull.ff only</code>, para eliminar los merge commits accidentales.</li></ul>`,
+myths:[
+['El merge commit es un commit vacío.','Tiene su propio tree con el resultado combinado y puede contener resoluciones de conflictos.'],
+['El merge compara las dos puntas.','Compara tres versiones: la base común y las dos puntas. Por eso sabe qué lado cambió cada línea.'],
+['El fast-forward pierde commits.','No pierde ninguno; pierde la evidencia de que hubo una rama separada.']],
+answer:`“Si la rama actual es ancestro de la que integro, Git hace fast-forward: solo mueve el puntero y no crea commit. Si las ramas divergieron, hace un merge de tres vías: toma la base común y las dos puntas, combina los cambios y crea un merge commit con dos padres. Si las dos ramas tocaron las mismas líneas desde la base, hay conflicto. Con --no-ff fuerzo el merge commit para dejar registro del PR, y con --ff-only me aseguro de no crear merges accidentales.”`
+},
+{
+n:5, id:'rebase', nav:'Rebase', group:'Integrar cambios', freq:'casi',
+title:'Rebase: qué hace y por qué reescribe la historia',
+def:`<code>git rebase main</code> toma los commits de tu rama que no están en main y los <b>reaplica uno a uno</b> sobre la punta de main. Como cambia el padre, crea commits nuevos (C′, D′) con hashes nuevos. Los originales quedan huérfanos. Regla de oro: <b>no hagas rebase de commits que otras personas ya tienen</b>.`,
+analogy:`Reescribir tu propuesta como si hubieras empezado después de leer la última versión del documento oficial. El contenido es casi el mismo, pero es una copia nueva con otra fecha. Si ya repartiste la versión anterior, ahora circulan dos versiones con el mismo contenido y la gente no sabe cuál vale.`,
+cmds:`git switch feature
+git fetch origin
+git rebase origin/main
+# si un commit choca:
+git status                       # "interactive rebase in progress"
+# resuelves el archivo
+git add src/precio.ts
+git rebase --continue            # o --skip / --abort
+git push --force-with-lease      # solo si la rama es tuya`,
+diagrams:[
+{label:'Antes', art:`      C---D   feature ← HEAD
+     /
+A---B---E     main`},
+{label:'Después de git rebase main', art:`          C'--D'  feature ← HEAD
+         /
+A---B---E         main
+
+C y D siguen existiendo, huérfanos (solo en reflog)`}],
+problem:`<p>Rebase deja historia lineal: tu rama parece haber empezado desde la punta actual de main, el PR se lee de corrido y la integración final puede ser fast-forward. También te obliga a resolver los conflictos en tu rama, antes del merge, y no en main.</p>
+<p>El precio: reescribe. Si alguien ya tenía C y D (porque hizo pull de tu rama), tú publicas C′ y D′. Al hacer pull, esa persona mezcla las dos versiones y el historial termina con commits duplicados, o alguien hace force push y borra trabajo ajeno.</p>`,
+risky:{title:'Forma riesgosa', code:`git switch main
+git rebase feature
+git push --force`, note:'Rebase sobre la rama compartida: reescribes main para todo el equipo y el force push pisa lo que otros subieron.'},
+safe:{title:'Forma segura', code:`git switch feature        # rama solo tuya
+git rebase origin/main
+git push --force-with-lease`, note:'Rebase solo de tu rama personal o de PR. Para actualizar una rama compartida, merge.'},
+rescue:`<p><b>“El rebase quedó a medias”.</b> <code>git status</code> te dice en qué commit va. Resuelve, <code>git add</code> y <code>git rebase --continue</code>. Si te perdiste, <code>git rebase --abort</code> te devuelve exactamente al estado anterior. Si ya terminó y quedó mal: <code>git reset --hard ORIG_HEAD</code> o <code>git reset --hard feature@{1}</code> (reflog de la rama).</p>`,
+lead:`<ul><li>Política: “rebase tu rama de PR sobre main cuanto quieras; nunca rebase de main ni de ramas que comparten varias personas”.</li><li>Force push solo con <code>--force-with-lease</code>; main y release protegidas contra force push.</li><li>Activar <code>git config --global rerere.enabled true</code>: Git recuerda cómo resolviste un conflicto y lo reaplica si se repite.</li></ul>`,
+myths:[
+['Rebase mueve los commits.','Los copia: crea commits nuevos con hashes nuevos. Los originales siguen en la base de objetos.'],
+['Rebase evita conflictos.','Los mismos conflictos aparecen, y a veces varias veces: uno por cada commit reaplicado. Merge los resuelve una vez.'],
+['Rebase es peligroso siempre.','Solo lo es sobre historia que otros ya tienen. En tu rama local es una herramienta de limpieza.']],
+answer:`“Rebase toma los commits de mi rama que no están en la rama base y los reaplica uno por uno sobre la punta de la base. Como cambia el padre, cada commit es nuevo y tiene otro hash; por eso decimos que reescribe la historia. Lo uso para mantener mi rama de PR al día y con historia lineal. La regla es no hacer rebase de commits que otras personas ya tienen, porque ellos siguen con los originales y se generan duplicados o se pierde trabajo. Si publico después de un rebase, uso --force-with-lease.”`,
+},
+{
+n:6, id:'merge-rebase-squash', nav:'Merge vs. rebase vs. squash', group:'Integrar cambios', freq:'casi',
+title:'Merge vs. rebase vs. squash: cuándo usar cada uno',
+def:`Las tres integran el mismo código y dejan historias distintas. <b>Merge</b> conserva todos los commits y agrega un commit de unión. <b>Rebase</b> (más fast-forward) reescribe tu rama para que la historia quede lineal con todos los commits. <b>Squash</b> comprime toda la rama en un único commit nuevo sobre main.`,
+analogy:`Merge es el acta completa de la reunión, con cada intervención y la hora en que se unieron los grupos. Rebase es la misma acta pasada en limpio y en orden. Squash es solo el resumen ejecutivo: “se aprobó el carrito”.`,
+cmds:`# merge commit
+git switch main && git merge --no-ff feature
+
+# rebase + fast-forward
+git switch feature && git rebase main
+git switch main && git merge --ff-only feature
+
+# squash
+git switch main && git merge --squash feature
+git commit -m "feat(carrito): carrito con total"
+git branch -D feature            # Git no la ve integrada: hay que forzar`,
+diagrams:[
+{label:'Mismo punto de partida', art:BASE_ART},
+{label:'Los tres resultados en main', art:`merge:   A---B---E---M        M tiene padres E y D
+              \\     /
+               C---D
+
+rebase:  A---B---E---C'---D'  lineal, commits nuevos
+
+squash:  A---B---E---S        S = C + D en un commit`}],
+problem:`<div class="tbl"><table>
+<thead><tr><th></th><th>Merge commit</th><th>Rebase + FF</th><th>Squash</th></tr></thead>
+<tbody>
+<tr><td>Historia en main</td><td>Ramificada, completa</td><td>Lineal, con todos los commits</td><td>Lineal, un commit por PR</td></tr>
+<tr><td>¿Reescribe?</td><td>No</td><td>Sí, la rama del PR</td><td>No reescribe main, pero descarta los commits de la rama</td></tr>
+<tr><td>Revertir el PR entero</td><td><code>revert -m 1 M</code></td><td>Revertir N commits</td><td><code>revert S</code>, el más simple</td></tr>
+<tr><td>bisect</td><td>Granular</td><td>Granular</td><td>Llega al PR, no al commit exacto</td></tr>
+<tr><td>Riesgo principal</td><td>Historia ruidosa</td><td>Force push y duplicados si la rama era compartida</td><td>Seguir usando la rama después del squash</td></tr>
+<tr><td>Ideal para</td><td>Ramas largas, release → main</td><td>Equipos que cuidan cada commit</td><td>PR pequeños de features</td></tr>
+</tbody></table></div>`,
+risky:{title:'Forma riesgosa', code:`# PR #41 integrado con squash
+git switch feature
+git commit -m "feat: otra mejora"
+# abres otro PR desde la misma rama`, note:'Git no sabe que C y D ya entraron dentro de S. El nuevo PR vuelve a traerlos y aparecen conflictos contra su propio código.'},
+safe:{title:'Forma segura', code:`git switch main && git pull
+git branch -D feature
+git switch -c feat/TIENDA-43-mejora`, note:'Después de un squash merge la rama se borra y el trabajo nuevo parte de main.'},
+lead:`<p>Una política defendible para un equipo de producto web:</p><ul><li><b>Squash merge</b> como método por defecto de los PR a main: un commit por PR, mensaje en Conventional Commits, revert trivial.</li><li><b>Rebase local</b> para mantener la rama del PR al día con main.</li><li><b>Merge commit</b> para integrar ramas de larga vida (release → main, sincronizar ramas de soporte), donde importa conservar la topología.</li><li>Lo importante es la consistencia: configurar el repo para permitir un solo método y documentarlo.</li></ul>`,
+myths:[
+['Rebase es la forma moderna y merge la antigua.','Son herramientas con propósitos distintos. Merge preserva contexto; rebase limpia historia local.'],
+['Squash pierde la historia.','La conserva el PR en la plataforma, pero no Git: bisect y blame pierden granularidad.'],
+['Historia lineal significa historia correcta.','Lineal es más legible. Correcta significa que cada commit compila y describe bien su cambio.']],
+answer:`“Las tres integran el mismo código y cambian la historia que queda. Merge conserva todos los commits y agrega un merge commit; es seguro porque no reescribe nada, pero la historia queda ramificada. Rebase reaplica mis commits sobre main y deja historia lineal, a costa de reescribir mi rama, así que solo lo uso en ramas que no comparto. Squash junta todo el PR en un commit: main queda muy limpio y revertir un PR es un solo revert, pero pierdo granularidad para bisect, y la rama hay que borrarla después. En un equipo de producto suelo proponer squash para los PR, rebase local para mantener las ramas al día y merge commit para ramas de larga vida.”`,
+lab:'lab-compare'
+},
+{
+n:7, id:'conflictos', nav:'Conflictos', group:'Integrar cambios', freq:'casi',
+title:'Conflictos: por qué ocurren, cómo leerlos y cómo reducirlos',
+def:`Un conflicto ocurre cuando las dos ramas cambiaron la misma zona de un archivo respecto a la base común, o cuando una borró o renombró un archivo que la otra modificó. Git no adivina la intención: detiene la operación, marca el archivo y te deja decidir.`,
+analogy:`Dos editores corrigieron la misma frase de un libro de forma distinta. El editor jefe necesita ver la frase original y las dos correcciones para escribir la versión final. Ver solo las dos correcciones, sin la original, es adivinar.`,
+cmds:`git merge feature
+# CONFLICT (content): Merge conflict in src/precio.ts
+git status                        # both modified: src/precio.ts
+git config --global merge.conflictStyle zdiff3   # muestra también la base
+git diff                          # muestra el conflicto
+git checkout --ours  src/precio.ts    # archivo completo de tu lado
+git checkout --theirs src/precio.ts   # archivo completo del otro lado
+git add src/precio.ts
+git commit                        # en rebase: git rebase --continue
+git merge --abort                 # volver al estado anterior`,
+diagrams:[
+{label:'Marcadores con zdiff3', art:`<<<<<<< HEAD                 ← tu lado (ours): main
+  return precio * 1.19;
+||||||| base                 ← la base común (merge-base)
+  return precio * 1.16;
+=======
+  return aplicarCupon(precio) * 1.16;
+>>>>>>> feature              ← el otro lado (theirs)`},
+{label:'Ojo en rebase: los lados se invierten', art:`git merge feature (en main):
+  ours   = main         theirs = feature
+
+git rebase main (en feature):
+  ours   = main (la base sobre la que reaplicas)
+  theirs = tu commit que se está reaplicando`}],
+problem:`<p>Resolver bien es reconstruir la intención de cada lado: aquí main corrigió el IVA y feature agregó cupones; la respuesta correcta combina las dos cosas. Por eso <code>zdiff3</code> ayuda tanto: la base te dice qué cambió cada lado.</p>
+<p>Cuidado con los <b>conflictos semánticos</b>: Git puede integrar sin conflicto y aun así romper el sistema (alguien renombró una función mientras tú agregabas una llamada a la versión vieja). Solo los atrapan los tests y el CI después del merge.</p>
+<p><b>Estrategias para reducirlos:</b></p><ul><li>PR pequeños e integración frecuente a main: menos divergencia, menos choque.</li><li>Rebase o merge de main a tu rama a diario.</li><li>Formateos masivos (Prettier, ESLint --fix) en un commit aparte y acordado, no mezclados con features.</li><li>Evitar archivos “imán” que todos editan (un único <code>routes.ts</code> gigante, listas de constantes).</li><li><code>rerere</code> para no resolver dos veces el mismo conflicto.</li></ul>`,
+risky:{title:'Forma riesgosa', code:`git checkout --theirs .
+git add . && git commit --no-edit`, note:'Aceptas un lado en bloque sin leer: borras en silencio los cambios del otro lado, incluidos fixes de producción.'},
+safe:{title:'Forma segura', code:`git diff               # con zdiff3
+# combinas a mano, quitas marcadores
+npm test
+git add src/precio.ts && git commit`, note:'Lees la base y los dos lados, combinas la intención y validas con tests antes de cerrar el merge.'},
+lead:`<ul><li>Configurar <code>merge.conflictStyle zdiff3</code> y <code>rerere</code> en la guía de setup del equipo.</li><li>Regla: quien abre el PR resuelve los conflictos en su rama, no quien hace el merge.</li><li>CODEOWNERS en archivos sensibles para que el conflicto lo revise quien conoce esa zona.</li></ul>`,
+myths:[
+['Un conflicto significa que alguien hizo algo mal.','Es lo normal cuando dos personas trabajan en la misma zona. Lo anormal son ramas que viven semanas.'],
+['Si no hubo conflicto, el merge está bien.','Puede haber conflictos semánticos que compilan y rompen. Por eso el CI corre sobre el resultado del merge.'],
+['“Ours” siempre es mi código.','En rebase se invierte: ours es la rama base y theirs es tu commit.']],
+answer:`“Un conflicto aparece cuando las dos ramas modificaron la misma zona respecto a la base común; Git no puede saber cuál intención es la correcta y me pide decidir. El bloque entre <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> y <code>=======</code> es mi lado y el de abajo es lo que llega. Uso zdiff3 para ver también la base, combino la intención de ambos, quito los marcadores, corro los tests y hago add y commit. Para reducirlos: PR pequeños, integrar a main seguido y no mezclar formateos masivos con features.”`,
+lab:'lab-conflict'
+},
+{
+n:8, id:'deshacer', nav:'Deshacer: reset, revert, restore', group:'Deshacer cambios', freq:'casi',
+title:'Deshacer cambios: reset vs. revert vs. restore vs. checkout',
+def:`<b>restore</b> trabaja sobre archivos: descarta cambios del working directory o los saca del staging. <b>reset</b> mueve la rama actual a otro commit y, según el modo, también el index y el working directory. <b>revert</b> crea un commit nuevo que invierte otro, sin tocar la historia. <b>checkout</b> es el comando antiguo que hacía de todo; desde Git 2.23 se dividió en <code>switch</code> (ramas) y <code>restore</code> (archivos).`,
+analogy:`restore es usar el borrador sobre lo que escribiste hoy en la hoja. reset es arrancar páginas del cuaderno: con <i>soft</i> las dejas ordenadas en la mesa, con <i>mixed</i> sueltas en la mesa, con <i>hard</i> van a la trituradora. revert es publicar una fe de erratas en la página siguiente: el error sigue en el libro, pero queda corregido a la vista de todos.`,
+cmds:`git restore carrito.ts                 # descarta cambios del working dir (¡irrecuperable!)
+git restore --staged carrito.ts        # lo saca del index, conserva el working dir
+git restore --source=HEAD~2 carrito.ts # trae la versión de hace dos commits
+git reset --soft HEAD~1    # rama atrás; index y working dir intactos (todo queda staged)
+git reset HEAD~1           # --mixed: rama e index atrás; cambios quedan sin stage
+git reset --hard HEAD~1    # rama, index y working dir atrás: borra lo no commiteado
+git revert D               # commit nuevo que deshace D
+git revert -m 1 M          # revertir un merge commit, conservando el padre 1`,
+diagrams:[
+{label:'Antes', art:`A---B---E---D   main ← HEAD`},
+{label:'git reset --hard HEAD~1', art:`A---B---E       main ← HEAD
+         \\
+          D     huérfano: solo en el reflog`},
+{label:'git revert D', art:`A---B---E---D---R   main ← HEAD
+R = Revert "D": historia intacta`}],
+problem:`<div class="tbl"><table>
+<thead><tr><th>Comando</th><th>Mueve la rama</th><th>Index</th><th>Working dir</th><th>¿Reescribe historia?</th></tr></thead>
+<tbody>
+<tr><td><code>restore archivo</code></td><td>No</td><td>No</td><td>Sí (descarta)</td><td>No</td></tr>
+<tr><td><code>restore --staged</code></td><td>No</td><td>Sí</td><td>No</td><td>No</td></tr>
+<tr><td><code>reset --soft</code></td><td>Sí</td><td>No</td><td>No</td><td>Sí</td></tr>
+<tr><td><code>reset --mixed</code></td><td>Sí</td><td>Sí</td><td>No</td><td>Sí</td></tr>
+<tr><td><code>reset --hard</code></td><td>Sí</td><td>Sí</td><td>Sí (descarta)</td><td>Sí</td></tr>
+<tr><td><code>revert</code></td><td>Avanza con un commit nuevo</td><td>—</td><td>—</td><td>No</td></tr>
+</tbody></table></div>
+<p><b>La regla de decisión:</b> ¿el commit ya está en una rama compartida? <b>Sí → revert</b>. <b>No → reset o amend</b>, con libertad.</p>
+<p>Lo único que Git no puede recuperar es lo que nunca entró en un commit ni en el index: <code>reset --hard</code> y <code>restore</code> sobre cambios sin commitear son las formas reales de perder trabajo.</p>`,
+risky:{title:'Forma riesgosa', code:`git switch main
+git reset --hard HEAD~1
+git push --force`, note:'Borras de main un commit que otros ya tienen. Sus clones quedan desalineados y al próximo push lo reintroducen o pierden su trabajo.'},
+safe:{title:'Forma segura', code:`git switch main
+git revert d93f1b7
+git push`, note:'Un commit nuevo que deshace el cambio. Todos hacen pull normal y queda registro de qué se deshizo y por qué.'},
+rescue:`<p><b>“Hice commit en la rama equivocada”</b> (en main, sin hacer push):</p>
+<pre class="code"><span class="k">git</span> branch feat/carrito-stock   <span class="c"># una rama apunta al commit</span>
+<span class="k">git</span> reset --keep HEAD~1          <span class="c"># main vuelve atrás; --keep aborta si pisaría cambios locales</span>
+<span class="k">git</span> switch feat/carrito-stock</pre>
+<p style="margin-top:8px">Si la rama destino ya existía: <code>git switch feature</code>, <code>git cherry-pick main</code>, <code>git switch main</code>, <code>git reset --keep HEAD~1</code>.</p>`,
+lead:`<ul><li>Proteger main y release contra force push: así el equipo está obligado a deshacer con revert.</li><li>Enseñar el árbol de decisión “¿publicado? → revert; ¿local? → reset/amend”.</li><li>Recomendar <code>reset --keep</code> en lugar de <code>--hard</code> para mover ramas: aborta si fuera a destruir cambios sin commitear.</li></ul>`,
+myths:[
+['<code>reset --hard</code> borra commits para siempre.','Los deja huérfanos; el reflog los recupera durante semanas. Lo que sí destruye son los cambios sin commitear.'],
+['<code>revert</code> borra el commit.','Agrega un commit que lo invierte. El original sigue en la historia.'],
+['<code>git checkout .</code> es inofensivo.','Descarta sin preguntar todos los cambios no staged del directorio.']],
+answer:`“Depende de si el commit ya se publicó. Si está en una rama compartida, uso revert, que crea un commit nuevo que invierte el cambio sin reescribir historia. Si es local, puedo usar reset: --soft mueve solo la rama y deja todo staged; --mixed, que es el modo por defecto, también limpia el index y deja los cambios en el working directory; y --hard además descarta el working directory, así que es el único que puede hacerme perder trabajo sin commitear. Para archivos sueltos uso restore: restore descarta cambios del disco y restore --staged los saca del staging.”`,
+},
+{
+n:9, id:'reflog', nav:'Reflog', group:'Deshacer cambios', freq:'seguido',
+title:'Reflog: recuperar commits “perdidos”',
+def:`El reflog es un registro <b>local</b> de cada posición por la que pasaron HEAD y cada rama: commits, resets, rebases, checkouts, merges. Un commit “perdido” sigue en la base de objetos hasta que el recolector de basura lo limpie, y el reflog guarda su hash.`,
+analogy:`El historial del navegador: aunque cerraste la pestaña, la página sigue en el historial. O la caja negra del avión: registra cada maniobra, incluida la que salió mal.`,
+cmds:`git reflog
+# e5a0c66 HEAD@{0}: reset: moving to HEAD~1
+# d93f1b7 HEAD@{1}: commit: feat(carrito): calcular total
+git reset --hard HEAD@{1}       # volver a donde estabas
+git branch rescate d93f1b7      # o crear una rama ahí sin mover nada
+git reflog show feature         # reflog de una rama concreta
+git log -g --oneline            # el reflog como log
+git reset --hard ORIG_HEAD      # deshace el último reset, merge o rebase
+git fsck --lost-found           # último recurso: objetos colgantes (incluye stashes borrados)`,
+diagrams:[
+{label:'Después del accidente', art:`A---B---E       main ← HEAD
+         \\
+          D     (reset --hard HEAD~1)`},
+{label:'git reset --hard HEAD@{1}', art:`A---B---E---D   main ← HEAD
+D vuelve a tener rama`}],
+problem:`<p>Casi nada de lo commiteado se pierde de verdad. Límites del reflog:</p>
+<ul><li>Es <b>local</b>: no se sube al remoto y un clon nuevo empieza vacío.</li><li><b>Expira</b>: por defecto 90 días para entradas alcanzables y 30 para inalcanzables (<code>gc.reflogExpire</code>, <code>gc.reflogExpireUnreachable</code>).</li><li>No guarda cambios que nunca se commitearon. Si llegaste a hacer <code>git add</code>, el blob existe y <code>git fsck --lost-found</code> lo puede encontrar.</li></ul>`,
+rescue:`<p><b>“Perdí commits tras un reset --hard”.</b> No hagas nada más que pueda limpiar: <code>git reflog</code>, ubica el último estado bueno, <code>git branch rescate HEAD@{n}</code>, revisa con <code>git log rescate</code> y luego mueve tu rama ahí.</p>`,
+lead:`<ul><li>Mensaje de equipo: “antes de entrar en pánico o borrar el repo, <code>git reflog</code>”.</li><li>Antes de una operación arriesgada (rebase grande, filter-repo): <code>git branch backup/antes-del-rebase</code>. Cuesta un segundo.</li></ul>`,
+myths:[
+['Si hice reset --hard perdí todo.','Perdiste lo no commiteado. Los commits siguen ahí y el reflog tiene sus hashes.'],
+['El reflog está en GitHub.','Es solo de tu clon local. El servidor tiene su propio registro, que no consultas con git reflog.']],
+answer:`“Con el reflog. Git registra localmente cada posición por la que pasó HEAD, incluso después de un reset --hard o un rebase. Ejecuto git reflog, busco la entrada anterior al accidente, por ejemplo HEAD@{1}, y creo una rama ahí o hago reset --hard a ese punto. Funciona porque el commit sigue en la base de objetos hasta que el recolector de basura lo limpie, y por defecto eso tarda semanas. El límite es que el reflog es local y no salva cambios que nunca se commitearon.”`,
+},
+{
+n:10, id:'remotos', nav:'Remotos, fetch, pull y force', group:'Remotos e historia', freq:'casi',
+title:'Remotos: fetch vs. pull, origin vs. upstream, tracking y force',
+def:`Un remoto es otro repositorio con nombre. <code>fetch</code> descarga objetos y actualiza las <b>ramas de seguimiento remoto</b> (<code>origin/main</code>) sin tocar tus ramas. <code>pull</code> es <code>fetch</code> más <code>merge</code> (o <code>rebase</code>) en tu rama actual. Por convención <b>origin</b> es tu remoto principal (o tu fork) y <b>upstream</b> el repositorio original del que hiciste fork. “Upstream” también nombra la rama remota que sigue tu rama local.`,
+analogy:`fetch es traer las cartas del buzón y dejarlas sin abrir en la mesa. pull es traerlas y archivarlas de una vez en tu carpeta. <code>origin/main</code> es una foto de cómo estaba el buzón la última vez que fuiste: no es el buzón en vivo.`,
+cmds:`git fetch origin                        # actualiza origin/*
+git log --oneline main..origin/main     # lo que trae el remoto y yo no tengo
+git pull --rebase                       # fetch + rebase de mis commits locales
+git push -u origin feature              # publica y configura upstream
+git branch -vv                          # feature [origin/feature: ahead 2, behind 1]
+git remote add upstream https://github.com/tienda/tienda.git
+git fetch --prune                       # limpia ramas remotas que ya no existen
+git push --force-with-lease --force-if-includes`,
+diagrams:[
+{label:'Antes de fetch', art:`local:   A---B---E          main, origin/main
+remoto:  A---B---E---F      main  (alguien subió F)`},
+{label:'Después de git fetch', art:`A---B---E          main ← HEAD
+         \\
+          F        origin/main   (tu main no se movió)`}],
+problem:`<p><code>--force</code> sobrescribe la rama remota con la tuya, aunque alguien haya subido algo después de tu último fetch. <code>--force-with-lease</code> solo fuerza si la rama remota sigue donde tú la viste; si alguien subió algo, falla. Matiz senior: si tu editor hace fetch en segundo plano, la “lease” se actualiza sola y pierde protección. <code>--force-if-includes</code> agrega la verificación de que realmente integraste lo que hay en el remoto.</p>`,
+risky:{title:'Forma riesgosa', code:`git rebase origin/main
+git push --force`, note:'Si tu compañero subió un commit a la rama hace cinco minutos, desaparece del remoto sin aviso.'},
+safe:{title:'Forma segura', code:`git rebase origin/main
+git push --force-with-lease --force-if-includes`, note:'El push falla si el remoto cambió desde que lo viste. Haces fetch, revisas e integras.'},
+lead:`<ul><li>main y release protegidas: sin force push y sin push directo.</li><li>Alias del equipo: <code>git config --global alias.pushf "push --force-with-lease --force-if-includes"</code>, y nunca <code>--force</code> a secas.</li><li><code>fetch.prune true</code> y <code>push.autoSetupRemote true</code> en la configuración recomendada.</li></ul>`,
+myths:[
+['<code>origin/main</code> es el remoto en vivo.','Es una copia local del último fetch. Puede estar desactualizada.'],
+['<code>git pull</code> siempre es seguro.','Por defecto puede crear merges inesperados o conflictos en tu rama actual. Primero fetch y mira qué llega.'],
+['<code>git branch -a</code> muestra las ramas que hay ahora en el servidor.','Muestra las ramas remotas de tu último fetch. <code>git ls-remote</code> consulta el servidor.']],
+answer:`“fetch descarga lo nuevo del remoto y actualiza las ramas de seguimiento como origin/main, sin tocar mi trabajo; pull hace fetch y además integra en mi rama actual, con merge por defecto o con rebase si lo configuro. Prefiero fetch y revisar antes de integrar. origin es mi remoto principal y upstream, en un flujo de forks, es el repo original. Si tengo que forzar un push después de un rebase uso --force-with-lease, que falla si alguien subió algo que yo no vi, en lugar de --force, que lo pisa.”`,
+},
+{
+n:11, id:'reescribir', nav:'Amend y rebase interactivo', group:'Remotos e historia', freq:'seguido',
+title:'Reescribir historia: commit --amend y rebase interactivo',
+def:`<code>commit --amend</code> reemplaza el último commit por uno nuevo (mensaje o contenido corregidos). <code>rebase -i</code> abre una lista editable de commits donde puedes <b>pick</b> (dejar), <b>reword</b> (cambiar mensaje), <b>edit</b> (detenerte a modificar), <b>squash</b> (fusionar y combinar mensajes), <b>fixup</b> (fusionar y descartar el mensaje), <b>drop</b> (eliminar) y reordenar líneas.`,
+analogy:`Editar el borrador antes de entregarlo: juntar dos párrafos, corregir un título, quitar uno que sobraba, cambiar el orden. Lo que ya imprimiste y repartiste no se edita: se publica una corrección.`,
+cmds:`git commit --amend -m "feat(carrito): calcular total con IVA"
+git commit --amend --no-edit          # agrega lo staged al último commit
+git rebase -i main                    # o HEAD~4
+  pick   c2d4e8a feat(carrito): agregar productos
+  fixup  0b1e3f9 wip
+  reword d93f1b7 feat: total
+  drop   4c77a20 console.log de depuración
+# durante el review:
+git commit --fixup=c2d4e8a
+git rebase -i --autosquash main       # los fixup se acomodan solos`,
+diagrams:[
+{label:'Antes', art:`B---C---W---D---X   feature
+W = "wip"   X = "console.log"`},
+{label:'Después del rebase -i', art:`B---C'---D'   feature
+C' = C + W (fixup)
+D' = D con mensaje nuevo (reword)
+X  eliminado (drop)`}],
+problem:`<p>Un PR con commits como “wip”, “arreglo”, “ahora sí” es difícil de revisar y casi inútil para bisect o blame. Limpiar antes de pedir review deja una historia que cuenta qué se hizo y por qué. Todo esto reescribe: cada commit tocado y todos los posteriores cambian de hash.</p>`,
+risky:{title:'Forma riesgosa', code:`git push origin feature    # tu compañero ya hizo pull
+git commit --amend
+git push --force`, note:'Amend sobre un commit que otra persona ya tiene: su copia diverge de la tuya.'},
+safe:{title:'Forma segura', code:`git commit --fixup=c2d4e8a
+git push                   # el reviewer ve solo lo nuevo
+# al aprobar:
+git rebase -i --autosquash main
+git push --force-with-lease`, note:'Durante el review agregas commits fixup. Al final los fusionas, ya sin nadie trabajando sobre la rama.'},
+rescue:`<p><b>“El rebase interactivo se cortó o hice drop de algo que necesitaba”.</b> Mientras está en curso: <code>git rebase --abort</code>. Si ya terminó: <code>git reflog</code> y <code>git reset --hard feature@{1}</code>.</p>`,
+lead:`<ul><li>“Limpia tu historia antes de pedir review” como parte de la definición de listo de un PR (si no usan squash merge).</li><li>Durante el review, solo commits fixup nuevos: el reviewer no tiene que releer todo tras cada force push.</li></ul>`,
+myths:[
+['Amend edita el commit.','Crea un commit nuevo con otro hash y deja el anterior huérfano.'],
+['Squash y fixup son lo mismo.','Los dos fusionan; squash te deja combinar los mensajes y fixup descarta el del commit fusionado.']],
+answer:`“Para el último commit uso commit --amend, que lo reemplaza por uno nuevo. Para varios uso rebase interactivo: puedo reordenar, cambiar mensajes con reword, fusionar con squash o fixup y eliminar con drop. Lo hago antes de pedir review o en mi rama de PR, nunca en historia compartida, porque todos los commits tocados cambian de hash. Durante el review prefiero commit --fixup y al final rebase -i --autosquash, así el reviewer solo ve los cambios nuevos.”`,
+},
+{
+n:12, id:'cherry-stash', nav:'cherry-pick y stash', group:'Herramientas', freq:'seguido',
+title:'cherry-pick y stash: para qué sirven y sus riesgos',
+def:`<b>cherry-pick</b> copia el cambio que introdujo un commit concreto y lo aplica como un commit nuevo en tu rama. <b>stash</b> guarda temporalmente tus cambios sin commitear (working directory e index) en una pila local y deja el directorio limpio.`,
+analogy:`cherry-pick es fotocopiar una receta del cuaderno de otro y pegarla en el tuyo: es una copia con otro número de página, no la misma hoja. stash es guardar lo que tienes sobre la mesa en un cajón para atender una urgencia, y sacarlo después.`,
+cmds:`git switch release/1.4
+git cherry-pick -x f81c2d0         # trae solo el fix; -x anota el hash de origen
+git cherry-pick --abort            # si hay conflicto y quieres volver
+git stash push -u -m "wip carrito" # -u incluye archivos nuevos sin rastrear
+git stash list                     # stash@{0}: On feature: wip carrito
+git stash pop                      # aplica y borra (si no hay conflicto)
+git stash apply stash@{1}          # aplica y conserva
+git stash branch wip-carrito       # crea una rama a partir del stash`,
+diagrams:[
+{label:'Antes', art:`      C---D---F   feature   (F = fix: redondeo)
+     /
+A---B---E         main ← HEAD`},
+{label:'git cherry-pick F', art:`      C---D---F   feature
+     /
+A---B---E---F'    main ← HEAD
+F' = mismo cambio, hash distinto`}],
+problem:`<p>cherry-pick resuelve backports y hotfixes: llevar un fix a una rama de release sin traer features a medio hacer. stash resuelve la interrupción: “arregla producción ya” con tu rama a medias.</p>
+<ul><li><b>Riesgo de cherry-pick:</b> duplica cambios con hashes distintos. Si después integras la rama original, Git ve dos commits con el mismo cambio y pueden aparecer conflictos o confusión. Usarlo como excepción, siempre con <code>-x</code>.</li>
+<li><b>Riesgos de stash:</b> se acumulan stashes olvidados; sin <code>-u</code> los archivos nuevos se quedan; si <code>pop</code> tiene conflicto, el stash no se borra; es local y no se respalda en el remoto.</li></ul>`,
+risky:{title:'Forma riesgosa', code:`git stash
+# ... tres días después ...
+git stash pop   # ¿cuál era? ¿en qué rama?`, note:'El stash como almacén de largo plazo: sin nombre, sin rama, fácil de perder con un drop.'},
+safe:{title:'Forma segura', code:`git switch -c wip/carrito
+git commit -am "wip: carrito a medias"
+git push -u origin wip/carrito`, note:'Para algo que dura más que una interrupción, un commit WIP en una rama: tiene nombre y respaldo.'},
+lead:`<ul><li>Hotfix: el fix entra primero a main por PR y se lleva a release con <code>cherry-pick -x</code>. Así nunca existe un fix en release que falte en main.</li><li>stash para minutos u horas. Para más, rama WIP.</li></ul>`,
+myths:[
+['cherry-pick mueve el commit a mi rama.','Copia su cambio como un commit nuevo. El original sigue donde estaba.'],
+['Cada rama tiene sus stashes.','La pila de stash es una sola para todo el repo; solo guarda en qué rama lo creaste.']],
+answer:`“cherry-pick aplica el cambio de un commit específico como un commit nuevo en mi rama. Lo uso sobre todo para llevar un hotfix de main a una rama de release, con -x para dejar trazabilidad. El riesgo es duplicar cambios con hashes distintos, lo que confunde integraciones posteriores. stash guarda temporalmente mis cambios sin commitear para cambiar de contexto; lo uso para interrupciones cortas con un mensaje y -u, y si va a durar más prefiero un commit WIP en una rama.”`,
+},
+{
+n:13, id:'estrategias', nav:'Git Flow, GitHub Flow, trunk', group:'Equipo', freq:'casi',
+title:'Estrategias de ramas: Git Flow, GitHub Flow y trunk-based development',
+def:`Una estrategia de ramas define qué ramas existen, cuánto viven y cómo llega el código a producción. <b>Git Flow</b> usa ramas permanentes (main y develop) más ramas de feature, release y hotfix. <b>GitHub Flow</b> tiene un main siempre desplegable y ramas cortas que entran por PR. <b>Trunk-based</b> integra a main (el tronco) al menos una vez al día, con ramas de horas y feature flags para lo incompleto.`,
+analogy:`Git Flow es un tren de carga con horario: los vagones se clasifican en patios intermedios y salen en la fecha programada. GitHub Flow es un servicio de taxis: cada viaje sale cuando el pasajero está listo. Trunk-based es una cinta transportadora continua con control de calidad automático en cada tramo.`,
+cmds:`# GitHub Flow, de punta a punta
+git switch main && git pull --ff-only
+git switch -c feat/TIENDA-42-carrito
+# commits pequeños, push temprano
+git push -u origin feat/TIENDA-42-carrito
+gh pr create --fill
+# CI verde + review -> squash merge -> deploy automático
+git switch main && git pull --ff-only
+git branch -d feat/TIENDA-42-carrito`,
+diagrams:[
+{label:'Git Flow: recorrido de un cambio', art:`feature/carrito --> develop --> release/1.2 --> main  (tag v1.2.0)
+                                   |
+                                   +----------> develop
+
+hotfix/1.2.1 (sale de main) --> main (tag v1.2.1)
+                            --> develop`},
+{label:'GitHub Flow', art:`         o--o--o           o        ramas de 1 a 3 días
+        /       \\         / \\
+main --o---------o-------o---o--   cada merge se despliega
+               PR #41      PR #42`},
+{label:'Trunk-based', art:`main  o--o--o--o--o--o--o--o--o   varios merges al día
+       \\/    \\/    \\/
+     ramas de horas + feature flags`}],
+problem:`<div class="tbl"><table>
+<thead><tr><th></th><th>Git Flow</th><th>GitHub Flow</th><th>Trunk-based</th></tr></thead>
+<tbody>
+<tr><td>Ritmo de release</td><td>Programado, versionado</td><td>Continuo, por PR</td><td>Continuo, varias veces al día</td></tr>
+<tr><td>Vida de las ramas</td><td>Semanas</td><td>Días</td><td>Horas</td></tr>
+<tr><td>Requisitos</td><td>Disciplina de merges dobles</td><td>CI y deploy automatizado</td><td>CI muy confiable, tests sólidos, feature flags</td></tr>
+<tr><td>Ideal para</td><td>Apps móviles, software instalable, varias versiones con soporte</td><td>Apps web de equipos pequeños y medianos</td><td>Equipos maduros con entrega continua</td></tr>
+<tr><td>Dolor típico</td><td>Conflictos grandes, lentitud</td><td>Features grandes difíciles de partir</td><td>Exige cultura y tooling</td></tr>
+</tbody></table></div>
+<p>El propio autor de Git Flow, Vincent Driessen, agregó en 2020 una nota a su artículo original: para software que se entrega de forma continua, como las apps web, recomienda un flujo más simple como GitHub Flow.</p>`,
+risky:{title:'Forma riesgosa', code:`# app web con deploy diario
+develop, release/*, hotfix/* ...
+# features que viven 3 semanas`, note:'Copiar Git Flow por inercia: ceremonia de releases que nadie necesita, ramas largas y merges dolorosos.'},
+safe:{title:'Forma segura', code:`# app web con CI/CD
+main protegida + ramas cortas + PR
+squash merge + feature flags
+release/* solo si hay que estabilizar`, note:'Elegir por la frecuencia de despliegue y por cuántas versiones hay que soportar a la vez.'},
+lead:`<p>Cómo lo decidiría:</p><ul><li><b>¿Cuántas versiones en producción hay que mantener?</b> Varias (móvil, on-premise, librería): Git Flow o una variante con ramas de release.</li><li><b>¿Cada cuánto se despliega?</b> Diario o continuo: GitHub Flow.</li><li><b>¿Hay CI confiable, buena cobertura y feature flags?</b> Entonces avanzar hacia trunk-based, que es lo que asocian los informes DORA con equipos de alto desempeño.</li><li>Para un equipo frontend web de 4 a 8 personas: GitHub Flow, ramas de menos de 3 días, squash merge y feature flags para lo grande. Revisar la política cada trimestre.</li></ul>`,
+myths:[
+['Git Flow es el estándar profesional.','Es una opción para releases versionados. Para entrega continua suele sobrar.'],
+['Trunk-based significa commitear sin review.','Puede tener PR muy cortos con review; lo que cambia es que se integran en horas, no en semanas.'],
+['Los feature flags son solo para experimentos A/B.','En trunk-based sirven para integrar código incompleto apagado y separar deploy de release.']],
+answer:`“Depende de cómo se entrega el software. Git Flow, con develop, release y hotfix, sirve cuando hay releases programados y varias versiones con soporte, como una app móvil. GitHub Flow, con main siempre desplegable y ramas cortas por PR, encaja con apps web con despliegue continuo. Trunk-based lleva eso al extremo: todos integran al tronco al menos a diario y lo incompleto va detrás de feature flags; exige CI muy confiable. Para un equipo web propondría GitHub Flow con ramas de pocos días y squash merge, y evolucionaría hacia trunk-based a medida que madure el pipeline.”`,
+},
+{
+n:14, id:'pull-requests', nav:'Pull requests y commits', group:'Equipo', freq:'seguido',
+title:'Pull requests, Conventional Commits y ramas protegidas',
+def:`Un pull request es una propuesta para integrar una rama con revisión humana y validación automática antes del merge. <b>Conventional Commits</b> es una convención de mensajes, <code>tipo(ámbito): descripción</code>, que hace la historia legible y permite generar changelogs y versiones automáticamente.`,
+analogy:`La revisión por pares de un artículo antes de publicarlo: el pipeline es el corrector ortográfico automático y el reviewer es el colega que entiende el tema. Un artículo de 80 páginas nadie lo revisa a fondo; uno de 4, sí.`,
+cmds:`git commit -m "feat(carrito): permitir cupones de descuento"
+git commit -m "fix(pago): redondear total a 2 decimales"
+git commit -m "refactor(precios): extraer servicio de impuestos"
+git commit -m "feat(api)!: cambiar formato de /orders"   # ! = cambio incompatible
+git log --oneline main..feature       # commits que entran en el PR
+git diff main...feature --stat        # tres puntos: cambios desde la base común
+gh pr create --title "feat(carrito): cupones" --body "Cierra TIENDA-42"`,
+diagrams:[
+{label:'Tipos más usados', art:`feat      nueva funcionalidad       -> MINOR
+fix       corrección                -> PATCH
+feat!     cambio incompatible       -> MAJOR
+refactor  sin cambio de comportamiento
+perf  test  docs  build  ci  chore`},
+{label:'Dos puntos vs. tres puntos', art:`git diff main..feature   compara las dos puntas
+                         (incluye lo que cambió en main)
+git diff main...feature  compara la base común con feature
+                         (solo lo que trae el PR)`}],
+problem:`<p>Sin reglas, main recibe pushes directos, PR de miles de líneas aprobados en un minuto y mensajes como “cambios”. Las <b>ramas protegidas</b> convierten los acuerdos en reglas:</p>
+<ul><li>Merge solo por PR, con 1 o 2 aprobaciones y CODEOWNERS en zonas críticas.</li><li>CI obligatorio en verde y rama actualizada con main (o una merge queue en equipos grandes).</li><li>Sin force push ni borrado; historia lineal si se usa squash o rebase.</li><li>Descartar aprobaciones cuando llegan commits nuevos.</li></ul>`,
+risky:{title:'Forma riesgosa', code:`PR #57 "Carrito completo"
++2.341 −480 en 46 archivos
+Aprobado: "LGTM"`, note:'Por encima de unos cientos de líneas la revisión se vuelve superficial: los bugs pasan y el conocimiento no se comparte.'},
+safe:{title:'Forma segura', code:`PR #57 feat(carrito): modelo y servicio   +180
+PR #58 feat(carrito): UI detrás de flag   +240
+PR #59 feat(carrito): activar flag         +12`, note:'PR pequeños y encadenados, cada uno revisable en minutos y desplegable por sí solo.'},
+lead:`<ul><li>Plantilla de PR: qué cambia, por qué, cómo probarlo, capturas si es UI.</li><li>Meta de tamaño (por ejemplo, menos de 400 líneas) y acuerdo de tiempo de respuesta del review (por ejemplo, el mismo día).</li><li>commitlint en un hook de commit-msg y en el CI para que la convención no dependa de la memoria.</li><li>El review también sirve para compartir conocimiento: rotar reviewers.</li></ul>`,
+myths:[
+['Más aprobaciones significa más calidad.','Más aprobaciones suelen significar más espera. Calidad viene de PR pequeños, tests y reviewers que conocen la zona.'],
+['El PR es para encontrar bugs.','También para compartir contexto y mantener consistencia de diseño. Los bugs los encuentran mejor los tests.']],
+answer:`“Un buen PR es pequeño, tiene un propósito claro y llega con tests y CI en verde. En el equipo protejo main: solo se integra por PR, con al menos una aprobación, CI obligatorio, sin force push y con un único método de merge. Uso Conventional Commits, tipo, ámbito y descripción, porque hace la historia legible y permite automatizar changelog y versionado: fix sube el patch, feat el minor y un cambio incompatible el major. Si una feature es grande, la parto en varios PR detrás de un feature flag.”`,
+},
+{
+n:15, id:'tags', nav:'Tags y SemVer', group:'Equipo', freq:'aveces',
+title:'Tags y versionado semántico',
+def:`Un tag es una referencia fija a un commit: a diferencia de una rama, no se mueve. El <b>ligero</b> es solo un puntero; el <b>anotado</b> es un objeto propio con autor, fecha, mensaje y firma opcional. SemVer numera versiones <code>MAJOR.MINOR.PATCH</code>: incompatible, funcionalidad compatible, corrección.`,
+analogy:`Una placa conmemorativa atornillada a una página: marca “aquí salió la versión 1.2” y no se mueve aunque el libro siga creciendo.`,
+cmds:`git tag v1.2.0                                    # ligero
+git tag -a v1.2.0 -m "Release 1.2.0: cupones"     # anotado
+git show v1.2.0
+git push origin v1.2.0               # git push no sube tags por defecto
+git push --follow-tags               # sube los anotados alcanzables
+git describe --tags                  # v1.2.0-3-g7f3d2a1
+git tag -d v1.2.0 && git push origin :refs/tags/v1.2.0`,
+diagrams:[{label:'Tags sobre main', art:`A---B---E---M   main
+        ↑   ↑
+   v1.0.0  v1.1.0`}],
+problem:`<p>Los tags dan puntos de referencia estables para releases, despliegues y changelogs. Mover un tag ya publicado rompe a quien ya lo descargó: su copia apunta a otro commit.</p>`,
+risky:{title:'Forma riesgosa', code:`git tag -f v1.2.0
+git push --force origin v1.2.0`, note:'Mover un tag publicado: builds y clientes que ya lo tienen quedan con un v1.2.0 distinto al tuyo.'},
+safe:{title:'Forma segura', code:`git tag -a v1.2.1 -m "fix: redondeo"
+git push origin v1.2.1`, note:'Un error en una versión publicada se corrige con una versión nueva.'},
+lead:`<ul><li>Releases con tags anotados creados por el CI, no a mano.</li><li>Con Conventional Commits, herramientas como semantic-release o Changesets calculan la versión y el changelog.</li></ul>`,
+myths:[['<code>git push</code> sube los tags.','No. Hay que empujarlos explícitamente o usar <code>--follow-tags</code>.']],
+answer:`“Un tag es un puntero fijo a un commit. El ligero es solo el puntero; el anotado es un objeto con autor, fecha y mensaje, y es el que uso para releases. Con SemVer, major para cambios incompatibles, minor para funcionalidad compatible y patch para correcciones. Un tag publicado no se mueve: si hay un error, saco una versión nueva.”`,
+},
+{
+n:16, id:'depuracion', nav:'bisect, blame y log', group:'Herramientas', freq:'seguido',
+title:'Depuración con Git: bisect, blame y log avanzado',
+def:`<b>bisect</b> hace búsqueda binaria en la historia para encontrar el primer commit que introdujo un bug. <b>blame</b> muestra qué commit modificó por última vez cada línea. <b>log</b> con <code>-S</code>, <code>-G</code>, <code>-p</code>, <code>-L</code> y <code>--graph</code> responde cuándo y por qué cambió algo.`,
+analogy:`bisect es buscar una palabra en el diccionario abriéndolo por la mitad, luego por la mitad de la mitad: con 1.000 commits llegas en unos 10 pasos. blame es la etiqueta de “última modificación” en cada renglón de un contrato.`,
+cmds:`git log --oneline --graph --all --decorate
+git log -S "aplicarCupon" --oneline         # commits que agregaron o quitaron ese texto
+git log -G "1\\.1[69]" -p -- src/precio.ts   # regex sobre las líneas del diff
+git log -L :total:src/precio.ts             # historia de la función total
+git blame -w -C -L 10,20 src/precio.ts      # ignora espacios y detecta código movido
+git blame --ignore-revs-file .git-blame-ignore-revs src/precio.ts
+git bisect start
+git bisect bad                  # el commit actual tiene el bug
+git bisect good v1.1.0          # esta versión no lo tenía
+git bisect run npm test         # automático: el script decide good o bad
+git bisect reset`,
+diagrams:[{label:'bisect sobre 12 commits', art:`good                                bad
+C1  C2  C3  C4  C5  C6  C7  C8  C9  C10 C11 C12
+                    ^ prueba 1: good
+                                ^ prueba 2: bad
+                        ^ prueba 3 ... C8 es el primero malo`}],
+problem:`<p>Sin estas herramientas, encontrar cuándo entró un bug es leer commits a mano. Con bisect el costo es logarítmico, y con <code>bisect run</code> es automático. La utilidad depende de la calidad de la historia: commits pequeños que compilan hacen que el resultado señale una causa concreta; un squash de 2.000 líneas solo dice “fue este PR”.</p>`,
+lead:`<ul><li>Un archivo <code>.git-blame-ignore-revs</code> con los commits de formateo masivo, para que blame no apunte siempre a quien corrió Prettier.</li><li>Commits que compilan y pasan tests: es lo que hace útil a bisect.</li></ul>`,
+myths:[['blame es para encontrar culpables.','Es para encontrar contexto: el commit, su mensaje y su PR explican por qué existe esa línea.']],
+answer:`“Si sé que una versión funcionaba y la actual no, uso git bisect: marco el commit bueno y el malo, y Git hace búsqueda binaria; con bisect run y un test lo automatizo. Para entender por qué existe una línea uso blame con -w y -C, y luego leo el commit y su PR. Para buscar cuándo apareció o desapareció un texto uso git log -S, y git log -L para seguir la historia de una función.”`,
+lab:'lab-bisect'
+},
+{
+n:17, id:'gitignore-secretos', nav:'.gitignore y secretos', group:'Herramientas', freq:'seguido',
+title:'.gitignore, archivos ya rastreados y secretos subidos por error',
+def:`<code>.gitignore</code> solo afecta a archivos <b>no rastreados</b>. Si un archivo ya está en el repositorio, agregarlo a .gitignore no hace nada: hay que sacarlo del index con <code>git rm --cached</code>. Un secreto que llegó a un commit publicado se considera comprometido: <b>primero se rota</b>, después se limpia la historia.`,
+analogy:`.gitignore es un cartel de “no recibimos más cajas de este tipo” en la puerta del depósito: no saca las cajas que ya están adentro. Y si guardaste la llave de la casa en una caja que ya enviaste en copia a veinte personas, lo urgente es cambiar la cerradura.`,
+cmds:`echo ".env" >> .gitignore
+git rm --cached .env              # deja de rastrearlo; el archivo local se queda
+git commit -m "chore: dejar de versionar .env"
+git check-ignore -v dist/app.js   # qué regla lo está ignorando
+
+# secreto ya publicado:
+# 1. ROTAR la credencial en el proveedor, ya
+# 2. limpiar la historia (herramienta recomendada: git-filter-repo)
+git filter-repo --invert-paths --path .env
+git push --force --all && git push --force --tags
+# 3. todo el equipo vuelve a clonar`,
+diagrams:[
+{label:'Antes', art:`A---B---C---D   main
+    B agregó .env con la API key`},
+{label:'Después de filter-repo', art:`A---B'---C'---D'   main
+todos los hashes desde B cambian`}],
+problem:`<p>Borrar el archivo en un commit nuevo no basta: el secreto sigue en la historia, en cada clon, en los forks y en las referencias de PR del servidor. Los bots que escanean repositorios públicos encuentran claves en minutos.</p>`,
+risky:{title:'Forma riesgosa', code:`git rm .env
+git commit -m "quitar .env"
+git push`, note:'La clave sigue en el commit B, visible para cualquiera con acceso al repo. Y sigue activa.'},
+safe:{title:'Forma segura', code:`# 1. revocar y rotar la clave
+# 2. git filter-repo --invert-paths --path .env
+# 3. force push coordinado + re-clonar
+# 4. pedir al proveedor (GitHub, GitLab) limpiar cachés y refs de PR`, note:'La rotación es lo que protege. La limpieza evita que la clave vieja siga circulando y quita ruido de futuros escaneos.'},
+rescue:`<p><b>“Hice push de un secreto”.</b> Ver el kit de rescate al final: rotar, limpiar, coordinar el re-clone y activar el escaneo de secretos.</p>`,
+lead:`<ul><li>Prevención: <code>.env.example</code> versionado, <code>.env</code> en .gitignore desde el primer commit, gitleaks o similar en pre-commit y secret scanning con push protection en el servidor.</li><li>Un runbook escrito de “secreto filtrado” para que nadie improvise bajo presión.</li></ul>`,
+myths:[
+['Si el repo es privado no pasa nada.','Lo ven todos los que tienen acceso, las integraciones y cualquier clon en un portátil perdido. Se rota igual.'],
+['<code>git rm</code> lo borra de la historia.','Solo lo borra del commit nuevo en adelante.']],
+answer:`“.gitignore solo evita rastrear archivos nuevos; si ya estaba versionado, hago git rm --cached y commit. Si se subió un secreto, lo primero es revocar y rotar la credencial, porque hay que asumir que ya fue vista. Después limpio la historia con git filter-repo, hago force push coordinado y pido al equipo que vuelva a clonar. Para prevenir, .env.example, escaneo de secretos en pre-commit y push protection en el servidor.”`,
+},
+{
+n:18, id:'hooks-ci', nav:'Hooks y CI', group:'Herramientas', freq:'aveces',
+title:'Hooks e integración continua',
+def:`Los hooks son scripts que Git ejecuta en eventos: <code>pre-commit</code>, <code>commit-msg</code>, <code>pre-push</code>, entre otros. Viven en <code>.git/hooks</code>, que no se versiona; para compartirlos se usan herramientas como Husky o Lefthook, o <code>core.hooksPath</code>. Se pueden saltar con <code>--no-verify</code>, así que la verificación definitiva es el pipeline de CI.`,
+analogy:`Los hooks son el detector de metales en la puerta de tu oficina: útil, pero alguien puede entrar por la ventana. El CI es el control del aeropuerto: nadie aborda sin pasar.`,
+cmds:`npx husky init
+echo "npx lint-staged" > .husky/pre-commit
+echo 'npx --no -- commitlint --edit "$1"' > .husky/commit-msg
+echo "npm run test:unit" > .husky/pre-push
+git config core.hooksPath .githooks   # alternativa sin dependencias
+git commit --no-verify                # se los salta: por eso CI repite los checks`,
+diagrams:[{label:'Dónde va cada verificación', art:`pre-commit  -> formato y lint de archivos staged   (segundos)
+commit-msg  -> Conventional Commits
+pre-push    -> tests unitarios rápidos
+CI (PR)     -> build, todos los tests, seguridad   (obligatorio)`}],
+problem:`<p>Los hooks dan feedback inmediato y evitan PR que fallan por formato. Si son lentos, el equipo se acostumbra a <code>--no-verify</code> y pierden su valor.</p>`,
+lead:`<ul><li>Hooks rápidos (pocos segundos) y solo sobre archivos staged con lint-staged.</li><li>Todo lo que importa se repite en CI y es obligatorio por regla de rama protegida.</li></ul>`,
+myths:[['Con hooks no necesito CI.','Los hooks son locales y opcionales. El CI es la única verificación que no se puede saltar.']],
+answer:`“Los hooks son scripts que Git corre en eventos como pre-commit o pre-push. Los uso para feedback rápido: formato, lint de lo staged y validación del mensaje de commit, compartidos con Husky o Lefthook. Como se pueden saltar con --no-verify, todo lo importante se repite en el CI, que es obligatorio en la rama protegida.”`,
+},
+{
+n:19, id:'repos-grandes', nav:'Monorepo, submódulos, LFS', group:'Herramientas', freq:'aveces',
+title:'Monorepo vs. multirepo, submódulos y repositorios grandes',
+def:`Un <b>monorepo</b> guarda varios proyectos en un solo repositorio; un <b>multirepo</b> usa uno por proyecto. Un <b>submódulo</b> es un puntero a un commit concreto de otro repositorio. <b>Git LFS</b> reemplaza archivos pesados por punteros y los guarda aparte. Los <b>clones superficiales</b> (<code>--depth</code>), el partial clone (<code>--filter=blob:none</code>) y sparse-checkout reducen lo que descargas.`,
+analogy:`Monorepo es una sola biblioteca con secciones; multirepo, una biblioteca por barrio. Un submódulo es una ficha que dice “ver tomo 3, edición de marzo, en la otra biblioteca”. LFS es guardar los mapas gigantes en una bodega y dejar en el estante una ficha con su ubicación.`,
+cmds:`git submodule add https://github.com/tienda/ui-kit libs/ui-kit
+git clone --recurse-submodules https://github.com/tienda/tienda.git
+git submodule update --init --recursive
+git lfs install && git lfs track "*.psd"     # crea la regla en .gitattributes
+git clone --depth 1 https://github.com/tienda/tienda.git           # CI rápido
+git clone --filter=blob:none https://github.com/tienda/tienda.git  # blobs bajo demanda
+git sparse-checkout set apps/tienda libs/ui`,
+diagrams:[{label:'Monorepo frontend típico', art:`tienda/
+├─ apps/tienda-web
+├─ apps/admin
+├─ libs/ui
+└─ libs/precios   ← un cambio aquí y sus consumidores
+                    se revisan en el mismo PR`}],
+problem:`<p>Monorepo facilita cambios atómicos entre proyectos y compartir librerías, pero necesita herramientas (Nx, Turborepo) para construir y testear solo lo afectado. Multirepo da independencia, a costa de coordinar versiones. Los submódulos suelen confundir: el repo padre guarda un commit fijo y hay que actualizarlo a mano.</p>`,
+lead:`<ul><li>Para un frontend con varias apps Angular y librerías compartidas, un monorepo con Nx suele ser la mejor opción.</li><li>Submódulos solo si no hay alternativa; preferir paquetes versionados.</li><li>Binarios pesados en LFS desde el inicio; en CI, clones superficiales.</li></ul>`,
+myths:[['Monorepo es lo mismo que monolito.','Puede contener muchos servicios desplegados por separado; solo comparten repositorio.']],
+answer:`“Monorepo pone varios proyectos en un repositorio y facilita cambios atómicos y librerías compartidas, si hay herramientas que construyan solo lo afectado. Multirepo da independencia, pero obliga a coordinar versiones. Los submódulos fijan un commit de otro repo y suelen dar problemas, así que prefiero paquetes. Para repos grandes, LFS para binarios y, en CI, clones superficiales o partial clone.”`,
+}
+];
+
+const RESCUES = [
+{t:'Hice commit en la rama equivocada', ctx:'Commiteaste en main lo que iba en una rama de feature, y todavía no hiciste push.', code:`git branch feat/carrito-stock    # una rama nueva apunta a tu commit
+git reset --keep HEAD~1           # main vuelve un commit atrás
+git switch feat/carrito-stock
+
+# si la rama destino ya existía:
+git switch feature
+git cherry-pick main
+git switch main
+git reset --keep HEAD~1`, warn:'Si ya hiciste push a main, no uses reset: haz revert en main y cherry-pick a tu rama.'},
+{t:'Hice push de un secreto', ctx:'Una API key quedó en un commit que ya está en el remoto.', code:`# 1. Revocar y rotar la clave en el proveedor (lo primero)
+# 2. Respaldo y limpieza
+git branch backup/antes-de-limpiar
+git filter-repo --invert-paths --path .env
+# 3. Publicar la historia limpia
+git push --force --all
+git push --force --tags
+# 4. El equipo vuelve a clonar; pedir al servidor limpiar refs de PR`, warn:'Rotar no es opcional: la limpieza no garantiza que nadie haya copiado la clave.'},
+{t:'Perdí commits tras un reset --hard', ctx:'Ejecutaste reset --hard y desaparecieron commits.', code:`git reflog
+# e5a0c66 HEAD@{0}: reset: moving to HEAD~2
+# d93f1b7 HEAD@{1}: commit: feat(carrito): calcular total
+git branch rescate HEAD@{1}
+git log --oneline rescate        # verificar
+git reset --hard rescate         # o merge/cherry-pick desde rescate`, warn:'Los cambios que nunca se commitearon ni se agregaron al index no se recuperan.'},
+{t:'El rebase quedó a medias', ctx:'Un conflicto detuvo el rebase y no sabes en qué estado está el repo.', code:`git status                  # "rebase in progress; onto e5a0c66"
+# opción A: terminarlo
+git diff                    # resolver el conflicto
+git add src/precio.ts
+git rebase --continue
+# opción B: volver al punto de partida
+git rebase --abort
+# ya terminó y quedó mal:
+git reset --hard ORIG_HEAD  # o feature@{1}`, warn:'No hagas commits nuevos ni cambies de rama a mitad de un rebase: confunden el estado.'},
+{t:'Hice un merge que no debía', ctx:'Integraste una rama equivocada en main.', code:`# todavía local:
+git reset --hard ORIG_HEAD
+
+# ya publicado:
+git revert -m 1 <hash-del-merge>
+git push`, warn:'Si después quieres volver a integrar esa rama, primero revierte el revert; si no, Git cree que esos commits ya están integrados.'},
+{t:'Un force push borró commits de un compañero', ctx:'Alguien hizo push --force y en el remoto desapareció trabajo.', code:`# quien tenía los commits (en su clon o en su reflog):
+git fetch origin
+git reflog show feature
+git push origin <hash-bueno>:feature --force-with-lease
+# después: proteger la rama y adoptar --force-with-lease`, warn:'El servidor no tiene tu reflog. La recuperación depende de un clon que aún tenga los commits.'},
+{t:'Borré una rama sin integrar', ctx:'Ejecutaste git branch -D y la rama tenía trabajo.', code:`# Git imprime el hash al borrar:
+# Deleted branch feature (was d93f1b7).
+git branch feature d93f1b7
+# si no lo copiaste:
+git reflog | grep feature`, warn:'Funciona mientras el reflog no haya expirado (semanas, por defecto).'}
+];
+
+const EX_CMD = [
+{q:'Agregaste config.local.json al staging por error y quieres conservar tus cambios en disco.', o:['git restore config.local.json','git restore --staged config.local.json','git reset --hard','git rm config.local.json'], a:1, e:'restore --staged saca el archivo del index y no toca el working directory. restore sin --staged descartaría los cambios del disco.'},
+{q:'Un commit con un bug ya está en main y el equipo ya lo tiene. Hay que deshacerlo.', o:['git reset --hard HEAD~1 y push --force','git revert <hash>','git commit --amend','git restore .'], a:1, e:'En historia compartida se deshace con revert: commit nuevo, sin reescribir nada.'},
+{q:'Tu último commit, sin push, tiene un error en el mensaje.', o:['git revert HEAD','git commit --amend','git rebase main','git reset --hard HEAD~1'], a:1, e:'amend reemplaza el último commit. Como no está publicado, reescribir es seguro.'},
+{q:'Quieres ver qué subieron tus compañeros sin tocar tu rama actual.', o:['git pull','git fetch y git log main..origin/main','git merge origin/main','git push'], a:1, e:'fetch actualiza origin/* sin modificar tus ramas; el rango main..origin/main muestra lo que llega.'},
+{q:'Hiciste rebase de tu rama de PR y git push es rechazado.', o:['git push --force','git push --force-with-lease','git pull y luego push','Borrar la rama remota'], a:1, e:'--force-with-lease fuerza solo si el remoto está como lo viste. pull mezclaría la historia vieja con la nueva.'},
+{q:'Necesitas en release/1.4 solo un fix que está en main.', o:['git merge main','git rebase main','git cherry-pick -x <hash>','git reset --hard main'], a:2, e:'cherry-pick trae solo ese cambio; -x deja anotado el commit de origen.'},
+{q:'Te piden un hotfix urgente y tienes cambios a medias en tu rama.', o:['git stash push -u -m "wip"','git reset --hard','git restore .','git commit --amend'], a:0, e:'stash guarda tus cambios (con -u también los archivos nuevos) y deja el directorio limpio para cambiar de rama.'},
+{q:'Algo se rompió entre v1.1.0 y hoy, con 300 commits de por medio.', o:['git blame','git bisect','git reflog','git log --graph'], a:1, e:'bisect hace búsqueda binaria: unos 9 pasos para 300 commits, o automático con bisect run.'},
+{q:'Quieres saber en qué commit apareció por primera vez la función aplicarCupon.', o:['git log -S "aplicarCupon"','git blame','git show aplicarCupon','git grep aplicarCupon'], a:0, e:'El pickaxe -S lista los commits que cambiaron cuántas veces aparece ese texto: el más antiguo es el que la agregó.'},
+{q:'Agregaste .env al .gitignore pero sigue apareciendo como modificado.', o:['git rm --cached .env','git restore .env','Volver a guardar .gitignore','git reset .env'], a:0, e:'.gitignore no afecta a archivos ya rastreados. rm --cached lo saca del index y conserva el archivo local.'},
+{q:'Tras un reset --hard desaparecieron dos commits.', o:['git revert','git reflog','git fsck --full','Ya no hay forma de recuperarlos'], a:1, e:'El reflog guarda las posiciones anteriores de HEAD; desde ahí creas una rama o haces reset.'},
+{q:'Quieres juntar cuatro commits “wip” en uno antes de pedir review.', o:['git merge --squash','git rebase -i','git cherry-pick','git commit --amend cuatro veces'], a:1, e:'rebase -i con squash o fixup fusiona los commits de tu rama antes de publicarla.'}
+];
+
+const EX_GRAPH = [
+{q:'Estás en main y ejecutas git merge feature.', art:BASE_ART, o:[
+`      C---D      feature
+     /     \\
+A---B---E---M    main`,
+`A---B---E---C'---D'   main`,
+`A---B---C---D   main, feature`,
+`A---B---E---S    main`], a:0, e:'Las ramas divergieron desde B, así que no puede ser fast-forward: Git crea un merge commit con dos padres.'},
+{q:'Estás en feature y ejecutas git rebase main.', art:BASE_ART, o:[
+`      C---D      feature
+     /     \\
+A---B---E---M    main`,
+`          C'--D'  feature
+         /
+A---B---E         main`,
+`A---B---E---C---D   main, feature`,
+`      C---D   feature
+     /
+A---B---E     main (sin cambios)`], a:1, e:'Rebase copia C y D sobre E como commits nuevos. main no se mueve.'},
+{q:'Estás en main y ejecutas git merge feature.', art:`A---B         main ← HEAD
+     \\
+      C---D   feature`, o:[
+`A---B-------M   main
+     \\     /
+      C---D     feature`,
+`A---B---C---D   main, feature`,
+`A---B---S   main`,
+`A---B   main (Already up to date)`], a:1, e:'main es ancestro de feature: Git hace fast-forward y solo mueve el puntero. Habría merge commit con --no-ff.'},
+{q:'En main ejecutas git reset --soft HEAD~1.', art:`A---B---E---D   main ← HEAD`, o:[
+`A---B---E   main ← HEAD
+cambios de D: staged`,
+`A---B---E   main ← HEAD
+cambios de D: descartados`,
+`A---B---E---D---R   main ← HEAD`,
+`A---B---E---D   main ← HEAD
+index vacío`], a:0, e:'soft mueve solo la rama: index y working directory quedan como estaban, así que los cambios de D aparecen listos para commitear.'},
+{q:'En main ejecutas git merge --squash feature y luego git commit.', art:BASE_ART, o:[
+`      C---D      feature
+     /     \\
+A---B---E---M    main`,
+`      C---D      feature (intacta)
+     /
+A---B---E---S    main`,
+`A---B---E---C'---D'   main, feature`,
+`A---B---E---S    main
+(feature se borra sola)`], a:1, e:'squash crea un commit normal S con todos los cambios. feature no se mueve ni se borra, y Git no la considera integrada.'},
+{q:'En main ejecutas git revert D.', art:`A---B---E---D   main ← HEAD`, o:[
+`A---B---E   main ← HEAD`,
+`A---B---E---D---R   main ← HEAD`,
+`A---B---E---R   main ← HEAD`,
+`A---B---E---D   main, cambios de D sin stage`], a:1, e:'revert agrega R, que invierte D. D sigue en la historia: nada se reescribe.'}
+];
+
+const OPEN_Q = [
+{q:'¿Cuál es la diferencia entre merge y rebase, y cuándo usarías cada uno?', a:'Merge integra creando un merge commit con dos padres y no reescribe nada, así que es seguro en ramas compartidas; deja historia ramificada. Rebase reaplica mis commits sobre la punta de la otra rama creando commits nuevos; deja historia lineal pero reescribe. Uso rebase para mantener mi rama de PR al día y merge (o squash) para integrar a main y en ramas compartidas.'},
+{q:'¿Cómo recuperas un commit que borraste con reset --hard?', a:'Con git reflog busco la posición anterior de HEAD, por ejemplo HEAD@{1}, y creo una rama ahí o hago reset --hard a ese punto. Funciona porque el commit sigue en la base de objetos hasta que el GC lo limpie. El límite: el reflog es local y no salva cambios nunca commiteados.'},
+{q:'¿Qué es HEAD y qué significa detached HEAD?', a:'HEAD indica en qué estoy parado. Normalmente apunta a una rama, y por eso esa rama avanza al hacer commit. En detached HEAD apunta directo a un commit; puedo hacer commits, pero si me voy sin crear una rama quedan huérfanos.'},
+{q:'Explica reset --soft, --mixed y --hard.', a:'Los tres mueven la rama actual. Soft deja index y working directory intactos, así que todo queda staged. Mixed, el modo por defecto, además resetea el index: los cambios quedan en el disco sin stage. Hard resetea también el working directory y descarta los cambios sin commitear.'},
+{q:'¿Por qué no se hace rebase sobre ramas compartidas?', a:'Porque rebase crea commits nuevos con hashes nuevos. Mis compañeros tienen los originales; al traer los nuevos, Git ve historias distintas y aparecen duplicados, conflictos o alguien hace force push y borra trabajo.'},
+{q:'¿Qué diferencia hay entre fetch y pull?', a:'fetch descarga los objetos y actualiza las ramas remotas como origin/main sin tocar mis ramas. pull hace fetch y además integra en mi rama actual, con merge o rebase según la configuración.'},
+{q:'¿Qué estrategia de ramas propondrías para un equipo de 6 que despliega a diario? ¿Y para una app móvil con release mensual?', a:'Para despliegue diario, GitHub Flow: main siempre desplegable, ramas cortas, PR con CI, squash merge y feature flags; con el tiempo, trunk-based. Para la app móvil, algo más cercano a Git Flow o al menos ramas de release para estabilizar y dar soporte a versiones publicadas, con hotfix por cherry-pick.'},
+{q:'Alguien subió una API key a GitHub. ¿Qué haces?', a:'Primero revoco y roto la clave. Luego limpio la historia con git filter-repo, hago force push coordinado, pido al equipo que vuelva a clonar y al proveedor que limpie cachés. Después, prevención: escaneo de secretos en pre-commit y push protection.'},
+{q:'¿Por qué se dice que un commit es una foto y no un diff?', a:'Porque cada commit apunta a un tree con el estado completo del proyecto. Los archivos sin cambios reutilizan el mismo blob, así que no se duplican. Los diffs se calculan comparando dos fotos.'},
+{q:'¿Cuál es la diferencia entre --force y --force-with-lease?', a:'--force sobrescribe la rama remota sin importar qué haya. --force-with-lease solo fuerza si el remoto sigue en el commit que yo vi en mi último fetch; si alguien subió algo, falla y me protege de borrar su trabajo.'},
+{q:'¿Cómo reduces los conflictos en un equipo?', a:'Ramas cortas y PR pequeños, integrar main a diario, no mezclar formateos masivos con features, evitar archivos que todos editan, y configurar zdiff3 y rerere.'},
+{q:'¿Qué es un squash merge y qué riesgo tiene?', a:'Junta todos los commits del PR en un único commit nuevo sobre main. Da una historia limpia y reverts simples, pero pierde granularidad para bisect, y si sigues usando la rama después, Git no sabe que ya se integró.'},
+{q:'¿Cómo encontrarías el commit que rompió una funcionalidad?', a:'Con git bisect: marco un commit bueno y uno malo, Git hace búsqueda binaria y yo marco cada paso, o lo automatizo con bisect run y un test. Después leo el commit y su PR para entender la causa.'}
+];
+
+const MC = [
+{q:'¿Qué hace git reset --mixed HEAD~1?', o:['Mueve la rama y el index; el working directory queda igual','Solo mueve la rama','Mueve rama, index y working directory','Crea un commit que invierte HEAD'], a:0, e:'Mixed es el modo por defecto: rama e index atrás, cambios en disco sin stage.'},
+{q:'¿Qué guarda un objeto tree?', o:['El contenido de un archivo','Nombres y permisos que apuntan a blobs y a otros trees','El diff respecto al commit anterior','La lista de ramas'], a:1, e:'El tree es un directorio; el contenido vive en los blobs.'},
+{q:'Durante un git rebase main, ¿a qué se refiere --ours?', o:['A tu commit que se está reaplicando','A la rama base sobre la que reaplicas (main)','Al merge-base','Al remoto'], a:1, e:'En rebase los lados se invierten respecto a merge.'},
+{q:'¿Cuál de estos comandos NO reescribe historia?', o:['git commit --amend','git rebase -i','git revert','git reset --hard HEAD~1'], a:2, e:'revert solo agrega un commit nuevo.'},
+{q:'Un fast-forward ocurre cuando…', o:['Las ramas no tienen conflictos','La rama actual es ancestro de la que integras','Usas --no-ff','La otra rama tiene un solo commit'], a:1, e:'Si no divergieron, basta con mover el puntero.'},
+{q:'origin/main es…', o:['La rama main del servidor en tiempo real','Una copia local del estado del remoto en tu último fetch','Un alias de main','La rama upstream del fork'], a:1, e:'Se actualiza solo con fetch, pull o push.'},
+{q:'Después de un squash merge, sigues commiteando en la misma rama y abres otro PR. ¿Qué pasa?', o:['Nada, Git sabe que ya se integró','El PR vuelve a traer los commits viejos y puede haber conflictos','La rama se rebasea sola','Git rechaza el push'], a:1, e:'Los commits originales no son ancestros de main; Git no los reconoce dentro de S.'},
+{q:'¿Cuál afirmación sobre el reflog es correcta?', o:['Se sincroniza con el remoto','Es local y sus entradas expiran','Guarda los cambios nunca commiteados','Solo registra commits'], a:1, e:'También registra resets, checkouts y rebases, pero solo en tu clon.'},
+{q:'.gitignore no tiene efecto sobre…', o:['Archivos nuevos','Carpetas de build','Archivos que ya están rastreados','Archivos ocultos'], a:2, e:'Para esos hace falta git rm --cached.'},
+{q:'¿Qué distingue a un tag anotado de uno ligero?', o:['Es un objeto con autor, fecha y mensaje','Se mueve con los commits','Solo existe en el remoto','Se crea con git branch'], a:0, e:'El ligero es solo un puntero; el anotado es un objeto propio.'},
+{q:'Trunk-based development requiere sobre todo…', o:['Ramas de release por cada sprint','CI confiable y feature flags','Una rama develop','Merge commits obligatorios'], a:1, e:'Se integra a diario, así que lo incompleto va detrás de flags y el CI protege el tronco.'},
+{q:'git log -S "IVA" muestra…', o:['Commits cuyo mensaje contiene IVA','Commits que cambiaron cuántas veces aparece IVA en el código','Archivos que contienen IVA','Ramas con IVA en el nombre'], a:1, e:'Es el pickaxe. Para el mensaje sería --grep.'},
+{q:'Ante un secreto filtrado en un commit publicado, el primer paso es…', o:['git filter-repo','Borrar el archivo y commitear','Revocar y rotar la credencial','Hacer el repo privado'], a:2, e:'La rotación es lo único que realmente neutraliza la filtración.'},
+{q:'git diff --staged compara…', o:['Working directory vs. index','Index vs. HEAD','Working directory vs. HEAD','Tu rama vs. origin'], a:1, e:'Muestra lo que entraría en el próximo commit.'},
+{q:'¿Cuántos pasos necesita bisect, aproximadamente, para 1.000 commits?', o:['10','100','500','30'], a:0, e:'log2(1000) ≈ 10.'},
+{q:'Sobre los hooks de Git, es cierto que…', o:['Se versionan automáticamente en .git/hooks','Se pueden saltar con --no-verify','Reemplazan al CI','Se ejecutan en el servidor de GitHub'], a:1, e:'Son locales y opcionales; el CI es la verificación obligatoria.'}
+];
+
+(function(){
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const FREQ={casi:{label:'Casi siempre',cls:'f-casi'},seguido:{label:'Seguido',cls:'f-seguido'},aveces:{label:'A veces',cls:'f-aveces'}};
+
+function hl(code){
+  return code.replace(/^\n+|\s+$/g,'').split('\n').map(line=>{
+    let ci=-1;
+    for(let i=0;i<line.length;i++){ if(line[i]==='#'&&(i===0||/\s/.test(line[i-1]))){ci=i;break;} }
+    const cp=ci>=0?line.slice(0,ci):line, com=ci>=0?line.slice(ci):'';
+    let h=esc(cp).replace(/^(\s*)(git|gh|npx|echo|cat)(?=\s|$)/,'$1<span class="k">$2</span>').replace(/(&amp;&amp;\s*)(git)(?=\s)/g,'$1<span class="k">$2</span>');
+    if(com) h+='<span class="c">'+esc(com)+'</span>';
+    return h;
+  }).join('\n');
+}
+
+/* ---------- storage ---------- */
+const KEY='gitguia-repasados-v1';
+let done={};
+try{done=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){done={};}
+function saveDone(){try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}}
+
+/* ---------- topics ---------- */
+function topicHTML(t){
+  const F=FREQ[t.freq];
+  const rs=t.risky?`<h3>Forma riesgosa y forma segura</h3><div class="rs"><div class="risky"><h4>${t.risky.title}</h4><pre class="code">${hl(t.risky.code)}</pre><p>${t.risky.note}</p></div><div class="safe"><h4>${t.safe.title}</h4><pre class="code">${hl(t.safe.code)}</pre><p>${t.safe.note}</p></div></div>`:'';
+  return `<section class="topic" id="${t.id}" data-freq="${t.freq}">
+  <header class="t-head"><span class="t-num">${String(t.n).padStart(2,'0')}</span><div><p class="t-group">${t.group}</p><h2>${t.title}</h2></div><span class="pill ${F.cls}">${F.label}</span></header>
+  <div class="t-intro"><div class="def"><h3>Definición</h3><p>${t.def}</p></div><aside class="analogy"><h3>Analogía</h3><p>${t.analogy}</p></aside></div>
+  <h3>Ejemplo en la tienda</h3><pre class="code">${hl(t.cmds)}</pre>
+  ${t.diagrams?`<div class="diagrams">${t.diagrams.map(d=>`<figure><figcaption>${d.label}</figcaption><pre class="diagram">${esc(d.art)}</pre></figure>`).join('')}</div>`:''}
+  <h3>Qué problema resuelve</h3><div class="prose">${t.problem}</div>
+  ${rs}
+  ${t.lab?`<div class="lab" id="${t.lab}"></div>`:''}
+  ${t.rescue?`<div class="rescue-inline"><h3>Escenario de rescate</h3>${t.rescue}</div>`:''}
+  <div class="lead"><h3>Perspectiva de Tech Lead</h3>${t.lead}</div>
+  <h3>Malentendidos comunes</h3><ul class="myths">${t.myths.map(([m,r])=>`<li><p class="m">${m}</p><p class="r">${r}</p></li>`).join('')}</ul>
+  <div class="answer"><h3>Respuesta modelo para la entrevista</h3><blockquote>${t.answer}</blockquote></div>
+  <label class="done"><input type="checkbox" class="done-toggle" data-id="${t.id}"${done[t.id]?' checked':''}> Marcar como repasado</label>
+  </section>`;
+}
+const simSection=`<section class="block" id="simulador"><div class="lab" id="lab-sim" style="margin-top:0"></div></section>`;
+let html='';
+TOPICS.forEach(t=>{html+=topicHTML(t); if(t.n===3) html+=simSection;});
+$('#topics').innerHTML=html;
+
+/* ---------- nav ---------- */
+function buildNav(){
+  let h='', g='';
+  TOPICS.forEach(t=>{
+    if(t.group!==g){g=t.group;h+=`<p class="ng">${g}</p>`;}
+    h+=`<a href="#${t.id}" data-id="${t.id}" data-freq="${t.freq}" class="${done[t.id]?'done':''}"><span class="nn">${String(t.n).padStart(2,'0')}</span><span class="nt">${t.nav}</span><span class="dot ${FREQ[t.freq].cls}" title="${FREQ[t.freq].label}"></span></a>`;
+    if(t.n===3) h+=`<a href="#simulador" class="labnav"><span class="nn">lab</span><span class="nt">Simulador del grafo</span><span></span></a>`;
+  });
+  h+=`<p class="ng">Laboratorios</p>
+  <a href="#lab-areas"><span class="nn">lab</span><span class="nt">Las tres áreas</span><span></span></a>
+  <a href="#simulador"><span class="nn">lab</span><span class="nt">Simulador del grafo</span><span></span></a>
+  <a href="#lab-compare"><span class="nn">lab</span><span class="nt">Merge, rebase y squash</span><span></span></a>
+  <a href="#lab-conflict"><span class="nn">lab</span><span class="nt">Resolver un conflicto</span><span></span></a>
+  <a href="#lab-bisect"><span class="nn">lab</span><span class="nt">Bisect guiado</span><span></span></a>
+  <p class="ng">Cierre</p>
+  <a href="#rescate"><span class="nn">!</span><span class="nt">Kit de rescate</span><span></span></a>
+  <a href="#practica"><span class="nn">?</span><span class="nt">Práctica: qué comando y qué grafo</span><span></span></a>
+  <a href="#simulacro"><span class="nn">✓</span><span class="nt">Simulacro de entrevista</span><span></span></a>`;
+  $('#nav').innerHTML=h;
+}
+buildNav();
+function updateProgress(){
+  const n=TOPICS.filter(t=>done[t.id]).length;
+  $('#progBar').style.width=(n/TOPICS.length*100)+'%';
+  $('#progText').textContent=`${n} de ${TOPICS.length} temas repasados`;
+  $$('#nav a[data-id]').forEach(a=>a.classList.toggle('done',!!done[a.dataset.id]));
+}
+document.addEventListener('change',e=>{
+  if(e.target.classList.contains('done-toggle')){done[e.target.dataset.id]=e.target.checked;saveDone();updateProgress();}
+});
+updateProgress();
+$$('.chip').forEach(c=>c.addEventListener('click',()=>{
+  $$('.chip').forEach(x=>x.classList.toggle('on',x===c));
+  const f=c.dataset.f;
+  $$('#nav a[data-freq]').forEach(a=>a.classList.toggle('hidden',f!=='all'&&a.dataset.freq!==f));
+}));
+$('#menuBtn').addEventListener('click',()=>{
+  const s=$('#side'); const o=s.classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded',o);
+});
+$('#nav').addEventListener('click',e=>{if(e.target.closest('a')){$('#side').classList.remove('open');$('#menuBtn').setAttribute('aria-expanded','false');}});
+
+/* =========================================================
+   Motor del grafo
+   ========================================================= */
+const LANE={main:0,feature:1,hotfix:2};
+const LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const MSGS=['feat(pago): integrar pasarela','fix(carrito): stock negativo','refactor: servicio de precios','test: total con cupón','feat: cupones de descuento','docs: README de la tienda','perf: cache del catálogo','fix(ui): botón de pagar'];
+function addC(s,id,parents,lane,msg){s.commits[id]={id,parents,lane,msg,seq:s.seq++};return id;}
+function makeBase(){
+  const s={commits:{},seq:0,branches:{},head:{type:'branch',name:'main'},reflog:[],nl:5,mi:0};
+  addC(s,'A',[],0,'init: estructura tienda');
+  addC(s,'B',['A'],0,'feat: catálogo');
+  addC(s,'C',['B'],1,'feat(carrito): agregar');
+  addC(s,'D',['C'],1,'feat(carrito): total');
+  addC(s,'E',['B'],0,'fix: precios IVA 19 %');
+  s.branches={main:'E',feature:'D'};
+  s.reflog=[{id:'E',a:'checkout: moving from feature to main'},{id:'D',a:'commit: feat(carrito): total'}];
+  return s;
+}
+const clone=s=>JSON.parse(JSON.stringify(s));
+const headId=s=>s.head.type==='branch'?s.branches[s.head.name]:s.head.id;
+function anc(s,id){const set=new Set(),st=[id];while(st.length){const x=st.pop();if(!x||set.has(x))continue;set.add(x);st.push(...s.commits[x].parents);}return set;}
+function reach(s){const set=new Set();Object.values(s.branches).forEach(id=>anc(s,id).forEach(x=>set.add(x)));anc(s,headId(s)).forEach(x=>set.add(x));return set;}
+function newId(s){let id;do{id=s.nl<26?LETTERS[s.nl]:'X'+s.nl;s.nl++;}while(s.commits[id]);return id;}
+function copyId(s,id){let n=id+"'";while(s.commits[n])n+="'";return n;}
+function curLane(s){return s.head.type==='branch'?(LANE[s.head.name]??2):3;}
+function moveHead(s,id,a){if(s.head.type==='branch')s.branches[s.head.name]=id;else s.head.id=id;s.reflog.unshift({id,a});}
+const where=s=>s.head.type==='branch'?s.head.name:'detached HEAD';
+const fail=(cmd,msg)=>({cmd,msg,err:true});
+
+const OPS={
+  commit(s){
+    const p=headId(s),id=newId(s),m=MSGS[s.mi++%MSGS.length];
+    addC(s,id,[p],curLane(s),m); moveHead(s,id,'commit: '+m);
+    return {cmd:`git commit -m "${m}"`,msg:s.head.type==='branch'
+      ?`Se creó <b>${id}</b> con padre <b>${p}</b>. La rama <b>${s.head.name}</b> avanzó a ${id} porque HEAD apunta a ella.`
+      :`Se creó <b>${id}</b> con padre <b>${p}</b>, pero estás en detached HEAD: ninguna rama avanzó. Si cambias de rama sin crear una, ${id} queda huérfano.`,fresh:[id]};
+  },
+  switch(s,name){
+    if(s.head.type==='branch'&&s.head.name===name) return fail(`git switch ${name}`,`Ya estás en ${name}.`);
+    const from=where(s); s.head={type:'branch',name}; s.reflog.unshift({id:s.branches[name],a:`checkout: moving from ${from} to ${name}`});
+    return {cmd:`git switch ${name}`,msg:`HEAD ahora apunta a <b>${name}</b>. No se movió ningún commit: Git solo cambió HEAD y actualizó tus archivos a la foto de ${s.branches[name]}.`};
+  },
+  hotfix(s){
+    if(s.branches.hotfix) return fail('git switch -c hotfix','La rama hotfix ya existe. Usa <code>git switch hotfix</code> o reinicia el simulador.');
+    const h=headId(s); s.branches.hotfix=h; const from=where(s); s.head={type:'branch',name:'hotfix'}; s.reflog.unshift({id:h,a:`checkout: moving from ${from} to hotfix`});
+    return {cmd:'git switch -c hotfix',msg:`Se creó la rama <b>hotfix</b> apuntando a ${h} y HEAD pasó a ella. Crear una rama solo escribe un puntero nuevo: ningún commit se copió.`};
+  },
+  detach(s){
+    const c=headId(s),p=s.commits[c].parents[0];
+    if(!p) return fail('git switch --detach HEAD~1','Este commit no tiene padre.');
+    s.head={type:'detached',id:p}; s.reflog.unshift({id:p,a:'checkout: moving to HEAD~1'});
+    return {cmd:'git switch --detach HEAD~1',msg:`HEAD apunta directo a <b>${p}</b>, no a una rama: detached HEAD. Puedes mirar y hacer commits, pero ninguna rama los seguirá.`};
+  },
+  merge(s,o){
+    if(!o) return fail('git merge','Elige otra rama en el selector.');
+    const c=headId(s),t=s.branches[o];
+    if(anc(s,c).has(t)) return fail(`git merge ${o}`,`<b>Already up to date.</b> ${t} ya es ancestro de ${c}: no hay nada que integrar.`);
+    if(anc(s,t).has(c)){ moveHead(s,t,`merge ${o}: Fast-forward`); return {cmd:`git merge ${o}`,msg:`<b>Fast-forward.</b> ${where(s)} era ancestro de ${o}, así que Git solo movió el puntero a ${t}. No se creó ningún commit.`}; }
+    const id=newId(s); addC(s,id,[c,t],curLane(s),`Merge branch '${o}'`); moveHead(s,id,`merge ${o}: Merge made by the 'ort' strategy.`);
+    return {cmd:`git merge ${o}`,msg:`<b>Merge de tres vías.</b> Las ramas divergieron, así que Git combinó la base común con las dos puntas y creó <b>${id}</b> con dos padres: ${c} y ${t}. No se reescribió nada.`,fresh:[id]};
+  },
+  rebase(s,o){
+    if(!o) return fail('git rebase','Elige otra rama en el selector.');
+    if(s.head.type!=='branch') return fail(`git rebase ${o}`,'En este simulador, rebase necesita estar en una rama.');
+    const name=s.head.name,c=headId(s),t=s.branches[o];
+    if(anc(s,t).has(c)){ moveHead(s,t,`rebase (finish): returning to refs/heads/${name}`); return {cmd:`git rebase ${o}`,msg:`${name} no tenía commits propios: el rebase equivale a un fast-forward hasta ${t}.`}; }
+    if(anc(s,c).has(t)) return fail(`git rebase ${o}`,`<b>Current branch ${name} is up to date.</b> Ya está construida sobre ${o}.`);
+    const base=anc(s,t);
+    const rep=[...anc(s,c)].filter(x=>!base.has(x)).map(x=>s.commits[x]).filter(x=>x.parents.length===1).sort((a,b)=>a.seq-b.seq);
+    let p=t; const pairs=[],fresh=[];
+    rep.forEach(x=>{const n=copyId(s,x.id);addC(s,n,[p],curLane(s),x.msg);p=n;pairs.push(`${x.id}→${n}`);fresh.push(n);});
+    s.branches[name]=p; s.reflog.unshift({id:p,a:`rebase (finish): returning to refs/heads/${name}`});
+    return {cmd:`git rebase ${o}`,msg:`Se reaplicaron ${rep.length} commit(s) sobre ${o}: <b>${pairs.join(', ')}</b>. Son commits nuevos con otros hashes; los originales quedan huérfanos (atenuados). Si ${name} ya estaba publicada, ahora necesitarías <code>push --force-with-lease</code>.`,fresh};
+  },
+  cherry(s,o){
+    if(!o) return fail('git cherry-pick','Elige otra rama en el selector.');
+    const c=headId(s),t=s.branches[o],tc=s.commits[t];
+    if(anc(s,c).has(t)) return fail(`git cherry-pick ${o}`,`${t} ya está contenido en ${where(s)}.`);
+    if(tc.parents.length>1) return fail(`git cherry-pick ${o}`,`${t} es un merge commit: necesitarías <code>-m 1</code> para elegir contra qué padre calcular el cambio.`);
+    const n=copyId(s,t); addC(s,n,[c],curLane(s),tc.msg); moveHead(s,n,`cherry-pick: ${tc.msg}`);
+    return {cmd:`git cherry-pick ${t}`,msg:`Se copió el cambio de <b>${t}</b> (la punta de ${o}) como <b>${n}</b>: mismo cambio, otro hash. Si después integras ${o}, Git verá dos commits con el mismo cambio.`,fresh:[n]};
+  },
+  reset(s,mode){
+    const c=headId(s),p=s.commits[c].parents[0];
+    if(!p) return fail(`git reset --${mode} HEAD~1`,'No hay HEAD~1: estás en el commit raíz.');
+    moveHead(s,p,'reset: moving to HEAD~1');
+    const extra={soft:'Index y working directory quedan intactos: los cambios de '+c+' aparecen <b>staged</b>.',mixed:'El index vuelve a '+p+'; los cambios de '+c+' quedan en el working directory <b>sin stage</b>.',hard:'Index y working directory vuelven a '+p+': los cambios sin commitear se <b>descartan</b>.'}[mode];
+    const orphan=!reach(s).has(c);
+    return {cmd:`git reset --${mode} HEAD~1`,msg:`${where(s)} retrocedió de ${c} a <b>${p}</b>. ${extra} ${orphan?c+' queda huérfano: solo lo encuentras con el reflog.':''} Si ${c} ya estaba publicado, esto reescribe historia compartida: ahí se usa revert.`};
+  },
+  revert(s){
+    const c=headId(s),cc=s.commits[c];
+    if(!cc.parents.length) return fail('git revert HEAD','En este simulador no se revierte el commit raíz.');
+    const id=newId(s),m=`Revert "${cc.msg}"`; addC(s,id,[c],curLane(s),m); moveHead(s,id,'revert: '+m);
+    return {cmd:`git revert ${cc.parents.length>1?'-m 1 ':''}${c}`,msg:`Se creó <b>${id}</b>, un commit cuyo cambio invierte el de ${c}. La historia no se reescribe: es la forma segura de deshacer en ramas compartidas.`,fresh:[id]};
+  },
+  reflog(s){
+    if(s.reflog.length<2) return fail('git reset --hard HEAD@{1}','El reflog no tiene una posición anterior.');
+    const t=s.reflog[1].id; moveHead(s,t,'reset: moving to HEAD@{1}');
+    return {cmd:'git reset --hard HEAD@{1}',msg:`HEAD@{1} es la posición anterior de HEAD según el reflog. ${where(s)} volvió a <b>${t}</b>. Así se recupera lo “perdido” tras un reset o un rebase.`};
+  }
+};
+
+/* ---------- render del grafo ---------- */
+const LBLCLASS=n=>'b'+(LANE[n]??2);
+function renderGraph(svg,s,opts={}){
+  const X=opts.compact?62:80,Y=opts.compact?72:90,padX=34,top=opts.compact?52:74;
+  const cs=Object.values(s.commits).sort((a,b)=>a.seq-b.seq);
+  const xi={}; cs.forEach((c,i)=>xi[c.id]=i);
+  const R=reach(s), hid=headId(s);
+  const maxLane=Math.max(1,...cs.map(c=>c.lane));
+  const W=padX*2+(cs.length-1)*X+40, H=top+maxLane*Y+40;
+  const P=c=>({x:padX+xi[c.id]*X,y:top+c.lane*Y});
+  let e='',n='',l='';
+  cs.forEach(c=>{const b=P(c);c.parents.forEach(pid=>{const a=P(s.commits[pid]);const cls=R.has(c.id)?'g-edge':'g-edge orphan';
+    e+=a.y===b.y?`<path class="${cls}" d="M${a.x} ${a.y}L${b.x} ${b.y}"/>`:`<path class="${cls}" d="M${a.x} ${a.y}C${a.x+X*.6} ${a.y},${b.x-X*.6} ${b.y},${b.x} ${b.y}"/>`;});});
+  const fresh=new Set(opts.fresh||[]);
+  cs.forEach(c=>{const p=P(c);const cls=['g-node','l'+c.lane];if(!R.has(c.id))cls.push('orphan');if(c.id===hid)cls.push('head');if(fresh.has(c.id))cls.push('new');
+    const m=c.msg.length>(opts.compact?11:14)?c.msg.slice(0,opts.compact?10:13)+'…':c.msg;
+    n+=`<g class="${cls.join(' ')}"><title>${esc(c.id+' '+c.msg)}${R.has(c.id)?'':' (huérfano)'}</title><circle cx="${p.x}" cy="${p.y}" r="15"/><text class="id" x="${p.x}" y="${p.y}">${esc(c.id)}</text><text class="msg" x="${p.x}" y="${p.y+30}">${esc(m)}</text></g>`;});
+  const at={};
+  Object.entries(s.branches).forEach(([b,id])=>{(at[id]=at[id]||[]).push({k:b,t:(s.head.type==='branch'&&s.head.name===b)?'HEAD → '+b:b,cls:LBLCLASS(b)+((s.head.type==='branch'&&s.head.name===b)?' hd':'')});});
+  if(s.head.type==='detached')(at[s.head.id]=at[s.head.id]||[]).push({k:'HEAD',t:'HEAD',cls:'det'});
+  const prev=svg._pos||{}, now={};
+  Object.entries(at).forEach(([id,arr])=>{const p=P(s.commits[id]);arr.forEach((L,i)=>{const w=L.t.length*6.9+14,x=p.x,y=p.y-28-i*21;now[L.k]={x,y};
+    let mv='';if(prev[L.k]&&(prev[L.k].x!==x||prev[L.k].y!==y))mv=` moved" style="--dx:${prev[L.k].x-x}px;--dy:${prev[L.k].y-y}px`;
+    l+=`<g class="g-lbl ${L.cls}${mv}"><rect x="${x-w/2}" y="${y-9}" width="${w}" height="18" rx="9"/><text x="${x}" y="${y+.5}">${esc(L.t)}</text></g>`;});});
+  svg._pos=now;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);if(opts.compact){svg.setAttribute('width','100%');svg.removeAttribute('height');svg.style.maxHeight=H+'px';}else{svg.setAttribute('width',W);svg.setAttribute('height',H);}
+  svg.innerHTML=e+n+l;
+}
+function logText(s){
+  const R=anc(s,headId(s)); const dec={};
+  Object.entries(s.branches).forEach(([b,id])=>{(dec[id]=dec[id]||[]).push(s.head.type==='branch'&&s.head.name===b?'HEAD -> '+b:b);});
+  if(s.head.type==='detached')(dec[s.head.id]=dec[s.head.id]||[]).unshift('HEAD');
+  return [...R].map(id=>s.commits[id]).sort((a,b)=>b.seq-a.seq).map(c=>`${c.id.padEnd(4)}${dec[c.id]?'('+dec[c.id].join(', ')+') ':''}${c.msg}${c.parents.length>1?'  [merge]':''}`).join('\n');
+}
+
+/* ---------- laboratorio: simulador ---------- */
+(function(){
+  const root=$('#lab-sim');
+  root.innerHTML=`<div class="lab-title"><span class="lab-tag">Laboratorio</span><h3>Simulador del grafo de commits</h3></div>
+  <p class="hint">Pulsa comandos y mira cómo se mueven commits, ramas y HEAD. Los círculos punteados son commits huérfanos: siguen existiendo, pero ninguna rama los alcanza. El repositorio es el mismo de toda la guía. Ideas: haz <b>merge</b>, reinicia y prueba <b>rebase</b> desde feature; haz <b>reset --hard</b> y recupera con el <b>reflog</b>.</p>
+  <div class="toolbar">
+    <div class="tgroup"><span>Trabajar</span><button class="btn" data-op="commit">git commit</button><button class="btn" data-op="switch" data-arg="main">git switch main</button><button class="btn" data-op="switch" data-arg="feature">git switch feature</button><button class="btn" data-op="hotfix">git switch -c hotfix</button><button class="btn" data-op="detach">git switch --detach HEAD~1</button></div>
+    <div class="tgroup"><span>Integrar con la rama</span><label class="sr" for="simOther" style="font-size:.8rem">rama:</label><select id="simOther"></select><button class="btn" data-op="merge">git merge</button><button class="btn" data-op="rebase">git rebase</button><button class="btn" data-op="cherry">git cherry-pick</button></div>
+    <div class="tgroup"><span>Deshacer</span><button class="btn" data-op="reset" data-arg="soft">reset --soft HEAD~1</button><button class="btn" data-op="reset" data-arg="mixed">reset --mixed HEAD~1</button><button class="btn danger" data-op="reset" data-arg="hard">reset --hard HEAD~1</button><button class="btn" data-op="revert">git revert HEAD</button><button class="btn" data-op="reflog">reset --hard HEAD@{1}</button></div>
+    <div class="tgroup"><span>Simulador</span><button class="btn primary" data-op="reiniciar">Reiniciar</button></div>
+  </div>
+  <p class="status-line" id="simWhere"></p>
+  <div class="graph-wrap"><svg id="simSvg" role="img" aria-label="Grafo de commits del simulador"></svg></div>
+  <div class="explain" id="simExplain" aria-live="polite"></div>
+  <div class="outs"><figure><figcaption>git log --oneline --decorate (desde HEAD)</figcaption><pre class="diagram" id="simLog"></pre></figure><figure><figcaption>git reflog</figcaption><pre class="diagram" id="simReflog"></pre></figure></div>`;
+  let s=makeBase();
+  const svg=$('#simSvg',root);
+  function draw(res){
+    const cur=where(s);
+    $('#simWhere',root).textContent='Estás en: '+(s.head.type==='branch'?'HEAD → '+cur:'detached HEAD en '+s.head.id);
+    const sel=$('#simOther',root),prevVal=sel.value;
+    const others=Object.keys(s.branches).filter(b=>!(s.head.type==='branch'&&s.head.name===b));
+    sel.innerHTML=others.map(b=>`<option${b===prevVal?' selected':''}>${b}</option>`).join('');
+    renderGraph(svg,s,{fresh:res&&res.fresh});
+    $('#simLog',root).textContent=logText(s);
+    $('#simReflog',root).textContent=s.reflog.slice(0,8).map((r,i)=>`${r.id.padEnd(4)}HEAD@{${i}}: ${r.a}`).join('\n');
+    const ex=$('#simExplain',root);
+    if(res){ex.className='explain'+(res.err?' err':'');ex.innerHTML=`<code>${esc(res.cmd)}</code> ${res.msg}`;}
+    else{ex.className='explain';ex.innerHTML='Estado inicial: <b>main</b> está en E y <b>feature</b> en D; divergieron desde B. HEAD apunta a main.';}
+    const wrap=svg.parentElement; wrap.scrollLeft=wrap.scrollWidth;
+  }
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-op]'); if(!b)return;
+    const op=b.dataset.op;
+    if(op==='reiniciar'){s=makeBase();svg._pos=null;draw();return;}
+    const arg=['merge','rebase','cherry'].includes(op)?$('#simOther',root).value:b.dataset.arg;
+    draw(OPS[op](s,arg));
+  });
+  draw();
+})();
+
+/* ---------- laboratorio: tres áreas ---------- */
+(function(){
+  const root=$('#lab-areas'); if(!root)return;
+  const F=['carrito.ts','pago.ts'];
+  const IDS=['F','G','H','I','J','K','L','M','N','O','P'];
+  let st,last;
+  function init(){
+    st={hist:[{id:'C',snap:{'carrito.ts':1,'pago.ts':1}},{id:'D',snap:{'carrito.ts':2,'pago.ts':1}}],head:1,orph:[],idx:{'carrito.ts':2,'pago.ts':1},wd:{'carrito.ts':3,'pago.ts':1},ver:{'carrito.ts':3,'pago.ts':1},n:0};
+    last={cmd:'# editaste carrito.ts',msg:'Editaste <b>carrito.ts</b>: el disco tiene la v3, el index y HEAD todavía tienen la v2. Prueba <code>git add</code>, luego <code>git commit</code>, y después los distintos <code>reset</code>.',flash:[]};
+  }
+  const repo=()=>st.hist[st.head].snap;
+  function act(t,f){
+    const r=repo(); let flash=[];
+    switch(t){
+      case 'edit': st.ver[f]++; st.wd[f]=st.ver[f]; flash=['wd-'+f]; last={cmd:`# editas ${f}`,msg:`${f} pasa a v${st.wd[f]} solo en el working directory.`}; break;
+      case 'add': if(st.wd[f]===st.idx[f]){last={cmd:`git add ${f}`,msg:'No hay diferencias entre el disco y el index: no cambia nada.'};break;}
+        st.idx[f]=st.wd[f]; flash=['ix-'+f]; last={cmd:`git add ${f}`,msg:`El index copia la v${st.idx[f]} de ${f}. Si vuelves a editar el archivo, el index se queda con esta versión hasta el próximo add.`}; break;
+      case 'restore': if(st.wd[f]===st.idx[f]){last={cmd:`git restore ${f}`,msg:'El archivo en disco ya coincide con el index.'};break;}
+        {const lost=st.wd[f]; st.wd[f]=st.idx[f]; flash=['wd-'+f]; last={cmd:`git restore ${f}`,msg:`El disco vuelve a la versión del index (v${st.wd[f]}). La v${lost} se perdió para siempre: nunca estuvo en el index ni en un commit.`,err:true};} break;
+      case 'unstage': if(st.idx[f]===r[f]){last={cmd:`git restore --staged ${f}`,msg:'El index ya coincide con HEAD.'};break;}
+        st.idx[f]=r[f]; flash=['ix-'+f]; last={cmd:`git restore --staged ${f}`,msg:`El index vuelve a la versión de HEAD (v${r[f]}). Tus cambios siguen en el disco.`}; break;
+      case 'commit': if(F.every(x=>st.idx[x]===r[x])){last={cmd:'git commit',msg:'<b>nothing to commit</b>: el index es igual a HEAD. Primero haz git add.',err:true};break;}
+        {const id=IDS[st.n++%IDS.length]; if(st.head<st.hist.length-1){st.orph.push(...st.hist.slice(st.head+1).map(h=>h.id));st.hist=st.hist.slice(0,st.head+1);}
+        st.hist.push({id,snap:{...st.idx}}); st.head++; flash=F.map(x=>'rp-'+x);
+        last={cmd:`git commit -m "commit ${id}"`,msg:`El index se convirtió en el commit <b>${id}</b> y la rama avanzó. Lo que solo estaba en el disco no entró.`};} break;
+      default: {const mode=t; if(st.head===0){last={cmd:`git reset --${mode} HEAD~1`,msg:'En esta demo no hay un commit anterior a C.',err:true};break;}
+        const from=st.hist[st.head].id; st.head--; const nr=repo(); flash=F.map(x=>'rp-'+x);
+        if(mode!=='soft'){F.forEach(x=>st.idx[x]=nr[x]);flash.push(...F.map(x=>'ix-'+x));}
+        if(mode==='hard'){F.forEach(x=>st.wd[x]=nr[x]);flash.push(...F.map(x=>'wd-'+x));}
+        const txt={soft:'Solo se movió la rama. Index y disco quedan igual, así que lo que había en '+from+' aparece como cambios staged.',mixed:'Se movieron la rama y el index. Lo de '+from+' sigue en el disco como cambios sin stage.',hard:'Se movieron rama, index y disco. Todo lo que no estaba commiteado se perdió; '+from+' queda huérfano y sigue en el reflog.'}[mode];
+        last={cmd:`git reset --${mode} HEAD~1`,msg:`HEAD pasó de ${from} a ${st.hist[st.head].id}. ${txt}`,err:mode==='hard'};}
+    }
+    last.flash=flash; draw();
+  }
+  function chip(area,f,v,state,stLabel,acts){
+    return `<div class="fcard ${state}" data-k="${area}-${f}"><div class="fn"><span>${f}</span><span>v${v}</span></div><div class="st">${stLabel}</div>${acts?`<div class="acts">${acts}</div>`:''}</div>`;
+  }
+  function draw(){
+    const r=repo();
+    let wd='',ix='',rp='';
+    F.forEach(f=>{
+      const m=st.wd[f]!==st.idx[f], s=st.idx[f]!==r[f];
+      wd+=chip('wd',f,st.wd[f],m?'mod':'clean',m?'modificado, sin stage':'igual al index',`<button class="btn" data-a="edit" data-f="${f}">editar</button><button class="btn" data-a="add" data-f="${f}">git add</button><button class="btn danger" data-a="restore" data-f="${f}">git restore</button>`);
+      ix+=chip('ix',f,st.idx[f],s?'staged':'clean',s?'staged: entra en el próximo commit':'igual a HEAD',`<button class="btn" data-a="unstage" data-f="${f}">git restore --staged</button>`);
+      rp+=chip('rp',f,r[f],'clean','en '+st.hist[st.head].id,'');
+    });
+    const lines=F.map(f=>{const X=st.idx[f]!==r[f]?'M':' ',Y=st.wd[f]!==st.idx[f]?'M':' ';return (X+Y).trim()?`${X}${Y} ${f}`:null;}).filter(Boolean);
+    const hist=st.hist.map((h,i)=>`<span class="${i===st.head?'h':''}${i>st.head?' o':''}">${h.id}${i===st.head?' ← HEAD':''}</span>`).join('<span>→</span>')+st.orph.map(o=>` <span class="o">${o}</span>`).join('');
+    root.innerHTML=`<div class="lab-title"><span class="lab-tag">Laboratorio</span><h3>Las tres áreas en movimiento</h3></div>
+    <p class="hint">Cada tarjeta muestra la versión de un archivo en cada área. El borde naranja indica cambios sin stage, el verde azulado cambios staged y el verde que el área coincide con la siguiente.</p>
+    <div class="arrows"><span>git add →</span><span>git commit →</span><span>← git reset / restore</span></div>
+    <div class="areas">
+      <div class="area"><h4>Working directory</h4><div class="sub">tus archivos en disco</div>${wd}</div>
+      <div class="area"><h4>Staging (index)</h4><div class="sub">.git/index</div>${ix}</div>
+      <div class="area"><h4>Repositorio</h4><div class="sub">HEAD → feature → ${st.hist[st.head].id}</div>${rp}<div class="hist">${hist}</div></div>
+    </div>
+    <div class="toolbar"><div class="tgroup"><span>Comandos sobre el repositorio</span><button class="btn primary" data-a="commit">git commit</button><button class="btn" data-a="soft">git reset --soft HEAD~1</button><button class="btn" data-a="mixed">git reset --mixed HEAD~1</button><button class="btn danger" data-a="hard">git reset --hard HEAD~1</button><button class="btn" data-a="init">Reiniciar</button></div></div>
+    <div class="explain${last.err?' err':''}" aria-live="polite"><code>${esc(last.cmd)}</code> ${last.msg}</div>
+    <div class="outs"><figure><figcaption>git status -s</figcaption><pre class="diagram">${lines.length?esc(lines.join('\n')):'nothing to commit, working tree clean'}</pre></figure>
+    <figure><figcaption>Cómo leer git status -s</figcaption><pre class="diagram">XY archivo
+X = index vs HEAD      (M = staged)
+Y = disco vs index     (M = sin stage)
+MM = staged y vuelto a editar</pre></figure></div>`;
+    (last.flash||[]).forEach(k=>{const el=root.querySelector(`[data-k="${k}"]`);if(el)el.classList.add('flash');});
+  }
+  root.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;if(b.dataset.a==='init'){init();draw();return;}act(b.dataset.a,b.dataset.f);});
+  init();draw();
+})();
+
+/* ---------- laboratorio: comparación ---------- */
+(function(){
+  const root=$('#lab-compare'); if(!root)return;
+  const base=makeBase();
+  const mS=clone(base); mS.nl=12; OPS.merge(mS,'feature');
+  const rS=clone(base); rS.head={type:'branch',name:'feature'}; OPS.rebase(rS,'main'); rS.head={type:'branch',name:'main'}; OPS.merge(rS,'feature');
+  const sS=clone(base); addC(sS,'S',['E'],0,'feat(carrito): C+D'); sS.branches.main='S';
+  const cols=[
+    {t:'Merge commit',s:mS,cmd:'git merge --no-ff feature',pros:['No reescribe nada: seguro en ramas compartidas','Conserva el contexto del PR'],cons:['Historia ramificada y ruidosa','Revertir el PR requiere -m 1']},
+    {t:'Rebase + fast-forward',s:rS,cmd:'git rebase main  (en feature)\ngit merge --ff-only feature',pros:['Historia lineal con todos los commits','bisect granular'],cons:['Reescribe la rama: C y D quedan huérfanos','Force push si la rama estaba publicada']},
+    {t:'Squash',s:sS,cmd:'git merge --squash feature\ngit commit',pros:['Un commit por PR en main','Revert trivial'],cons:['Pierde granularidad de bisect y blame','feature no queda como integrada']}];
+  root.innerHTML=`<div class="lab-title"><span class="lab-tag">Laboratorio</span><h3>El mismo historial integrado de tres formas</h3></div>
+  <p class="hint">Mismo punto de partida, mismo código final en main. Cambia la historia que queda y lo que puedes hacer con ella después.</p>
+  <div class="seg" role="group" aria-label="Momento"><button data-v="antes">Antes</button><button data-v="despues" class="on">Después</button></div>
+  <div class="cmp">${cols.map((c,i)=>`<div><h4>${c.t}</h4><div class="graph-wrap"><svg data-i="${i}" role="img" aria-label="Grafo con ${c.t}"></svg></div><pre data-log="${i}"></pre><ul>${c.pros.map(p=>`<li><b style="color:var(--good)">+</b> ${p}</li>`).join('')}${c.cons.map(p=>`<li><b style="color:var(--bad)">−</b> ${p}</li>`).join('')}</ul></div>`).join('')}</div>`;
+  function draw(v){
+    cols.forEach((c,i)=>{const s=v==='antes'?base:c.s;renderGraph(root.querySelector(`svg[data-i="${i}"]`),s,{compact:true});
+      root.querySelector(`pre[data-log="${i}"]`).textContent=(v==='antes'?'# punto de partida':'$ '+c.cmd.replace(/\n/g,'\n$ '))+'\n\n$ git log --oneline main\n'+logMain(s);});
+  }
+  function logMain(s){return [...anc(s,s.branches.main)].map(id=>s.commits[id]).sort((a,b)=>b.seq-a.seq).map(c=>`${c.id.padEnd(3)} ${c.msg}`).join('\n');}
+  root.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('.seg button',root).forEach(x=>x.classList.toggle('on',x===b));draw(b.dataset.v);});
+  draw('despues');
+})();
+
+/* ---------- laboratorio: conflicto ---------- */
+(function(){
+  const root=$('#lab-conflict'); if(!root)return;
+  const L={ours:'  return precio * 1.19; // IVA 19 %',base:'  return precio * 1.16;',theirs:'  return aplicarCupon(precio) * 1.16;'};
+  const OPTS=[
+    {k:'ours',t:'Conservar HEAD (main)',lines:[L.ours],ok:false,fb:'Perdiste los cupones de feature. Compila y los tests de main pasan, pero la funcionalidad del PR desaparece en silencio.'},
+    {k:'theirs',t:'Conservar feature',lines:[L.theirs],ok:false,fb:'Vuelves al IVA de 16 %: reintroduces el bug que main ya había corregido.'},
+    {k:'both',t:'Conservar ambas',lines:[L.ours,L.theirs],ok:false,fb:'Quedan dos return: el segundo es código inalcanzable y el cupón nunca se aplica. Quitar los marcadores no es lo mismo que resolver.'},
+    {k:'mix',t:'Combinar a mano',lines:['  return aplicarCupon(precio) * 1.19; // IVA 19 %'],ok:true,fb:'Correcto. Conservas la intención de los dos lados: el cupón que trae feature y el IVA corregido en main. La base deja ver que cada lado cambió la misma línea por un motivo distinto.'}];
+  let base=true, pick=null;
+  function file(){
+    const mk=t=>`<span class="mk">${esc(t)}</span>`;
+    return `export function total(precio: number): number {\n${mk('<<<<<<< HEAD')}\n<span class="ours">${esc(L.ours)}</span>${base?`${mk('||||||| base')}\n<span class="base">${esc(L.base)}</span>`:''}${mk('=======')}\n<span class="theirs">${esc(L.theirs)}</span>${mk('>>>>>>> feature')}\n}`;
+  }
+  function draw(){
+    const o=pick&&OPTS.find(x=>x.k===pick);
+    root.innerHTML=`<div class="lab-title"><span class="lab-tag">Laboratorio</span><h3>Resuelve el conflicto de src/precio.ts</h3></div>
+    <p class="hint">Estás en <b>main</b> y ejecutaste <code>git merge feature</code>. En main alguien corrigió el IVA de 16 % a 19 %. En feature tú agregaste cupones. Lee los marcadores y elige qué conservar.</p>
+    <label class="check"><input type="checkbox" id="cfBase"${base?' checked':''}> Mostrar la base (merge.conflictStyle zdiff3)</label>
+    <pre class="conf-file" style="margin-top:8px">${file()}</pre>
+    <div class="outs"><figure><figcaption>Cómo leerlo</figcaption><pre class="diagram">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD   empieza tu lado (ours): main
+||||||| base      la versión común original
+=======           separa los dos lados
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature  termina el lado que llega (theirs)</pre></figure></div>
+    <div class="opts">${OPTS.map(x=>`<button class="btn${pick===x.k?' primary':''}" data-k="${x.k}">${x.t}</button>`).join('')}</div>
+    ${o?`<figure><figcaption>Resultado</figcaption><pre class="diagram">export function total(precio: number): number {\n${esc(o.lines.join('\n'))}\n}</pre></figure><div class="fb ${o.ok?'ok':'no'}">${o.fb}</div>${o.ok?`<pre class="code" style="margin-top:8px">${hl('git add src/precio.ts\nnpm test                  # valida antes de cerrar el merge\ngit commit                # o git merge --continue')}</pre>`:''}`:''}`;
+  }
+  root.addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;pick=b.dataset.k;draw();});
+  root.addEventListener('change',e=>{if(e.target.id==='cfBase'){base=e.target.checked;draw();}});
+  draw();
+})();
+
+/* ---------- laboratorio: bisect ---------- */
+(function(){
+  const root=$('#lab-bisect'); if(!root)return;
+  const M=['init tienda','feat: catálogo','feat(carrito): agregar','feat(carrito): total','fix: IVA 19 %','feat: cupones','refactor: precios','perf: cache','feat(pago): pasarela','test: cupones','docs: README','chore: Angular 19'];
+  let b;
+  function init(){b={bug:2+Math.floor(Math.random()*11),good:1,bad:12,tested:null,steps:0,log:['git bisect start','git bisect bad            # C12 tiene el bug','git bisect good C1        # C1 no lo tenía'],fb:null,done:false};b.cur=Math.floor((b.good+b.bad)/2);}
+  function draw(){
+    const chips=M.map((m,i)=>{const n=i+1;let c='';if(n<=b.good)c='good';else if(n>=b.bad)c='bad';if(!b.done&&n===b.cur)c+=' cur';if(!b.done&&(n<b.good||n>b.bad))c+=' out';
+      return `<div class="${c}" title="${esc(m)}">C${n}<small>${n<=b.good?'good':n>=b.bad?'bad':n===b.cur&&!b.done?'probando':'?'}</small></div>`;}).join('');
+    const rem=b.bad-b.good-1;
+    root.innerHTML=`<div class="lab-title"><span class="lab-tag">Laboratorio</span><h3>Bisect guiado: ¿qué commit rompió el total?</h3></div>
+    <p class="hint">Bug: el total del carrito sale con tres decimales. C1 funcionaba, C12 falla. En cada paso Git deja HEAD en un commit intermedio; corre los tests y márcalo. El commit culpable cambia cada vez que reinicias.</p>
+    <div class="bis">${chips}</div>
+    ${b.done?`<div class="fb ok"><b>C${b.bad} is the first bad commit</b> (“${esc(M[b.bad-1])}”). Lo encontraste en ${b.steps} pasos; revisar uno por uno habría tomado hasta 11. Siguiente: <code>git show C${b.bad}</code> y <code>git bisect reset</code>.</div>`:
+    `<p class="status-line">HEAD está en C${b.cur} · quedan ${rem} candidatos · ~${Math.ceil(Math.log2(rem+1))} pasos más</p>
+    <div class="opts"><button class="btn primary" data-b="test">Correr npm test en C${b.cur}</button><button class="btn" data-b="good">git bisect good</button><button class="btn" data-b="bad">git bisect bad</button></div>`}
+    ${b.fb?`<div class="fb ${b.fb.c}">${b.fb.t}</div>`:''}
+    <div class="outs"><figure><figcaption>Terminal</figcaption><pre class="diagram">${esc(b.log.join('\n'))}</pre></figure><figure><figcaption>Automatizado</figcaption><pre class="diagram">git bisect start C12 C1
+git bisect run npm test
+# Git marca good/bad según el código de salida</pre></figure></div>
+    <button class="btn" data-b="init">Reiniciar con otro bug</button>`;
+  }
+  root.addEventListener('click',e=>{const t=e.target.closest('button[data-b]');if(!t)return;const a=t.dataset.b;
+    if(a==='init'){init();draw();return;}
+    if(a==='test'){const pass=b.cur<b.bug;b.tested=pass;b.log.push(`npm test   # en C${b.cur}: ${pass?'todos pasan':'falla: total con 3 decimales'}`);b.fb={c:pass?'ok':'no',t:pass?`Los tests pasan en C${b.cur}: el bug entró después.`:`Los tests fallan en C${b.cur}: el bug ya existe aquí o antes.`};draw();return;}
+    if(b.tested===null){b.fb={c:'info',t:`Primero corre los tests en C${b.cur} para saber si es good o bad.`};draw();return;}
+    if((a==='good')!==b.tested){b.fb={c:'no',t:`Ojo: los tests ${b.tested?'pasaron':'fallaron'} en C${b.cur}, así que es <b>${b.tested?'good':'bad'}</b>. Marcarlo mal hace que bisect señale un commit equivocado.`};draw();return;}
+    b.steps++; b.log.push(`git bisect ${a}`); if(a==='good')b.good=b.cur;else b.bad=b.cur; b.tested=null; b.fb=null;
+    if(b.bad-b.good===1){b.done=true;b.log.push(`C${b.bad} is the first bad commit`);}else{b.cur=Math.floor((b.good+b.bad)/2);b.log.push(`Bisecting: ${b.bad-b.good-1} revisions left to test`);}
+    draw();});
+  init();draw();
+})();
+
+/* ---------- rescate ---------- */
+$('#rescate').innerHTML=`<h2>Kit de rescate</h2><p class="prose" style="margin-top:10px">Los accidentes reales, con los pasos en orden. Regla general antes de cualquier rescate: <code>git status</code>, <code>git reflog</code> y, si vas a hacer algo grande, <code>git branch backup/ahora</code>.</p>
+<div class="rescue-grid">${RESCUES.map(r=>`<div class="rcard"><h4>${r.t}</h4><p>${r.ctx}</p><pre class="code">${hl(r.code)}</pre><p class="warn">${r.warn}</p></div>`).join('')}</div>`;
+
+/* ---------- práctica ---------- */
+function exList(list,prefix,isArt){
+  return list.map((x,i)=>`<div class="ex" data-set="${prefix}" data-i="${i}"><p class="q">${i+1}. ${x.q}</p>${x.art?`<figure style="margin-bottom:8px"><figcaption>Antes</figcaption><pre class="diagram">${esc(x.art)}</pre></figure>`:''}<div class="op">${x.o.map((o,j)=>`<button data-j="${j}">${esc(o)}</button>`).join('')}</div><div class="exfb"></div></div>`).join('');
+}
+$('#practica').innerHTML=`<h2>Práctica</h2><p class="prose" style="margin-top:10px">Feedback inmediato con la explicación. Elige una respuesta por pregunta.</p>
+<div class="sub-head"><h3>¿Qué comando usarías en esta situación?</h3><span class="score" id="sc-cmd"></span></div><div class="ex-list">${exList(EX_CMD,'cmd')}</div>
+<div class="sub-head"><h3>¿Cómo queda el grafo después de este comando?</h3><span class="score" id="sc-graph"></span></div><div class="ex-list">${exList(EX_GRAPH,'graph')}</div>
+<p style="margin-top:14px"><button class="btn" id="exReset">Reiniciar la práctica</button></p>`;
+const exScore={cmd:{},graph:{}};
+function upScore(){[['cmd',EX_CMD],['graph',EX_GRAPH]].forEach(([k,l])=>{const v=Object.values(exScore[k]);$('#sc-'+k).textContent=`Aciertos: ${v.filter(Boolean).length} de ${v.length} respondidas (${l.length} en total)`;});}
+$('#practica').addEventListener('click',e=>{
+  if(e.target.id==='exReset'){exScore.cmd={};exScore.graph={};$$('#practica .ex').forEach(ex=>{$$('button',ex).forEach(b=>{b.disabled=false;b.className='';});$('.exfb',ex).innerHTML='';});upScore();return;}
+  const b=e.target.closest('.op button');if(!b||b.disabled)return;
+  const ex=b.closest('.ex'),set=ex.dataset.set,i=+ex.dataset.i,item=(set==='cmd'?EX_CMD:EX_GRAPH)[i],j=+b.dataset.j,ok=j===item.a;
+  $$('button',ex).forEach((x,k)=>{x.disabled=true;if(k===item.a)x.classList.add('right');});
+  if(!ok)b.classList.add('wrong');
+  $('.exfb',ex).innerHTML=`<div class="fb ${ok?'ok':'no'}"><b>${ok?'Correcto.':'No es esa.'}</b> ${item.e}</div>`;
+  exScore[set][i]=ok;upScore();
+});
+upScore();
+
+/* ---------- simulacro ---------- */
+$('#simulacro').innerHTML=`<h2>Simulacro de entrevista</h2>
+<p class="prose" style="margin-top:10px">Primero las preguntas abiertas: respóndelas en voz alta, como si tuvieras al entrevistador enfrente, y solo después abre la respuesta modelo. Compara estructura, no palabras exactas: ¿diste la definición, el porqué y un ejemplo?</p>
+<div class="sub-head"><h3>Preguntas abiertas</h3></div>
+<div class="ex-list">${OPEN_Q.map((q,i)=>`<details class="open-q"><summary><span class="qn">${String(i+1).padStart(2,'0')}</span><span>${q.q}<span class="reveal">Responde en voz alta y luego pulsa para ver la respuesta modelo</span></span></summary><div class="ma">${q.a}</div></details>`).join('')}</div>
+<div class="sub-head"><h3>Test de opción múltiple</h3><span class="score">${MC.length} preguntas</span></div>
+<form id="mcForm"><div class="ex-list">${MC.map((q,i)=>`<div class="mc" data-i="${i}"><fieldset><legend>${i+1}. ${q.q}</legend>${q.o.map((o,j)=>`<label><input type="radio" name="mc${i}" value="${j}" id="mc${i}-${j}"> <span>${o}</span></label>`).join('')}</fieldset><p class="why">${q.e}</p></div>`).join('')}</div>
+<p style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">Calificar</button><button class="btn" type="button" id="mcReset">Reiniciar test</button></p>
+<div id="mcResult" aria-live="polite"></div></form>`;
+$('#mcForm').addEventListener('submit',e=>{
+  e.preventDefault(); let ok=0, blank=0;
+  MC.forEach((q,i)=>{const box=$(`.mc[data-i="${i}"]`);box.classList.add('graded');const sel=box.querySelector('input:checked');
+    $$('label',box).forEach((l,j)=>{l.classList.remove('right','wrong');if(j===q.a)l.classList.add('right');});
+    if(!sel){blank++;return;} if(+sel.value===q.a)ok++;else sel.closest('label').classList.add('wrong');});
+  const pct=Math.round(ok/MC.length*100);
+  const verdict=pct>=85?'Listo para la entrevista en estos temas.':pct>=65?'Buen nivel. Repasa los temas de las preguntas en rojo.':'Vuelve a los temas marcados como “casi siempre” antes de repetir.';
+  $('#mcResult').innerHTML=`<div class="result">Puntaje: ${ok} de ${MC.length} (${pct} %)${blank?` · ${blank} sin responder`:''}. ${verdict}</div>`;
+});
+$('#mcReset').addEventListener('click',()=>{$('#mcForm').reset();$$('.mc').forEach(m=>{m.classList.remove('graded');$$('label',m).forEach(l=>l.classList.remove('right','wrong'));});$('#mcResult').innerHTML='';});
+
+if(location.hash){const t=document.getElementById(location.hash.slice(1));if(t)setTimeout(()=>t.scrollIntoView(),50);}
+})();
+</script>
+</body></html>

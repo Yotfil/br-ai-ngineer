@@ -1,0 +1,11 @@
+id: metodos-seguros-idempotentes
+track: rest
+order: 5
+freq: always
+concepts:
+  - idempotencia
+  - metodo-seguro
+related:
+  - metodos-http
+  - idempotencia-en-la-practica
+demo: idempotency-retry

@@ -1,0 +1,9 @@
+id: errores-problem-details
+track: rest
+order: 16
+freq: often
+concepts:
+  - problem-details
+related:
+  - codigos-de-estado
+  - diseno-api-rest

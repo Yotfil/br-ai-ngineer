@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POO en Python para entrevistas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: índice fijo a la izquierda, un tema por pantalla en columna de lectura; en móvil el índice pasa a una tira horizontal. */
+:root{
+  --paper:#f3f5f8; --surface:#ffffff; --ink:#15202c; --muted:#5a6878; --line:#d5dce5;
+  --accent:#2a5ea8; --accent-soft:#e3ecf8; --sun:#b98300; --sun-soft:#fbf1d3;
+  --good:#1d7a4f; --good-soft:#dff3e8; --bad:#b3372f; --bad-soft:#fbe4e1;
+  --code-bg:#17212e; --code-ink:#e3e9f1; --hc:#8494a8; --hs:#e6c06a; --hk:#8db8f5; --hd:#f09a8c; --hv:#c3a6f2;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#10171f; --surface:#18222e; --ink:#e6ecf3; --muted:#9aa8b8; --line:#2c3a4a;
+    --accent:#7fb0f2; --accent-soft:#1d3048; --sun:#e5b94a; --sun-soft:#33290f;
+    --good:#5fce98; --good-soft:#15301f; --bad:#f08a80; --bad-soft:#3a1b18;
+    --code-bg:#0b1118;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#10171f; --surface:#18222e; --ink:#e6ecf3; --muted:#9aa8b8; --line:#2c3a4a;
+  --accent:#7fb0f2; --accent-soft:#1d3048; --sun:#e5b94a; --sun-soft:#33290f;
+  --good:#5fce98; --good-soft:#15301f; --bad:#f08a80; --bad-soft:#3a1b18;
+  --code-bg:#0b1118;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:16px/1.6 var(--body)}
+.shell{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh}
+nav{border-right:1px solid var(--line);padding:24px 14px;position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto}
+nav h1{font:700 20px/1.2 var(--display);margin:0 8px 4px}
+nav p{margin:0 8px 16px;color:var(--muted);font-size:13px}
+nav ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+nav a{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:14.5px}
+nav a:hover{background:var(--accent-soft)}
+nav a[aria-current="true"]{background:var(--accent);color:var(--paper);font-weight:600}
+nav .n{font:500 12px var(--mono);width:20px;color:var(--muted);flex:none}
+nav a[aria-current="true"] .n{color:inherit}
+nav .done{margin-left:auto;font-size:12px;color:var(--good);font-weight:600}
+nav a[aria-current="true"] .done{color:inherit}
+main{padding:36px 28px 80px;min-width:0}
+.tema{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.tema[hidden]{display:none}
+.freq{align-self:flex-start;font:500 12px var(--mono);padding:3px 10px;border-radius:99px;background:var(--sun-soft);color:var(--sun);border:1px solid var(--sun)}
+h2{font:700 clamp(28px,4.5vw,40px)/1.1 var(--display);margin:0;text-wrap:balance}
+h3{font:700 19px/1.25 var(--display);margin:8px 0 0;text-wrap:balance}
+p{margin:0}
+.lead{font-size:18px;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.card h4{margin:0;font:700 16px var(--display)}
+.card small{color:var(--muted);font-size:13.5px}
+.tag{font:500 11.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.analogy{border-left:4px solid var(--sun);background:var(--sun-soft);padding:12px 16px;border-radius:0 10px 10px 0}
+.say{border:1.5px solid var(--good);background:var(--good-soft);padding:14px 16px;border-radius:10px}
+.bridge{border:1px dashed var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:10px}
+.pynote{border:1px solid var(--line);background:var(--surface);padding:12px 16px;border-radius:10px}
+.analogy .tag,.say .tag,.bridge .tag,.pynote .tag{display:block;margin-bottom:4px}
+.say .tag{color:var(--good)} .bridge .tag{color:var(--accent)} .analogy .tag{color:var(--sun)}
+pre.code{margin:0;background:var(--code-bg);color:var(--code-ink);font:13.5px/1.55 var(--mono);padding:14px 16px;border-radius:10px;overflow-x:auto;tab-size:4}
+.hc{color:var(--hc);font-style:italic}.hs{color:var(--hs)}.hk{color:var(--hk)}.hd{color:var(--hd)}.hv{color:var(--hv)}
+code{font:.92em var(--mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.codepair{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.codepair>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.lbl{font:600 13px var(--body)}.lbl.bad{color:var(--bad)}.lbl.good{color:var(--good)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:480px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 13px var(--body);color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.demo{background:var(--surface);border:1.5px solid var(--accent);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.demo>.tag{color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn,.opt,.seg button{font:500 14px var(--body);border-radius:8px;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);padding:8px 13px;cursor:pointer}
+.btn.mono{font-family:var(--mono);font-size:13px}
+.btn:hover,.opt:hover:not(:disabled){background:var(--accent-soft)}
+.btn.primary{background:var(--accent);color:var(--paper)}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.seg{display:inline-flex;gap:0}
+.seg button{border-radius:0;margin-left:-1.5px}
+.seg button:first-child{border-radius:8px 0 0 8px;margin-left:0}.seg button:last-child{border-radius:0 8px 8px 0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
+.log{background:var(--code-bg);color:var(--code-ink);font:13px/1.6 var(--mono);padding:12px 14px;border-radius:10px;min-height:48px;white-space:pre-wrap;overflow-x:auto}
+.log .ok{color:#7ddba8}.log .err{color:#ff9d92}.log .dim{color:var(--hc)}
+.objs{display:flex;flex-wrap:wrap;gap:10px}
+.obj{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:150px;font:13px/1.5 var(--mono);background:var(--paper);display:flex;flex-direction:column;gap:4px}
+.obj b{font-family:var(--body);font-size:14px}
+.obj .id{color:var(--muted);font-size:11.5px}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch}
+.flow div{flex:1 1 120px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.flow div b{display:block;font:500 13px var(--mono);color:var(--accent)}
+.big{font:700 34px var(--display);font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:12px var(--mono);padding:3px 8px;border-radius:6px;background:var(--bad-soft);color:var(--bad)}
+.chip.g{background:var(--good-soft);color:var(--good)}
+label.chk{display:inline-flex;gap:6px;align-items:center;font-size:14.5px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font:700 15px var(--display);padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.panel{display:flex;flex-direction:column;gap:12px}.panel[hidden]{display:none}
+.real{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.real b{font-weight:600}
+.q-top{display:flex;justify-content:space-between;font:500 12.5px var(--mono);color:var(--muted)}
+.q-text{font-size:17px;font-weight:500}
+.q-opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{text-align:left}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default;opacity:.9}
+.q-fb{font-size:14.5px;min-height:1.6em}
+.q-fb b.ok{color:var(--good)}.q-fb b.no{color:var(--bad)}
+.flash{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.flash .ans{border-top:1px dashed var(--line);padding-top:10px}
+.flash .ans[hidden]{display:none}
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px;margin-top:8px}
+.diag{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.boxes span{font:12px var(--mono);padding:8px 4px;text-align:center;border-radius:6px;border:1px solid var(--line);background:var(--paper)}
+.boxes span.x{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.boxes span.y{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+@media (max-width:820px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav{position:static;border-right:0;border-bottom:1px solid var(--line);padding:16px;max-height:none}
+  nav ol{flex-direction:row;overflow-x:auto;padding-bottom:6px}
+  nav a{white-space:nowrap;border:1px solid var(--line)}
+  nav p{margin-bottom:10px}
+  main{padding:24px 16px 60px}
+}
+@media (prefers-reduced-motion:no-preference){.obj,.chip{animation:pop .18s ease-out}@keyframes pop{from{transform:scale(.94)}to{transform:none}}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav aria-label="Temas">
+  <h1>POO en Python</h1>
+  <p>Lo que más preguntan en entrevistas. Lee, juega con los ejemplos y cierra con el simulacro.</p>
+  <ol id="nav"></ol>
+</nav>
+<main>
+
+<!-- 1 -->
+<section class="tema" data-id="clase-objeto" data-title="Clase y objeto" data-freq="Sale seguido">
+  <h2>Clase y objeto</h2>
+  <p class="lead">La clase es el molde. El objeto es cada cosa concreta que sale del molde, con su propio estado.</p>
+  <div class="analogy"><span class="tag">Analogía</span>El formulario en blanco de "Pedido" es la clase. Cada formulario diligenciado por un cliente distinto es un objeto. Todos tienen los mismos campos y cada uno guarda datos diferentes.</div>
+  <pre class="code">class Pedido:
+    def __init__(self, cliente):   # constructor: deja el objeto listo para usarse
+        self.cliente = cliente     # estado propio de ESTE objeto
+        self.items = []
+
+    def agregar_item(self, precio):   # comportamiento
+        self.items.append(precio)
+
+    def total(self):
+        return sum(self.items)
+
+p1 = Pedido("Ana")    # un objeto (instancia)
+p2 = Pedido("Luis")   # otro objeto: mismo molde, estado independiente</pre>
+  <div class="demo">
+    <span class="tag">Pruébalo</span>
+    <p>Crea varios pedidos y agrégale ítems a uno solo. Los demás no cambian: cada objeto tiene su propia memoria.</p>
+    <div class="row"><button class="btn primary mono" id="mkPedido">Pedido(cliente)</button><button class="btn ghost" id="rsPedido">Borrar todos</button></div>
+    <div class="objs" id="pedidos"></div>
+  </div>
+  <h3>Ciclo de vida de un objeto</h3>
+  <div class="flow">
+    <div><b>1. Pedido("Ana")</b>Python reserva memoria para el objeto.</div>
+    <div><b>2. __init__</b>El constructor le pone su estado inicial.</div>
+    <div><b>3. Uso</b>Llamas métodos; el estado cambia.</div>
+    <div><b>4. Sin referencias</b>Ya ninguna variable apunta a él.</div>
+    <div><b>5. Recolector</b>Python libera la memoria solo.</div>
+  </div>
+  <div class="pynote"><span class="tag">Detalle de Python</span><code>self</code> es el <code>this</code> de TypeScript, pero se escribe explícito como primer parámetro de cada método. <code>__init__</code> equivale a tu <code>constructor()</code>.</div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Una clase define qué datos y qué comportamiento tiene un tipo de cosa. Un objeto es una instancia concreta de esa clase, con su propio estado en memoria. El constructor garantiza que el objeto nazca en un estado válido."</div>
+</section>
+
+<!-- 2 -->
+<section class="tema" data-id="pilares" data-title="Los cuatro pilares" data-freq="Casi siempre" hidden>
+  <h2>Los cuatro pilares</h2>
+  <p class="lead">La pregunta de apertura más común. Cada pilar resuelve un problema distinto.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag">Protege</span><h4>Encapsulamiento</h4><p>El objeto guarda su estado y solo deja cambiarlo por métodos que controlan las reglas.</p><small>Un cajero: no metes la mano en la bóveda, pides un retiro y él valida.</small><small><b>Sin él:</b> cualquiera deja el objeto en un estado imposible, como un saldo negativo.</small></div>
+    <div class="card"><span class="tag">Simplifica</span><h4>Abstracción</h4><p>Muestras qué hace algo y escondes cómo lo hace.</p><small>Pagas con el datáfono sin saber qué banco, red ni protocolo hay detrás.</small><small><b>Sin ella:</b> quien usa tu clase tiene que conocer todos los detalles internos.</small></div>
+    <div class="card"><span class="tag">Reutiliza</span><h4>Herencia</h4><p>Una clase toma lo que ya tiene otra y agrega o cambia lo suyo. Relación "es un".</p><small>Una cuenta de ahorros es una cuenta bancaria con intereses.</small><small><b>Sin ella:</b> copias y pegas el mismo código en clases parecidas.</small></div>
+    <div class="card"><span class="tag">Flexibiliza</span><h4>Polimorfismo</h4><p>El mismo mensaje, enviado a objetos distintos, produce el comportamiento de cada uno.</p><small>Presionas "play" y cada app reproduce a su manera: música, video o podcast.</small><small><b>Sin él:</b> cadenas de <code>if tipo == ...</code> por todo el código.</small></div>
+  </div>
+  <pre class="code">class CuentaBancaria:
+    def __init__(self, saldo):
+        self._saldo = saldo              # encapsulamiento: estado protegido
+
+    def retirar(self, monto):            # abstracción: quien llama no ve las reglas
+        if monto > self._saldo:
+            raise ValueError("Fondos insuficientes")
+        self._saldo -= monto
+
+class CuentaAhorros(CuentaBancaria):     # herencia: es una CuentaBancaria
+    def retirar(self, monto):            # polimorfismo: misma llamada, otra regla
+        if monto > 2_000_000:
+            raise ValueError("Tope diario superado")
+        super().retirar(monto)</pre>
+
+  <h3>Cada pilar en un proyecto real</h3>
+  <p>El ejemplo de la cuenta sirve para memorizar. Esto es lo que vas a encontrar en el código de un backend de verdad.</p>
+  <div class="tabs" role="tablist" data-tabs="pilares">
+    <button role="tab" aria-selected="true" data-tab="p-enc">Encapsulamiento</button><button role="tab" aria-selected="false" data-tab="p-abs">Abstracción</button><button role="tab" aria-selected="false" data-tab="p-her">Herencia</button><button role="tab" aria-selected="false" data-tab="p-pol">Polimorfismo</button>
+  </div>
+
+  <div class="panel" data-panel="p-enc">
+    <p><b>Dónde lo ves:</b></p>
+    <ul class="real">
+      <li><b>Estados de un pedido.</b> Nadie puede pasar un pedido de "entregado" a "creado" asignando un texto; solo existen las transiciones que el negocio permite.</li>
+      <li><b>Inventario.</b> El stock baja con <code>reservar(cantidad)</code>, que rechaza la operación si no alcanza. Nunca con <code>producto.stock -= 3</code> desde un endpoint.</li>
+      <li><b>Contraseñas.</b> El usuario guarda solo el hash y expone <code>verificar_password(texto)</code>. Ningún otro módulo ve ni compara el hash.</li>
+      <li><b>Carrito con total.</b> El total se calcula a partir de los ítems; no hay un campo <code>total</code> que alguien pueda dejar desincronizado.</li>
+    </ul>
+    <pre class="code">class Pedido:
+    # Atributo de clase: un solo diccionario compartido por todos los pedidos.
+    # Clave = estado actual. Valor = conjunto (set) de estados a los que puede pasar.
+    # El guion bajo inicial avisa: "uso interno, no lo toques desde fuera".
+    _TRANSICIONES = {
+        "creado":  {"pagado", "cancelado"},      # de creado solo puede ir a estos dos
+        "pagado":  {"enviado", "reembolsado"},   # de pagado, a enviado o reembolsado
+        "enviado": {"entregado"},                # de enviado, solo a entregado
+        # "entregado" no aparece como clave: es un estado final, de ahí no sale
+    }
+
+    # Constructor: se ejecuta al escribir Pedido(81)
+    def __init__(self, id):
+        self.id = id                  # dato público: cualquiera lo puede leer
+        self._estado = "creado"       # dato protegido: todo pedido nace en "creado"
+
+    # @property convierte el método en un atributo de solo lectura.
+    # Se usa SIN paréntesis: pedido.estado   (no pedido.estado())
+    # Como no se define un setter, pedido.estado = "x" lanza AttributeError.
+    # Equivale a un `get estado()` en una clase de TypeScript.
+    @property
+    def estado(self):
+        return self._estado           # entrega el valor interno sin dejar cambiarlo
+
+    # Métodos públicos: la única forma de cambiar el estado desde fuera
+    def marcar_pagado(self):
+        self._cambiar_a("pagado")     # delega en el método interno, que valida
+
+    def marcar_enviado(self):
+        self._cambiar_a("enviado")    # misma idea, otro estado destino
+
+    # Método interno (guion bajo): la regla vive aquí, en un solo lugar
+    def _cambiar_a(self, nuevo):
+        # Busca a qué estados se puede ir desde el estado actual.
+        # .get(clave, set()) devuelve un conjunto vacío si la clave no existe
+        # (caso "entregado"), en vez de lanzar KeyError.
+        permitidos = self._TRANSICIONES.get(self._estado, set())
+        if nuevo not in permitidos:   # ¿la transición NO está permitida?
+            # raise corta la ejecución y lanza el error (el `throw` de TypeScript)
+            raise ValueError(f"No se puede pasar de {self._estado} a {nuevo}")
+        self._estado = nuevo          # solo llega aquí si la transición es válida
+
+pedido = Pedido(81)        # crea el objeto; su estado es "creado"
+print(pedido.estado)       # imprime "creado": lectura a través de la property
+pedido.marcar_enviado()    # ValueError: de "creado" no se puede pasar a "enviado"</pre>
+    <p>La regla vive en un solo lugar. Sin esto, cada endpoint, tarea programada y script de soporte tendría que acordarse de validarla, y alguno no lo hará.</p>
+    <div class="bridge"><span class="tag">Puente con Angular</span>Es el servicio con un <code>BehaviorSubject</code> o <code>signal</code> privado que expone <code>asObservable()</code> o <code>asReadonly()</code>: los componentes leen el estado, pero solo lo cambian llamando métodos del servicio.</div>
+  </div>
+
+  <div class="panel" data-panel="p-abs" hidden>
+    <p><b>Dónde lo ves:</b></p>
+    <ul class="real">
+      <li><b>ORM.</b> Escribes <code>session.add(pedido)</code> y no el <code>INSERT</code>, ni el manejo de conexiones, ni la transacción.</li>
+      <li><b>Clientes HTTP.</b> <code>requests.get(url)</code> esconde sockets, TLS, redirecciones y codificación.</li>
+      <li><b>SDK de una pasarela de pagos.</b> Llamas "crear cobro" y el SDK se encarga de firmas, reintentos e idempotencia.</li>
+      <li><b>Almacenamiento de archivos.</b> El endpoint pide "guarda esta factura" y recibe una URL. No sabe si fue a disco, a un bucket o a otro proveedor.</li>
+    </ul>
+    <pre class="code">class AlmacenFacturas:
+    # Único método público: lo que el resto del sistema puede pedir (el "qué").
+    # `pdf: bytes` y `-> str` son anotaciones de tipo, como en TypeScript:
+    # recibe el contenido del archivo en bytes y devuelve un texto (la URL).
+    def guardar(self, factura_id, pdf: bytes) -> str:
+        ruta = self._ruta(factura_id)            # 1. decide dónde va el archivo
+        self._subir_con_reintentos(ruta, pdf)    # 2. lo sube; si falla, reintenta
+        return self._url_firmada(ruta)           # 3. devuelve un enlace de descarga
+
+    # De aquí hacia abajo es el "cómo". El guion bajo marca que son internos.
+    # Los `...` son un cuerpo vacío: ahí iría el código real de cada paso.
+
+    # Arma la ubicación, por ejemplo "facturas/2026/81.pdf"
+    def _ruta(self, factura_id): ...
+
+    # Habla con el proveedor de archivos y repite el intento si la red falla
+    def _subir_con_reintentos(self, ruta, datos): ...
+
+    # Genera un enlace temporal para descargar el archivo
+    def _url_firmada(self, ruta): ...
+
+# Quien lo usa (un endpoint) solo conoce guardar().
+# Si mañana cambias de proveedor, esta línea no cambia.
+url = almacen.guardar(factura.id, pdf)</pre>
+    <p>La prueba de una buena abstracción: puedes cambiar todo lo que hay dentro y quien la usa no se entera. Si el endpoint tuviera que armar la ruta o manejar el reintento, la abstracción tiene fugas.</p>
+    <div class="bridge"><span class="tag">Puente con Angular</span>Tu <code>AuthService.login()</code>: el componente llama un método y recibe un resultado. Tokens, refresh, almacenamiento y cabeceras quedan dentro del servicio y los interceptores.</div>
+  </div>
+
+  <div class="panel" data-panel="p-her" hidden>
+    <p><b>Dónde lo ves:</b> en un backend real heredas mucho más de las clases del framework que entre tus propias clases de negocio.</p>
+    <ul class="real">
+      <li><b>Excepciones del dominio.</b> Una familia de errores propios con un padre común. Es el uso más frecuente y más sano de la herencia en Python.</li>
+      <li><b>Esquemas de entrada y salida.</b> En FastAPI, <code>UsuarioCrear</code> y <code>UsuarioRespuesta</code> heredan los campos comunes de <code>UsuarioBase</code>.</li>
+      <li><b>Modelos del ORM.</b> <code>class Usuario(Base)</code>: heredas el mapeo a tablas sin escribirlo.</li>
+      <li><b>Clases base del framework.</b> <code>BaseModel</code> de Pydantic, <code>TestCase</code> en tests, vistas basadas en clases en Django.</li>
+    </ul>
+    <div class="codepair">
+      <div><span class="lbl">Familia de errores de negocio</span><pre class="code"># Padre de todos los errores de negocio.
+# Hereda de Exception: por eso se puede
+# usar con raise y con except.
+class ErrorDeNegocio(Exception):
+    # Atributo de clase: valor por
+    # defecto para toda la familia
+    codigo_http = 400
+
+    def __init__(self, mensaje):
+        # super() llama al constructor
+        # del padre (Exception), como
+        # super(mensaje) en TypeScript
+        super().__init__(mensaje)
+        # Guarda el texto para usarlo
+        # al armar la respuesta
+        self.mensaje = mensaje
+
+# Hija: hereda __init__ y mensaje sin
+# reescribirlos. Solo cambia lo que
+# es distinto: el código HTTP.
+class PedidoNoEncontrado(ErrorDeNegocio):
+    codigo_http = 404   # no existe
+
+class StockInsuficiente(ErrorDeNegocio):
+    codigo_http = 409   # conflicto
+
+try:
+    # Aquí adentro puede lanzarse
+    # cualquiera de los errores
+    servicio.crear_pedido(datos)
+# except con el padre atrapa también
+# a todas sus hijas
+except ErrorDeNegocio as e:
+    # e es el error concreto y trae
+    # su propio código y mensaje
+    responder(e.codigo_http, e.mensaje)</pre></div>
+      <div><span class="lbl">Esquemas en FastAPI (Pydantic)</span><pre class="code"># BaseModel es la clase base de Pydantic.
+# Al heredar de ella ganas validación
+# de datos y conversión a JSON.
+from pydantic import BaseModel
+
+# Campos comunes a entrada y salida.
+# `nombre: str` declara el campo y su
+# tipo; Pydantic rechaza lo que no cumpla.
+class UsuarioBase(BaseModel):
+    nombre: str
+    email: str
+
+# Lo que llega en el POST: hereda
+# nombre y email, y agrega password
+class UsuarioCrear(UsuarioBase):
+    password: str
+
+# Lo que devuelve la API: hereda
+# nombre y email, y agrega id.
+# No tiene password, así que nunca
+# sale en la respuesta.
+class UsuarioRespuesta(UsuarioBase):
+    id: int</pre></div>
+    </div>
+    <p>En ambos casos el "es un" es verdadero y estable: un <code>StockInsuficiente</code> siempre es un error de negocio. Cuando la relación no es así de clara, usa composición (tema 6).</p>
+    <div class="bridge"><span class="tag">Puente con TypeScript</span>Lo mismo que <code>class ApiError extends Error</code> con subclases por tipo de fallo, o un tipo <code>UsuarioCrear</code> que extiende de una <code>interface UsuarioBase</code>.</div>
+  </div>
+
+  <div class="panel" data-panel="p-pol" hidden>
+    <p><b>Dónde lo ves:</b> en cualquier punto donde el sistema tiene varios proveedores o variantes de lo mismo.</p>
+    <ul class="real">
+      <li><b>Proveedores intercambiables.</b> Pasarelas de pago, operadores de SMS, servicios de correo: el negocio llama el mismo método y cambia el proveedor por configuración.</li>
+      <li><b>Producción vs. tests.</b> El repositorio real habla con Postgres; el de pruebas guarda en una lista. El servicio no distingue cuál recibió.</li>
+      <li><b>Exportadores.</b> PDF, CSV y Excel responden a <code>exportar(reporte)</code>.</li>
+      <li><b>Modelos de IA.</b> El mismo <code>generar(prompt)</code> contra un modelo en la nube, uno local o uno falso para tests.</li>
+      <li><b>El <code>except</code> del pilar anterior.</b> Atrapa cualquier subclase de <code>ErrorDeNegocio</code> y cada una aporta su propio código HTTP.</li>
+    </ul>
+    <pre class="code"># Protocol sirve para declarar un contrato, como una interface de TypeScript
+from typing import Protocol
+
+# El contrato: "cualquier objeto con un método generar(prompt) que devuelva texto".
+# Los `...` indican que no hay implementación: solo se describe la forma.
+class ModeloDeLenguaje(Protocol):
+    def generar(self, prompt: str) -> str: ...
+
+# Tres clases distintas. Ninguna hereda de ModeloDeLenguaje:
+# cumplen el contrato solo por tener el método con la misma forma.
+class ModeloEnLaNube:
+    def generar(self, prompt):
+        ...   # aquí llamaría a la API de un proveedor; cuesta dinero y tarda
+
+class ModeloLocal:
+    def generar(self, prompt):
+        ...   # aquí correría el modelo en tu propia máquina
+
+class ModeloFalso:
+    def generar(self, prompt):
+        return "Resumen de prueba"   # respuesta fija: tests rápidos, sin red ni costo
+
+# La lógica de negocio. `modelo: ModeloDeLenguaje` significa: acepto cualquier
+# objeto que cumpla el contrato. La función nunca pregunta de qué clase es.
+def resumir_ticket(ticket, modelo: ModeloDeLenguaje) -> str:
+    # La f antes de las comillas permite insertar variables con {llaves}.
+    # Aquí ocurre el polimorfismo: la llamada es siempre la misma y se
+    # ejecuta el generar() del objeto que haya llegado.
+    return modelo.generar(f"Resume este ticket de soporte: {ticket.texto}")
+
+resumir_ticket(ticket, ModeloEnLaNube())   # producción: usa el modelo real
+resumir_ticket(ticket, ModeloFalso())      # tests: misma función, otro objeto</pre>
+    <p><code>resumir_ticket</code> no tiene un solo <code>if</code> sobre el tipo de modelo. Cambiar de proveedor, o agregar uno, no toca la lógica de negocio. Las tres clases no heredan de nada: cumplen el contrato por tener el método.</p>
+    <div class="bridge"><span class="tag">Puente con Angular</span>Es lo que haces con <code>{ provide: PagosService, useClass: PagosMockService }</code> en un test, y lo que hace Angular con tus interceptores: llama <code>intercept()</code> en cada uno sin saber qué hace por dentro.</div>
+  </div>
+
+  <div class="demo"><span class="tag">Practica: ¿qué pilar es?</span><div data-quiz="pilares"></div></div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Encapsulamiento protege el estado, abstracción esconde la complejidad, herencia reutiliza código entre tipos relacionados y polimorfismo permite tratar objetos distintos de la misma forma." Luego da un ejemplo de tu trabajo para al menos uno.</div>
+</section>
+
+<!-- 3 -->
+<section class="tema" data-id="encapsulamiento" data-title="Encapsulamiento vs. abstracción" data-freq="Sale seguido" hidden>
+  <h2>Encapsulamiento vs. abstracción</h2>
+  <p class="lead">Los dos "esconden algo", por eso se confunden. La diferencia está en qué esconden y para qué.</p>
+  <div class="tablewrap"><table>
+    <tr><th></th><th>Encapsulamiento</th><th>Abstracción</th></tr>
+    <tr><td><b>Esconde</b></td><td>Los datos internos</td><td>La complejidad</td></tr>
+    <tr><td><b>Para qué</b></td><td>Que nadie rompa el estado del objeto</td><td>Que usarlo sea sencillo</td></tr>
+    <tr><td><b>Pregunta que responde</b></td><td>¿Quién puede tocar esto?</td><td>¿Qué necesita saber quien lo usa?</td></tr>
+    <tr><td><b>En el código</b></td><td>Atributos privados, propiedades, validaciones</td><td>Métodos con buen nombre, interfaces, clases abstractas</td></tr>
+    <tr><td><b>Ejemplo</b></td><td>No puedes asignar <code>saldo = -500</code></td><td>Llamas <code>transferir()</code> sin ver los 8 pasos internos</td></tr>
+  </table></div>
+  <div class="demo">
+    <span class="tag">Pruébalo: una cuenta con y sin encapsulamiento</span>
+    <div class="row"><div class="seg" id="encSeg"><button aria-pressed="true" data-v="0">Sin encapsular</button><button aria-pressed="false" data-v="1">Encapsulada</button></div></div>
+    <div class="row"><span>Saldo actual:</span><span class="big" id="saldo">$ 100</span></div>
+    <div class="row"><button class="btn mono" data-acc="direct">cuenta.saldo = -500</button><button class="btn mono" data-acc="r30">cuenta.retirar(30)</button><button class="btn mono" data-acc="r150">cuenta.retirar(150)</button><button class="btn ghost" data-acc="reset">Reiniciar</button></div>
+    <div class="log" id="encLog"><span class="dim"># Intenta romper la cuenta con el primer botón, en ambos modos.</span></div>
+  </div>
+  <pre class="code">class Cuenta:
+    def __init__(self, saldo):
+        self.__saldo = saldo          # doble guion bajo: Python lo oculta desde fuera
+
+    @property
+    def saldo(self):                  # se puede leer...
+        return self.__saldo           # ...pero no hay setter: no se puede asignar
+
+    def retirar(self, monto):         # la única puerta para cambiarlo
+        if monto > self.__saldo:
+            raise ValueError("Fondos insuficientes")
+        self.__saldo -= monto</pre>
+  <div class="pynote"><span class="tag">Detalle de Python (lo preguntan)</span>Python no tiene <code>private</code> real. <code>_saldo</code> es una convención que significa "no lo toques". <code>__saldo</code> activa el <i>name mangling</i>: Python lo renombra a <code>_Cuenta__saldo</code>, lo que dificulta el acceso pero no lo impide. En Java, C# o TypeScript el compilador sí lo prohíbe.</div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Encapsular es proteger el estado: los datos solo cambian a través de métodos que hacen cumplir las reglas. Abstraer es simplificar el uso: expongo qué hace el objeto y oculto cómo. Una cuenta que valida los retiros encapsula; un método <code>transferir()</code> que esconde todo el proceso abstrae."</div>
+</section>
+
+<!-- 4 -->
+<section class="tema" data-id="polimorfismo" data-title="Polimorfismo" data-freq="Casi siempre" hidden>
+  <h2>Polimorfismo</h2>
+  <p class="lead">Un mismo llamado, muchos comportamientos. El código que llama no pregunta de qué tipo es el objeto.</p>
+  <div class="analogy"><span class="tag">Analogía</span>El datáfono de una tienda. El cajero siempre hace lo mismo: "cobrar". Si pagas con tarjeta, QR o celular, cada medio resuelve el cobro a su manera. El cajero no cambia su rutina cuando aparece un medio de pago nuevo.</div>
+  <div class="codepair">
+    <div><span class="lbl bad">Sin polimorfismo</span><pre class="code">def checkout(tipo, monto):
+    if tipo == "tarjeta":
+        ...  # lógica de tarjeta
+    elif tipo == "pse":
+        ...  # lógica de PSE
+    elif tipo == "nequi":
+        ...  # lógica de Nequi
+    # cada medio nuevo obliga
+    # a abrir y editar esta función</pre></div>
+    <div><span class="lbl good">Con polimorfismo</span><pre class="code">class Tarjeta:
+    def procesar(self, monto): ...
+
+class Pse:
+    def procesar(self, monto): ...
+
+class Nequi:
+    def procesar(self, monto): ...
+
+def checkout(pago, monto):
+    return pago.procesar(monto)</pre></div>
+  </div>
+  <div class="demo">
+    <span class="tag">Pruébalo</span>
+    <p>Ejecuta el mismo ciclo sobre todos los medios de pago. Después agrega uno nuevo y vuelve a ejecutar.</p>
+    <div class="objs" id="pagos"></div>
+    <div class="row"><button class="btn primary mono" id="runPagos">for pago in pagos: pago.procesar(50000)</button><button class="btn" id="addPago">Agregar medio nuevo: Cripto</button></div>
+    <div class="log" id="pagosLog"><span class="dim"># El ciclo nunca pregunta el tipo de cada objeto.</span></div>
+  </div>
+  <h3>Sobrecarga vs. sobrescritura</h3>
+  <div class="tablewrap"><table>
+    <tr><th></th><th>Sobrecarga (overloading)</th><th>Sobrescritura (overriding)</th></tr>
+    <tr><td><b>Qué es</b></td><td>Varios métodos con el mismo nombre y distintos parámetros, en la misma clase</td><td>Una subclase redefine un método que heredó, con la misma firma</td></tr>
+    <tr><td><b>Se decide</b></td><td>Al compilar, según los argumentos</td><td>Al ejecutar, según el tipo real del objeto</td></tr>
+    <tr><td><b>Ejemplo</b></td><td><code>sumar(a, b)</code> y <code>sumar(a, b, c)</code></td><td><code>CuentaAhorros.retirar()</code> reemplaza a <code>CuentaBancaria.retirar()</code></td></tr>
+    <tr><td><b>En Python</b></td><td>No existe: la segunda definición borra la primera</td><td>Sí existe y es lo normal</td></tr>
+  </table></div>
+  <div class="pynote"><span class="tag">Detalle de Python</span>Como no hay sobrecarga, se usan parámetros con valor por defecto (<code>def sumar(a, b, c=0)</code>), <code>*args</code> o <code>functools.singledispatch</code>. TypeScript tampoco tiene sobrecarga real: sus "overloads" son solo firmas de tipos sobre una única implementación.</div>
+  <h3>Dos caminos al polimorfismo</h3>
+  <div class="grid2">
+    <div class="card"><h4>Por herencia</h4><p>Las clases comparten un padre y sobrescriben sus métodos.</p><small><code>Tarjeta(MedioDePago)</code>, <code>Pse(MedioDePago)</code></small></div>
+    <div class="card"><h4>Por interfaz</h4><p>Las clases no son familia; solo cumplen el mismo contrato.</p><small>En Python basta con que tengan el método. Se llama <i>duck typing</i>, y se formaliza con <code>Protocol</code>.</small></div>
+  </div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Polimorfismo es poder tratar objetos de tipos distintos a través de una misma interfaz, y que cada uno responda con su propia implementación. En un checkout, el servicio llama <code>pago.procesar()</code> sin saber si es tarjeta o PSE. La ventaja es que agrego un medio de pago creando una clase nueva, sin modificar el código que ya funciona."</div>
+</section>
+
+<!-- 5 -->
+<section class="tema" data-id="abstracta-interfaz" data-title="Clase abstracta vs. interfaz" data-freq="Casi siempre" hidden>
+  <h2>Clase abstracta vs. interfaz</h2>
+  <p class="lead">Las dos definen "lo que una clase debe tener". Una además trae código; la otra solo es un contrato.</p>
+  <div class="analogy"><span class="tag">Analogía</span>Una clase abstracta es una casa en obra gris: estructura y tuberías ya están hechas, tú terminas los acabados. Una interfaz es la norma del enchufe: no te da nada construido, solo exige que tu aparato encaje.</div>
+  <div class="tablewrap"><table>
+    <tr><th></th><th>Clase abstracta</th><th>Interfaz</th></tr>
+    <tr><td><b>Relación</b></td><td>"Es un" (misma familia)</td><td>"Puede hacer" (misma capacidad)</td></tr>
+    <tr><td><b>Trae código y estado</b></td><td>Sí</td><td>No, solo firmas</td></tr>
+    <tr><td><b>Cuántas por clase</b></td><td>Una sola en Java y C#</td><td>Varias</td></tr>
+    <tr><td><b>Se puede instanciar</b></td><td>No</td><td>No</td></tr>
+    <tr><td><b>En Python</b></td><td><code>ABC</code> + <code>@abstractmethod</code></td><td><code>typing.Protocol</code></td></tr>
+  </table></div>
+  <div class="codepair">
+    <div><span class="lbl">Clase abstracta: comparte código</span><pre class="code">from abc import ABC, abstractmethod
+
+class Reporte(ABC):
+    def generar(self):          # código común
+        return self.cabecera() + self.cuerpo()
+
+    def cabecera(self):
+        return "ACME S.A.\n"
+
+    @abstractmethod
+    def cuerpo(self): ...       # cada hijo lo define
+
+class ReporteVentas(Reporte):
+    def cuerpo(self):
+        return "Ventas del mes"</pre></div>
+    <div><span class="lbl">Interfaz: solo el contrato</span><pre class="code">from typing import Protocol
+
+class Exportable(Protocol):
+    def exportar(self) -> str: ...
+
+class Factura:                  # no hereda de nadie
+    def exportar(self) -> str:
+        return "factura.pdf"
+
+def guardar(x: Exportable):
+    print(x.exportar())
+
+guardar(Factura())   # cumple por tener el método</pre></div>
+  </div>
+  <div class="bridge"><span class="tag">Puente con TypeScript</span><code>Protocol</code> funciona igual que las <code>interface</code> de TypeScript: tipado estructural. Si el objeto tiene la forma correcta, cumple, sin necesidad de declarar <code>implements</code>. En Java y C# sí hay que declararlo.</div>
+  <div class="demo"><span class="tag">Practica: ¿cuál usarías?</span><div data-quiz="abstracta"></div></div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Uso una clase abstracta cuando las subclases son de la misma familia y comparten código o estado. Uso una interfaz cuando solo necesito garantizar una capacidad en clases que no tienen relación entre sí. Una clase puede cumplir muchas interfaces, pero normalmente hereda de una sola clase."</div>
+</section>
+
+<!-- 6 -->
+<section class="tema" data-id="composicion" data-title="Composición vs. herencia" data-freq="Casi siempre" hidden>
+  <h2>Composición vs. herencia</h2>
+  <p class="lead">Herencia dice "es un". Composición dice "tiene un". Cuando dudes, arma el objeto con piezas.</p>
+  <div class="analogy"><span class="tag">Analogía</span>Heredar es como un tatuaje: queda fijo desde que naces como esa clase. Componer es como ponerte una chaqueta: te la cambias cuando el clima cambia. Un computador de escritorio tiene una tarjeta gráfica y la puedes reemplazar sin cambiar de computador.</div>
+  <div class="codepair">
+    <div><span class="lbl bad">Herencia: rígida</span><pre class="code">class Notificador:
+    def enviar(self, msg): ...
+
+class NotificadorEmail(Notificador): ...
+class NotificadorSms(Notificador): ...
+
+# ¿Y si quiero email Y sms?
+class NotificadorEmailSms(Notificador): ...
+# ...y así con cada combinación</pre></div>
+    <div><span class="lbl good">Composición: piezas</span><pre class="code">class Notificador:
+    def __init__(self, canales):
+        self.canales = canales     # TIENE canales
+
+    def enviar(self, msg):
+        for canal in self.canales:
+            canal.enviar(msg)
+
+n = Notificador([Email(), Sms()])
+# otra combinación = otra lista</pre></div>
+  </div>
+  <div class="demo">
+    <span class="tag">Pruébalo: la explosión de subclases</span>
+    <p>Marca los canales que el negocio pide soportar, en cualquier combinación.</p>
+    <div class="row" id="canales">
+      <label class="chk"><input type="checkbox" id="c-email" value="Email" checked>Email</label>
+      <label class="chk"><input type="checkbox" id="c-sms" value="Sms" checked>SMS</label>
+      <label class="chk"><input type="checkbox" id="c-slack" value="Slack">Slack</label>
+      <label class="chk"><input type="checkbox" id="c-push" value="Push">Push</label>
+      <label class="chk"><input type="checkbox" id="c-wa" value="WhatsApp">WhatsApp</label>
+    </div>
+    <div class="grid2">
+      <div class="stack"><span class="lbl bad">Con herencia necesitas</span><span class="big" id="nHer">3 clases</span><div class="chips" id="chHer"></div></div>
+      <div class="stack"><span class="lbl good">Con composición necesitas</span><span class="big" id="nCom">2 clases</span><div class="chips" id="chCom"></div></div>
+    </div>
+  </div>
+  <h3>Por qué se prefiere la composición</h3>
+  <div class="grid2">
+    <div class="card"><h4>Menos acoplamiento</h4><p>Un cambio en la clase padre puede romper a todos los hijos. Una pieza solo depende del contrato.</p></div>
+    <div class="card"><h4>Cambia en ejecución</h4><p>Puedes reemplazar una pieza mientras el programa corre. La herencia queda fija al escribir el código.</p></div>
+    <div class="card"><h4>Fácil de probar</h4><p>En un test pasas una pieza falsa. Con herencia arrastras todo lo del padre.</p></div>
+    <div class="card"><h4>Sin jerarquías profundas</h4><p>Tres niveles de herencia ya son difíciles de seguir. Las piezas se quedan planas.</p></div>
+  </div>
+  <div class="bridge"><span class="tag">Puente con Angular</span>Ya compones todos los días: un componente no hereda de <code>HttpClient</code>, lo recibe en el constructor. Eso es "tiene un".</div>
+  <div class="demo"><span class="tag">Practica: ¿"es un" o "tiene un"?</span><div data-quiz="composicion"></div></div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Uso herencia solo cuando hay una relación 'es un' real y estable. En los demás casos compongo: la clase recibe objetos que hacen parte del trabajo. Así evito jerarquías frágiles, puedo cambiar comportamientos en ejecución y los tests son más simples."</div>
+</section>
+
+<!-- 7 -->
+<section class="tema" data-id="solid" data-title="SOLID" data-freq="Casi siempre" hidden>
+  <h2>SOLID</h2>
+  <p class="lead">Cinco reglas para que el código aguante los cambios. En entrevista piden nombrarlas y explicar dos o tres. Las más pedidas son la S y la D.</p>
+  <div class="tabs" role="tablist" data-tabs="solid">
+    <button role="tab" aria-selected="true" data-tab="s">S</button><button role="tab" aria-selected="false" data-tab="o">O</button><button role="tab" aria-selected="false" data-tab="l">L</button><button role="tab" aria-selected="false" data-tab="i">I</button><button role="tab" aria-selected="false" data-tab="d">D</button>
+  </div>
+  <div class="panel" data-panel="s">
+    <h3>S: responsabilidad única</h3>
+    <p>Una clase debe tener una sola razón para cambiar.</p>
+    <div class="analogy"><span class="tag">Analogía</span>En un restaurante el chef cocina, el mesero atiende y el cajero cobra. Si una sola persona hace todo, cualquier cambio en el menú afecta la caja.</div>
+    <div class="codepair"><div><span class="lbl bad">Mal: tres razones para cambiar</span><pre class="code">class Factura:
+    def calcular_total(self): ...
+    def guardar_en_bd(self): ...
+    def enviar_por_email(self): ...</pre></div><div><span class="lbl good">Bien: una cada una</span><pre class="code">class Factura:
+    def calcular_total(self): ...
+
+class RepositorioFacturas:
+    def guardar(self, factura): ...
+
+class NotificadorEmail:
+    def enviar(self, factura): ...</pre></div></div>
+    <div class="bridge"><span class="tag">Puente con Angular</span>Es la razón por la que sacas las llamadas HTTP del componente y las pones en un servicio.</div>
+  </div>
+  <div class="panel" data-panel="o" hidden>
+    <h3>O: abierto/cerrado</h3>
+    <p>Abierto para extender, cerrado para modificar. Agregas comportamiento con código nuevo, sin tocar el que ya funciona.</p>
+    <div class="analogy"><span class="tag">Analogía</span>Una regleta: conectas un aparato nuevo sin abrir la pared ni cambiar el cableado.</div>
+    <div class="codepair"><div><span class="lbl bad">Mal: cada descuento edita la función</span><pre class="code">def aplicar(tipo, total):
+    if tipo == "navidad":
+        return total * 0.8
+    elif tipo == "empleado":
+        return total * 0.7
+    # nuevo descuento = editar aquí</pre></div><div><span class="lbl good">Bien: cada descuento es una clase</span><pre class="code">class Navidad:
+    def aplicar(self, total):
+        return total * 0.8
+
+class Empleado:
+    def aplicar(self, total):
+        return total * 0.7
+
+def cobrar(descuento, total):
+    return descuento.aplicar(total)</pre></div></div>
+  </div>
+  <div class="panel" data-panel="l" hidden>
+    <h3>L: sustitución de Liskov</h3>
+    <p>Donde funciona la clase padre debe funcionar cualquier hija, sin sorpresas.</p>
+    <div class="analogy"><span class="tag">Analogía</span>Pides un conductor de reemplazo. Si llega alguien que no sabe manejar, el reemplazo no sirve aunque tenga el mismo uniforme.</div>
+    <div class="codepair"><div><span class="lbl bad">Mal: la hija rompe la promesa</span><pre class="code">class Archivo:
+    def leer(self): ...
+    def escribir(self, texto): ...
+
+class ArchivoSoloLectura(Archivo):
+    def escribir(self, texto):
+        raise Exception("No puedo")</pre></div><div><span class="lbl good">Bien: cada tipo promete lo que cumple</span><pre class="code">class ArchivoLegible:
+    def leer(self): ...
+
+class ArchivoEditable(ArchivoLegible):
+    def escribir(self, texto): ...
+
+# quien necesita escribir pide
+# un ArchivoEditable</pre></div></div>
+  </div>
+  <div class="panel" data-panel="i" hidden>
+    <h3>I: segregación de interfaces</h3>
+    <p>Mejor varias interfaces pequeñas que una gigante. Nadie debe implementar métodos que no usa.</p>
+    <div class="analogy"><span class="tag">Analogía</span>Un control remoto con 60 botones cuando solo usas 4. Uno por función sería más claro.</div>
+    <div class="codepair"><div><span class="lbl bad">Mal: contrato gigante</span><pre class="code">class Multifuncional(Protocol):
+    def imprimir(self): ...
+    def escanear(self): ...
+    def enviar_fax(self): ...
+
+class ImpresoraBasica:
+    def imprimir(self): ...
+    def escanear(self):
+        raise NotImplementedError
+    def enviar_fax(self):
+        raise NotImplementedError</pre></div><div><span class="lbl good">Bien: contratos pequeños</span><pre class="code">class Imprime(Protocol):
+    def imprimir(self): ...
+
+class Escanea(Protocol):
+    def escanear(self): ...
+
+class ImpresoraBasica:
+    def imprimir(self): ...
+    # solo cumple lo que sabe hacer</pre></div></div>
+  </div>
+  <div class="panel" data-panel="d" hidden>
+    <h3>D: inversión de dependencias</h3>
+    <p>La lógica de negocio depende de contratos, no de herramientas concretas.</p>
+    <div class="analogy"><span class="tag">Analogía</span>Tu lámpara depende del enchufe estándar, no de una hidroeléctrica específica. Puedes cambiar de proveedor de energía y la lámpara ni se entera.</div>
+    <div class="codepair"><div><span class="lbl bad">Mal: amarrado a MySQL</span><pre class="code">class ServicioPedidos:
+    def __init__(self):
+        self.repo = RepoMySQL()
+
+    def crear(self, pedido):
+        self.repo.guardar(pedido)</pre></div><div><span class="lbl good">Bien: depende del contrato</span><pre class="code">class RepoPedidos(Protocol):
+    def guardar(self, pedido): ...
+
+class ServicioPedidos:
+    def __init__(self, repo: RepoPedidos):
+        self.repo = repo
+
+    def crear(self, pedido):
+        self.repo.guardar(pedido)</pre></div></div>
+    <p>La D es el principio. La inyección de dependencias (siguiente tema) es la técnica para aplicarlo.</p>
+  </div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"S: una clase, una razón para cambiar. O: extiendo sin modificar. L: una subclase debe poder reemplazar a su padre. I: interfaces pequeñas y específicas. D: dependo de abstracciones, no de implementaciones." Y remata con un caso tuyo, por ejemplo cómo separaste un componente gigante en servicios.</div>
+</section>
+
+<!-- 8 -->
+<section class="tema" data-id="inyeccion" data-title="Inyección de dependencias" data-freq="Sale seguido" hidden>
+  <h2>Inyección de dependencias</h2>
+  <p class="lead">Una clase no fabrica lo que necesita: lo recibe desde fuera. Esta ya la usas, ahora ponle palabras.</p>
+  <div class="analogy"><span class="tag">Analogía</span>Un chef no cultiva los tomates ni fabrica los cuchillos. Se los entregan y él cocina. Si mañana cambia el proveedor, su receta sigue igual.</div>
+  <div class="codepair">
+    <div><span class="lbl bad">Sin inyección</span><pre class="code">class ServicioUsuarios:
+    def __init__(self):
+        self.repo = RepoPostgres()   # la crea adentro
+
+# Para probarlo necesitas
+# una base de datos real.</pre></div>
+    <div><span class="lbl good">Con inyección</span><pre class="code">class ServicioUsuarios:
+    def __init__(self, repo):
+        self.repo = repo             # la recibe
+
+    def registrar(self, nombre):
+        self.repo.guardar(nombre)
+
+ServicioUsuarios(RepoPostgres())   # producción
+ServicioUsuarios(RepoEnMemoria())  # tests</pre></div>
+  </div>
+  <div class="demo">
+    <span class="tag">Pruébalo</span>
+    <p>Elige qué repositorio inyectar. El código del servicio es exactamente el mismo en los dos casos.</p>
+    <div class="row"><div class="seg" id="diSeg"><button aria-pressed="true" data-v="pg">RepoPostgres</button><button aria-pressed="false" data-v="mem">RepoEnMemoria (test)</button></div><button class="btn primary mono" id="diRun">servicio.registrar("Ana")</button></div>
+    <div class="log" id="diLog"><span class="dim"># Ejecuta el método con cada repositorio.</span></div>
+  </div>
+  <div class="bridge"><span class="tag">Puente con Angular</span><code>constructor(private userService: UserService)</code> es inyección por constructor. El inyector de Angular crea la instancia, la guarda y te la entrega. En FastAPI el equivalente es <code>Depends()</code>. En Python puro lo haces a mano: pasas el objeto al constructor.</div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Inyección de dependencias es entregarle a una clase los objetos que necesita en vez de que los cree ella. Reduce el acoplamiento, permite cambiar implementaciones sin tocar la clase y facilita los tests porque puedo pasar dobles de prueba."</div>
+</section>
+
+<!-- 9 -->
+<section class="tema" data-id="patrones" data-title="Patrones de diseño" data-freq="Sale seguido" hidden>
+  <h2>Patrones de diseño</h2>
+  <p class="lead">Soluciones con nombre para problemas que se repiten. Los cuatro más preguntados, cada uno con su mini demo.</p>
+  <div class="tabs" role="tablist" data-tabs="pat">
+    <button role="tab" aria-selected="true" data-tab="strategy">Strategy</button><button role="tab" aria-selected="false" data-tab="factory">Factory</button><button role="tab" aria-selected="false" data-tab="observer">Observer</button><button role="tab" aria-selected="false" data-tab="singleton">Singleton</button>
+  </div>
+  <div class="panel" data-panel="strategy">
+    <p><b>Problema:</b> hay varias formas de hacer lo mismo y quieres elegir cuál usar mientras el programa corre.</p>
+    <div class="analogy"><span class="tag">Analogía</span>Waze: el destino es el mismo y tú eliges la estrategia de ruta. Más rápida, sin peajes o en bici.</div>
+    <pre class="code">class Estandar:
+    def costo(self, kg): return 4000 * kg
+
+class Express:
+    def costo(self, kg): return 8000 * kg
+
+class RecogerEnTienda:
+    def costo(self, kg): return 0
+
+class Carrito:
+    def __init__(self, envio):
+        self.envio = envio              # la estrategia se inyecta
+
+    def costo_envio(self, kg):
+        return self.envio.costo(kg)     # delega</pre>
+    <div class="demo"><span class="tag">Pruébalo: paquete de 2 kg</span>
+      <div class="row"><div class="seg" id="stSeg"><button aria-pressed="true" data-v="Estandar">Estandar</button><button aria-pressed="false" data-v="Express">Express</button><button aria-pressed="false" data-v="RecogerEnTienda">RecogerEnTienda</button></div></div>
+      <div class="log" id="stLog"></div></div>
+  </div>
+  <div class="panel" data-panel="factory" hidden>
+    <p><b>Problema:</b> el código que usa un objeto no debería saber qué clase concreta crear ni cómo armarla.</p>
+    <div class="analogy"><span class="tag">Analogía</span>Pides "una hamburguesa" en el mostrador. No entras a la cocina a decidir quién la arma ni con qué plancha.</div>
+    <pre class="code">def crear_exportador(formato):
+    if formato == "pdf":
+        return ExportadorPdf()
+    if formato == "csv":
+        return ExportadorCsv()
+    if formato == "xlsx":
+        return ExportadorExcel()
+    raise ValueError(formato)
+
+exportador = crear_exportador("pdf")   # no sé ni me importa la clase
+exportador.exportar(reporte)</pre>
+    <div class="demo"><span class="tag">Pruébalo</span>
+      <div class="row"><button class="btn mono" data-fac="pdf">crear_exportador("pdf")</button><button class="btn mono" data-fac="csv">crear_exportador("csv")</button><button class="btn mono" data-fac="xlsx">crear_exportador("xlsx")</button></div>
+      <div class="log" id="facLog"><span class="dim"># La decisión de qué clase crear vive en un solo lugar.</span></div></div>
+  </div>
+  <div class="panel" data-panel="observer" hidden>
+    <p><b>Problema:</b> cuando algo ocurre, varios interesados deben enterarse, y quien lo emite no debería conocerlos.</p>
+    <div class="analogy"><span class="tag">Analogía</span>Un canal de YouTube. Sube un video y avisa a todos los suscritos. El canal no sabe quiénes son ni qué harán con el aviso.</div>
+    <pre class="code">class Evento:
+    def __init__(self):
+        self.suscriptores = []
+
+    def suscribir(self, funcion):
+        self.suscriptores.append(funcion)
+
+    def publicar(self, dato):
+        for funcion in self.suscriptores:
+            funcion(dato)
+
+pedido_creado = Evento()
+pedido_creado.suscribir(enviar_email)
+pedido_creado.suscribir(descontar_inventario)
+pedido_creado.publicar(pedido)</pre>
+    <div class="demo"><span class="tag">Pruébalo</span>
+      <div class="row">
+        <label class="chk"><input type="checkbox" id="o-email" data-obs="enviar_email → Correo de confirmación enviado" checked>enviar_email</label>
+        <label class="chk"><input type="checkbox" id="o-inv" data-obs="descontar_inventario → Stock actualizado" checked>descontar_inventario</label>
+        <label class="chk"><input type="checkbox" id="o-ana" data-obs="registrar_analitica → Evento guardado">registrar_analitica</label>
+      </div>
+      <div class="row"><button class="btn primary mono" id="obsRun">pedido_creado.publicar(pedido)</button></div>
+      <div class="log" id="obsLog"><span class="dim"># Suscribe o desuscribe y publica.</span></div></div>
+    <div class="bridge"><span class="tag">Puente con Angular</span>Lo usas a diario: <code>Subject</code> y <code>Observable</code> de RxJS, <code>EventEmitter</code> y <code>addEventListener</code> son Observer.</div>
+  </div>
+  <div class="panel" data-panel="singleton" hidden>
+    <p><b>Problema:</b> debe existir una sola instancia de algo en toda la aplicación, como la configuración o un pool de conexiones.</p>
+    <div class="analogy"><span class="tag">Analogía</span>La torre de control de un aeropuerto. Todos los aviones hablan con la misma; dos torres dando órdenes sería un desastre.</div>
+    <pre class="code">class Config:
+    _instancia = None
+
+    def __new__(cls):
+        if cls._instancia is None:
+            cls._instancia = super().__new__(cls)
+        return cls._instancia
+
+a = Config()
+b = Config()
+print(a is b)   # True: es el mismo objeto</pre>
+    <div class="demo"><span class="tag">Pruébalo</span>
+      <div class="row"><button class="btn primary mono" id="sgRun">Config()</button><span>Instancias en memoria: <b id="sgN">0</b></span></div>
+      <div class="log" id="sgLog"><span class="dim"># Llama al constructor varias veces.</span></div></div>
+    <div class="pynote"><span class="tag">Lo que quiere oír un entrevistador senior</span>Singleton es estado global disfrazado: dificulta los tests y esconde dependencias. Úsalo poco. En Python un módulo ya se comporta como singleton. En Angular, <code>providedIn: 'root'</code> te da una instancia única, pero gestionada por el inyector, que es la versión sana.</div>
+  </div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>Elige uno que hayas usado de verdad y cuenta el problema antes que el patrón: "Teníamos varios cálculos de envío metidos en un <code>if</code> enorme. Los separé en estrategias y el carrito recibe la que corresponde. Agregar un envío nuevo dejó de tocar el carrito."</div>
+</section>
+
+<!-- 10 -->
+<section class="tema" data-id="acoplamiento" data-title="Acoplamiento y cohesión" data-freq="A veces" hidden>
+  <h2>Acoplamiento y cohesión</h2>
+  <p class="lead">La meta de casi todo lo anterior cabe en una frase: bajo acoplamiento y alta cohesión.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag">Entre clases</span><h4>Acoplamiento</h4><p>Cuánto sabe una clase de las demás. Si cambiar A te obliga a cambiar B, C y D, están muy acopladas.</p><small>Quieres que sea <b>bajo</b>.</small></div>
+    <div class="card"><span class="tag">Dentro de una clase</span><h4>Cohesión</h4><p>Qué tan relacionado está todo lo que hay dentro. Si los métodos sirven al mismo propósito, hay alta cohesión.</p><small>Quieres que sea <b>alta</b>.</small></div>
+  </div>
+  <div class="analogy"><span class="tag">Analogía</span>Piezas de Lego: cada una hace una sola cosa (alta cohesión) y se conecta con cualquier otra por un encaje estándar (bajo acoplamiento). Lo contrario es un mueble pegado con pegante: para cambiar una tabla rompes todo.</div>
+  <div class="diag">
+    <div class="card"><span class="lbl bad">Baja cohesión: clase "cajón de sastre"</span><div class="boxes"><span class="x">calcular_iva</span><span class="x">enviar_email</span><span class="x">leer_csv</span><span class="x">validar_cedula</span><span class="x">conectar_bd</span><span class="x">formatear_fecha</span></div><small>Clase <code>Utilidades</code>: seis temas distintos, seis razones para cambiar.</small></div>
+    <div class="card"><span class="lbl good">Alta cohesión: un propósito</span><div class="boxes"><span class="y">agregar_item</span><span class="y">quitar_item</span><span class="y">total</span><span class="y">aplicar_cupon</span><span class="y">vaciar</span><span class="y">cantidad</span></div><small>Clase <code>Carrito</code>: todo gira alrededor del carrito.</small></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Herramienta</th><th>Qué mejora</th></tr>
+    <tr><td>Responsabilidad única (S)</td><td>Sube la cohesión</td></tr>
+    <tr><td>Interfaces e inversión de dependencias (D)</td><td>Baja el acoplamiento</td></tr>
+    <tr><td>Composición e inyección de dependencias</td><td>Baja el acoplamiento</td></tr>
+    <tr><td>Encapsulamiento</td><td>Baja el acoplamiento: nadie depende de tus datos internos</td></tr>
+  </table></div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Acoplamiento es cuánto depende un módulo de otros; cohesión es qué tan enfocado está en una sola tarea. Busco bajo acoplamiento para poder cambiar una parte sin romper las demás, y alta cohesión para que cada clase sea fácil de entender y de probar."</div>
+</section>
+
+<!-- 11 -->
+<section class="tema" data-id="estatico" data-title="Estático vs. de instancia" data-freq="A veces" hidden>
+  <h2>Estático vs. de instancia</h2>
+  <p class="lead">Lo de instancia pertenece a cada objeto. Lo estático pertenece a la clase y lo comparten todos.</p>
+  <div class="analogy"><span class="tag">Analogía</span>En un conjunto residencial cada apartamento tiene su propio número de habitantes (de instancia). El reglamento y el contador total de residentes son del conjunto entero (de clase).</div>
+  <pre class="code">class Usuario:
+    total = 0                      # atributo de clase: uno solo, compartido
+
+    def __init__(self, nombre):
+        self.nombre = nombre       # atributo de instancia: uno por objeto
+        Usuario.total += 1
+
+    def saludar(self):             # método de instancia: usa self
+        return f"Hola, soy {self.nombre}"
+
+    @classmethod
+    def desde_email(cls, email):   # método de clase: recibe la clase, crea objetos
+        return cls(email.split("@")[0])
+
+    @staticmethod
+    def es_email_valido(texto):    # método estático: no usa ni self ni cls
+        return "@" in texto</pre>
+  <div class="demo">
+    <span class="tag">Pruébalo</span>
+    <div class="row"><button class="btn primary mono" id="mkUser">Usuario(nombre)</button><button class="btn ghost" id="rsUser">Reiniciar</button><span>Usuario.total = <b class="big" id="uTotal">0</b></span></div>
+    <div class="objs" id="users"></div>
+    <p>El contador vive en la clase y lo ven todos los objetos. El nombre vive en cada objeto.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th></th><th>Recibe</th><th>Úsalo para</th></tr>
+    <tr><td>Método de instancia</td><td><code>self</code></td><td>Trabajar con el estado del objeto</td></tr>
+    <tr><td><code>@classmethod</code></td><td><code>cls</code></td><td>Constructores alternativos</td></tr>
+    <tr><td><code>@staticmethod</code></td><td>Nada</td><td>Funciones de ayuda relacionadas con la clase</td></tr>
+  </table></div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Un miembro de instancia pertenece a cada objeto; uno estático pertenece a la clase y se comparte. Uso estáticos para utilidades sin estado o para datos comunes a todas las instancias, y evito guardar estado mutable ahí porque se convierte en estado global."</div>
+</section>
+
+<!-- 12 -->
+<section class="tema" data-id="mutabilidad" data-title="Mutabilidad" data-freq="A veces" hidden>
+  <h2>Mutabilidad e inmutabilidad</h2>
+  <p class="lead">Un objeto mutable puede cambiar después de creado. Uno inmutable no: para "cambiarlo" creas otro.</p>
+  <div class="analogy"><span class="tag">Analogía</span>Un documento compartido de Google Docs es mutable: si tu compañero lo edita, tú ves el cambio. Un PDF enviado por correo es inmutable: para corregirlo hay que generar otro.</div>
+  <div class="tablewrap"><table>
+    <tr><th>Mutables en Python</th><th>Inmutables en Python</th></tr>
+    <tr><td><code>list</code>, <code>dict</code>, <code>set</code>, tus objetos por defecto</td><td><code>int</code>, <code>str</code>, <code>tuple</code>, <code>frozenset</code>, <code>@dataclass(frozen=True)</code></td></tr>
+  </table></div>
+  <div class="demo">
+    <span class="tag">Pruébalo: dos variables, ¿una lista o dos?</span>
+    <div class="row"><div class="seg" id="muSeg"><button aria-pressed="true" data-v="alias">b = a</button><button aria-pressed="false" data-v="copy">b = a.copy()</button></div><button class="btn primary mono" id="muAdd">b.append(4)</button><button class="btn ghost" id="muRs">Reiniciar</button></div>
+    <div class="objs" id="muObjs"></div>
+    <div class="log" id="muLog"></div>
+  </div>
+  <h3>La trampa clásica de Python</h3>
+  <div class="codepair">
+    <div><span class="lbl bad">Mal: la lista se crea una sola vez</span><pre class="code">def agregar(item, lista=[]):
+    lista.append(item)
+    return lista
+
+agregar("a")   # ['a']
+agregar("b")   # ['a', 'b']  ← sorpresa</pre></div>
+    <div><span class="lbl good">Bien: None como valor por defecto</span><pre class="code">def agregar(item, lista=None):
+    if lista is None:
+        lista = []
+    lista.append(item)
+    return lista
+
+agregar("b")   # ['b']</pre></div>
+  </div>
+  <div class="bridge"><span class="tag">Puente con Angular</span>Es la misma razón por la que en React o con <code>OnPush</code> y signals haces <code>[...lista, nuevo]</code> en vez de <code>push</code>: una referencia nueva deja claro que algo cambió.</div>
+  <div class="say"><span class="tag">Dilo así en la entrevista</span>"Los objetos inmutables no cambian tras crearse, así que son seguros para compartir, más fáciles de razonar y no generan efectos secundarios. Con los mutables hay que cuidar las referencias compartidas. En Python el caso típico es el argumento por defecto mutable."</div>
+</section>
+
+<!-- 13 -->
+<section class="tema" data-id="simulacro" data-title="Simulacro de entrevista" data-freq="Cierre" hidden>
+  <h2>Simulacro de entrevista</h2>
+  <p class="lead">Dos rondas. Primero responde en voz alta y compara con la respuesta modelo. Después, el test de opción múltiple.</p>
+  <h3>Ronda 1: responde en voz alta</h3>
+  <p>Lee la pregunta, respóndela hablando como si estuvieras en la entrevista y solo entonces destapa la respuesta.</p>
+  <div class="stack" id="flash"></div>
+  <p id="flashScore" class="tag"></p>
+  <h3>Ronda 2: test rápido</h3>
+  <div class="demo"><span class="tag">12 preguntas</span><div data-quiz="final"></div></div>
+</section>
+
+</main>
+</div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* resaltado de sintaxis */
+function hl(src){
+  const re=/(#.*$)|(f?"[^"\n]*"|f?'[^'\n]*')|(@\w+)|\b(class|def|return|if|elif|else|for|in|import|from|pass|raise|None|True|False|not|and|or|lambda|is|with|as)\b|\b(self|cls|super)\b/gm;
+  let out='',last=0;
+  for(const m of src.matchAll(re)){
+    out+=esc(src.slice(last,m.index));
+    const c=m[1]?'c':m[2]?'s':m[3]?'d':m[4]?'k':'v';
+    out+='<span class="h'+c+'">'+esc(m[0])+'</span>'; last=m.index+m[0].length;
+  }
+  return out+esc(src.slice(last));
+}
+$$('pre.code').forEach(p=>p.innerHTML=hl(p.textContent));
+
+/* navegación */
+const temas=$$('.tema'), nav=$('#nav');
+let vistos={};
+try{vistos=JSON.parse(localStorage.getItem('poo-vistos')||'{}')}catch(e){}
+temas.forEach((t,i)=>{
+  const id=t.dataset.id;
+  const li=document.createElement('li');
+  li.innerHTML='<a href="#'+id+'" data-nav="'+id+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><span>'+t.dataset.title+'</span><span class="done"></span></a>';
+  nav.appendChild(li);
+  const f=document.createElement('span'); f.className='freq'; f.textContent=t.dataset.freq; t.prepend(f);
+  const pg=document.createElement('div'); pg.className='pager';
+  const prev=temas[i-1], next=temas[i+1];
+  pg.innerHTML=(prev?'<a class="btn ghost" href="#'+prev.dataset.id+'">← '+prev.dataset.title+'</a>':'<span></span>')+
+    '<button class="btn" data-visto="'+id+'"></button>'+
+    (next?'<a class="btn primary" href="#'+next.dataset.id+'" style="text-decoration:none">'+next.dataset.title+' →</a>':'<span></span>');
+  t.appendChild(pg);
+});
+$$('.pager a').forEach(a=>a.style.textDecoration='none');
+function pintarVistos(){
+  $$('[data-nav]').forEach(a=>$('.done',a).textContent=vistos[a.dataset.nav]?'✓':'');
+  $$('[data-visto]').forEach(b=>b.textContent=vistos[b.dataset.visto]?'✓ Repasado (quitar)':'Marcar como repasado');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-visto]'); if(!b) return;
+  vistos[b.dataset.visto]=!vistos[b.dataset.visto];
+  try{localStorage.setItem('poo-vistos',JSON.stringify(vistos))}catch(e){}
+  pintarVistos();
+});
+function ir(){
+  const id=location.hash.slice(1);
+  const t=temas.find(x=>x.dataset.id===id)||temas[0];
+  temas.forEach(x=>x.hidden=x!==t);
+  $$('[data-nav]').forEach(a=>a.setAttribute('aria-current',a.dataset.nav===t.dataset.id));
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',ir); ir(); pintarVistos();
+
+/* pestañas */
+$$('[data-tabs]').forEach(tb=>{
+  const sec=tb.closest('.tema');
+  $$('button',tb).forEach(b=>b.onclick=()=>{
+    $$('button',tb).forEach(x=>x.setAttribute('aria-selected',x===b));
+    $$('.panel',sec).forEach(p=>p.hidden=p.dataset.panel!==b.dataset.tab);
+  });
+});
+/* controles segmentados */
+function seg(id,cb){const s=$('#'+id);$$('button',s).forEach(b=>b.onclick=()=>{$$('button',s).forEach(x=>x.setAttribute('aria-pressed',x===b));cb(b.dataset.v)});}
+const fmt=n=>'$ '+n.toLocaleString('es-CO');
+const hexid=()=>'0x7f'+Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
+
+/* 1: pedidos */
+const nombres=['Ana','Luis','Marta','Diego','Sofía','Camilo','Laura','Andrés'];
+let pedidos=[];
+function drawPedidos(){
+  const c=$('#pedidos');
+  c.innerHTML=pedidos.length?'':'<span class="tag">Todavía no hay objetos. La clase existe, pero nadie la ha instanciado.</span>';
+  pedidos.forEach((p,i)=>{
+    const d=document.createElement('div'); d.className='obj';
+    d.innerHTML='<b>p'+(i+1)+'</b><span class="id">id '+p.id+'</span><span>cliente = "'+p.cliente+'"</span><span>items = ['+p.items.join(', ')+']</span><span>total() → '+fmt(p.items.reduce((a,b)=>a+b,0))+'</span>';
+    const b=document.createElement('button'); b.className='btn mono'; b.textContent='agregar_item(15000)';
+    b.onclick=()=>{p.items.push(15000);drawPedidos()}; d.appendChild(b); c.appendChild(d);
+  });
+}
+$('#mkPedido').onclick=()=>{if(pedidos.length<6){pedidos.push({id:hexid(),cliente:nombres[pedidos.length%nombres.length],items:[]});drawPedidos()}};
+$('#rsPedido').onclick=()=>{pedidos=[];drawPedidos()};
+pedidos=[{id:hexid(),cliente:'Ana',items:[15000]},{id:hexid(),cliente:'Luis',items:[]}]; drawPedidos();
+
+/* 3: cuenta */
+let enc=0, saldo=100;
+const encLog=$('#encLog');
+function encSay(cls,t){encLog.innerHTML='<span class="'+cls+'">'+t+'</span>';$('#saldo').textContent=fmt(saldo);$('#saldo').style.color=saldo<0?'var(--bad)':''}
+seg('encSeg',v=>{enc=+v;saldo=100;encSay('dim',enc?'# Modo encapsulado: el saldo solo cambia a través de retirar().':'# Modo sin encapsular: saldo es un atributo público.')});
+$$('[data-acc]').forEach(b=>b.onclick=()=>{
+  const a=b.dataset.acc;
+  if(a==='reset'){saldo=100;encSay('dim','# Cuenta reiniciada.')}
+  else if(a==='direct'){
+    if(enc) encSay('err',"AttributeError: property 'saldo' has no setter\n# La cuenta rechazó la asignación. El estado sigue siendo válido.");
+    else{saldo=-500;encSay('err','# Python lo aceptó sin protestar.\n# Saldo negativo: la cuenta quedó en un estado imposible y nadie validó nada.')}
+  }else{
+    const m=a==='r30'?30:150;
+    if(m>saldo) encSay('err','ValueError: Fondos insuficientes\n# retirar() hizo cumplir la regla.');
+    else{saldo-=m;encSay('ok','# Retiro de '+fmt(m)+' aprobado por retirar().')}
+  }
+});
+
+/* 4: pagos */
+let pagos=[['Tarjeta','Cobro de $ 50.000 a la tarjeta terminada en 4417'],['Pse','Redirigiendo al banco para debitar $ 50.000'],['Nequi','Notificación push enviada al celular por $ 50.000']];
+function drawPagos(){$('#pagos').innerHTML=pagos.map(p=>'<div class="obj"><b>'+p[0]+'()</b><span>procesar(monto)</span></div>').join('')}
+drawPagos();
+$('#runPagos').onclick=()=>{$('#pagosLog').innerHTML=pagos.map(p=>'<span class="dim">'+p[0]+'.procesar → </span><span class="ok">'+p[1]+'</span>').join('\n')+'\n<span class="dim"># Mismo llamado, '+pagos.length+' comportamientos.</span>'};
+$('#addPago').onclick=e=>{
+  if(pagos.length>3) return;
+  pagos.push(['Cripto','Esperando confirmación en la red por $ 50.000']); drawPagos(); e.target.disabled=true;
+  $('#pagosLog').innerHTML='<span class="ok"># Clase Cripto creada.</span>\n<span class="dim"># Líneas modificadas en el ciclo o en checkout(): 0. Ejecútalo otra vez.</span>';
+};
+
+/* 6: explosión */
+function explosion(){
+  const sel=$$('#canales input:checked').map(i=>i.value), n=sel.length, combos=[];
+  for(let m=1;m<(1<<n);m++){let s='';sel.forEach((c,i)=>{if(m&(1<<i))s+=c});combos.push('Notificador'+s)}
+  $('#nHer').textContent=combos.length+(combos.length===1?' clase':' clases');
+  $('#chHer').innerHTML=combos.map(c=>'<span class="chip">'+c+'</span>').join('')||'<span class="tag">Marca al menos un canal</span>';
+  $('#nCom').textContent=(n?n+1:0)+' clases';
+  $('#chCom').innerHTML=n?['Notificador',...sel].map(c=>'<span class="chip g">'+c+'</span>').join(''):'';
+}
+$$('#canales input').forEach(i=>i.onchange=explosion); explosion();
+
+/* 8: DI */
+let diRepo='pg';
+seg('diSeg',v=>{diRepo=v;$('#diLog').innerHTML='<span class="dim"># Inyectado: '+(v==='pg'?'RepoPostgres':'RepoEnMemoria')+'. Ejecuta el método.</span>'});
+$('#diRun').onclick=()=>{$('#diLog').innerHTML=diRepo==='pg'
+  ?'<span class="dim">ServicioUsuarios.registrar("Ana")</span>\n<span class="ok">RepoPostgres.guardar → INSERT INTO usuarios (nombre) VALUES (\'Ana\')</span>\n<span class="dim"># Necesita una base de datos encendida. 120 ms.</span>'
+  :'<span class="dim">ServicioUsuarios.registrar("Ana")</span>\n<span class="ok">RepoEnMemoria.guardar → lista.append("Ana")</span>\n<span class="dim"># Sin base de datos. 0 ms. Ideal para tests. El servicio no cambió ni una línea.</span>'};
+
+/* 9: patrones */
+const tarifas={Estandar:4000,Express:8000,RecogerEnTienda:0};
+function strat(v){$('#stLog').innerHTML='<span class="dim">Carrito('+v+'()).costo_envio(2) → </span><span class="ok">'+fmt(tarifas[v]*2)+'</span>\n<span class="dim"># La clase Carrito es la misma; solo cambió la pieza inyectada.</span>'}
+seg('stSeg',strat); strat('Estandar');
+const fac={pdf:['ExportadorPdf','reporte.pdf'],csv:['ExportadorCsv','reporte.csv'],xlsx:['ExportadorExcel','reporte.xlsx']};
+$$('[data-fac]').forEach(b=>b.onclick=()=>{const f=fac[b.dataset.fac];$('#facLog').innerHTML='<span class="dim">crear_exportador("'+b.dataset.fac+'") → </span><span class="ok">objeto '+f[0]+'</span>\n<span class="dim">exportador.exportar(reporte) → </span><span class="ok">'+f[1]+'</span>'});
+$('#obsRun').onclick=()=>{const on=$$('[data-obs]:checked');$('#obsLog').innerHTML=on.length?on.map(i=>'<span class="ok">'+i.dataset.obs+'</span>').join('\n')+'\n<span class="dim"># El evento avisó a '+on.length+' suscriptor(es) sin conocerlos.</span>':'<span class="dim"># Nadie suscrito: el evento se publica y no pasa nada. Tampoco falla.</span>'};
+let sgId=null, sgCalls=0;
+$('#sgRun').onclick=()=>{sgCalls++; if(!sgId) sgId=hexid(); $('#sgN').textContent=1;
+  const l=$('#sgLog'); if(sgCalls===1) l.innerHTML='';
+  l.innerHTML+='<span class="dim">Config() #'+sgCalls+' → </span><span class="ok">objeto en '+sgId+(sgCalls>1?'  (el mismo)':'  (recién creado)')+'</span>\n'};
+
+/* 11: usuarios */
+let users=[];
+function drawUsers(){$('#uTotal').textContent=users.length;$('#users').innerHTML=users.map((u,i)=>'<div class="obj"><b>u'+(i+1)+'</b><span>self.nombre = "'+u+'"</span><span class="id">ve Usuario.total = '+users.length+'</span></div>').join('')}
+$('#mkUser').onclick=()=>{if(users.length<6){users.push(nombres[users.length]);drawUsers()}};
+$('#rsUser').onclick=()=>{users=[];drawUsers()}; drawUsers();
+
+/* 12: mutabilidad */
+let muMode='alias', la=[1,2,3], lb=la;
+function drawMu(msg){
+  const ida='0x7f3a10', idb=muMode==='alias'?ida:'0x7f9c44';
+  $('#muObjs').innerHTML='<div class="obj"><b>a</b><span class="id">id '+ida+'</span><span>['+la.join(', ')+']</span></div><div class="obj"><b>b</b><span class="id">id '+idb+'</span><span>['+lb.join(', ')+']</span></div>';
+  $('#muLog').innerHTML=msg||(muMode==='alias'?'<span class="dim"># a y b tienen el mismo id: son dos nombres para UNA sola lista.</span>':'<span class="dim"># b es una copia: ids distintos, dos listas independientes.</span>');
+}
+function muReset(){la=[1,2,3];lb=muMode==='alias'?la:[...la];drawMu()}
+seg('muSeg',v=>{muMode=v;muReset()});
+$('#muRs').onclick=muReset;
+$('#muAdd').onclick=()=>{if(lb.length>7)return;lb.push(lb.length+1);drawMu(muMode==='alias'?'<span class="err"># Modificaste b y a también cambió. Nadie tocó a directamente.</span>':'<span class="ok"># Solo cambió b. a quedó intacta.</span>')};
+muReset();
+
+/* quizzes */
+const P=['Encapsulamiento','Abstracción','Herencia','Polimorfismo'], AI=['Clase abstracta (ABC)','Interfaz (Protocol)'], EC=['"Es un" → herencia','"Tiene un" → composición'];
+const QUIZ={
+pilares:[
+ {q:'Marcas el saldo como privado y solo permites cambiarlo con depositar() y retirar().',o:P,a:0,w:'Proteges el estado detrás de métodos que validan.'},
+ {q:'Llamas enviar_correo(destino, texto) sin saber nada de SMTP, reintentos ni cifrado.',o:P,a:1,w:'Ves el qué y se te oculta el cómo.'},
+ {q:'UsuarioAdmin reutiliza todo lo de Usuario y le agrega permisos.',o:P,a:2,w:'Una clase toma lo de otra y lo extiende.'},
+ {q:'Recorres una lista de figuras y llamas area() en cada una; cada figura calcula a su manera.',o:P,a:3,w:'Mismo mensaje, comportamiento según el tipo real.'},
+ {q:'Un setter rechaza una edad negativa antes de guardarla.',o:P,a:0,w:'El objeto defiende sus propias reglas.'},
+ {q:'Cambias PagoTarjeta por PagoNequi y el checkout sigue funcionando sin tocarlo.',o:P,a:3,w:'El checkout trata a ambos por la misma interfaz.'},
+ {q:'HttpClient te ofrece get() y post() y esconde sockets, cabeceras y reintentos.',o:P,a:1,w:'Una interfaz simple sobre algo complejo.'}],
+abstracta:[
+ {q:'Todos los reportes comparten la lógica de cabecera y pie de página; solo cambia el cuerpo.',o:AI,a:0,w:'Hay código común que vale la pena heredar.'},
+ {q:'Quieres que cualquier objeto con un método serializar() se pueda guardar, sin importar de qué familia sea.',o:AI,a:1,w:'Solo te importa la capacidad, no el parentesco.'},
+ {q:'Una clase debe cumplir dos contratos a la vez: Comparable y Exportable.',o:AI,a:1,w:'Se pueden cumplir varias interfaces; heredar de varias clases es problemático.'},
+ {q:'Las subclases deben compartir atributos (id, creado_en) y un constructor común.',o:AI,a:0,w:'Estado compartido: eso solo lo da una clase.'},
+ {q:'Quieres aceptar una clase de una librería externa que no puedes modificar, siempre que tenga el método cerrar().',o:AI,a:1,w:'Protocol comprueba la forma; no exige que la clase herede de nada.'}],
+composicion:[
+ {q:'Carro y Motor',o:EC,a:1,w:'Un carro tiene un motor, y se lo puedes cambiar.'},
+ {q:'CuentaAhorros y CuentaBancaria',o:EC,a:0,w:'Es una cuenta bancaria, siempre, y puede sustituirla.'},
+ {q:'Pedido y DirecciónDeEnvío',o:EC,a:1,w:'El pedido tiene una dirección.'},
+ {q:'ServicioDePedidos y Repositorio',o:EC,a:1,w:'El servicio usa un repositorio que recibe por inyección.'},
+ {q:'Una Pila construida sobre una lista',o:EC,a:1,w:'Si heredara de list expondría insert() y sort(), que rompen la pila. Mejor guardar la lista adentro.'},
+ {q:'Empleado y Persona, en un sistema donde una persona puede ser empleado y cliente a la vez',o:EC,a:1,w:'Los roles cambian y se combinan: la persona tiene roles. Heredar la amarraría a uno solo.'}],
+final:[
+ {q:'Una subclase redefine un método heredado con la misma firma. Eso es:',o:['Sobrecarga','Sobrescritura','Encapsulamiento'],a:1,w:'Sobrescritura (override): se resuelve en ejecución según el tipo real.'},
+ {q:'En Python defines dos métodos con el mismo nombre y distinta cantidad de parámetros en la misma clase. ¿Qué pasa?',o:['Python elige según los argumentos','Da error al definir la clase','El segundo reemplaza al primero'],a:2,w:'Python no tiene sobrecarga: la última definición gana.'},
+ {q:'"Depende de abstracciones, no de implementaciones concretas" es la letra:',o:['S','L','D'],a:2,w:'Inversión de dependencias.'},
+ {q:'Una subclase lanza una excepción en un método que el padre sí soporta. Viola:',o:['Liskov','Abierto/cerrado','Segregación de interfaces'],a:0,w:'La hija ya no puede sustituir al padre.'},
+ {q:'Necesitas cambiar un algoritmo mientras el programa corre, sin llenar el código de if. Patrón:',o:['Singleton','Strategy','Factory'],a:1,w:'Strategy encapsula cada algoritmo en un objeto intercambiable.'},
+ {q:'¿Cuál es el problema de def agregar(item, lista=[])?',o:['La lista por defecto se comparte entre todas las llamadas','No se puede usar una lista como parámetro','La función no devuelve nada'],a:0,w:'El valor por defecto se crea una sola vez, al definir la función.'},
+ {q:'La diferencia clave entre ABC y Protocol en Python:',o:['Protocol permite instanciarse y ABC no','ABC exige heredar y puede traer código; Protocol solo comprueba la forma','Son sinónimos'],a:1,w:'Tipado nominal (ABC) frente a estructural (Protocol).'},
+ {q:'Razón principal para preferir composición sobre herencia:',o:['Usa menos memoria','Menos acoplamiento y piezas intercambiables','Evita escribir constructores'],a:1,w:'Evitas jerarquías frágiles y puedes cambiar piezas, incluso en ejecución.'},
+ {q:'Un Subject de RxJS implementa el patrón:',o:['Observer','Factory','Strategy'],a:0,w:'Emite y avisa a todos los suscritos.'},
+ {q:'Alta cohesión significa que:',o:['La clase depende de muchas otras','Todo lo que hay en la clase sirve a un mismo propósito','La clase tiene muchos métodos'],a:1,w:'Cohesión es qué tan enfocada está la clase por dentro.'},
+ {q:'En Python, el guion bajo en self._saldo:',o:['Impide el acceso desde fuera','Es una convención: avisa, pero no bloquea','Hace el atributo estático'],a:1,w:'Python confía en la convención; no hay private real.'},
+ {q:'El mayor beneficio práctico de la inyección de dependencias:',o:['El código corre más rápido','Poder sustituir dependencias, por ejemplo en tests, sin tocar la clase','Ahorra escribir imports'],a:1,w:'La clase deja de estar amarrada a una implementación concreta.'}]
+};
+$$('[data-quiz]').forEach(el=>{
+  const items=QUIZ[el.dataset.quiz]; let i=0, ok=0;
+  function draw(){
+    if(i>=items.length){
+      const pct=ok/items.length;
+      el.innerHTML='<p class="q-text">'+ok+' de '+items.length+' correctas. '+(pct===1?'Dominado.':pct>=.7?'Bien. Repite para afinar las que fallaste.':'Relee el tema y vuelve a intentarlo.')+'</p><div class="row"><button class="btn">Repetir</button></div>';
+      $('button',el).onclick=()=>{i=0;ok=0;draw()}; return;
+    }
+    const it=items[i];
+    el.innerHTML='<div class="q-top"><span>Caso '+(i+1)+' de '+items.length+'</span><span>'+ok+' correctas</span></div><p class="q-text">'+esc(it.q)+'</p><div class="q-opts">'+it.o.map((t,k)=>'<button class="opt" data-k="'+k+'">'+esc(t)+'</button>').join('')+'</div><div class="q-fb" aria-live="polite"></div>';
+    $$('.opt',el).forEach(b=>b.onclick=()=>{
+      const k=+b.dataset.k, good=k===it.a; if(good) ok++;
+      $$('.opt',el).forEach(x=>{x.disabled=true;if(+x.dataset.k===it.a)x.classList.add('right')});
+      if(!good) b.classList.add('wrong');
+      $('.q-fb',el).innerHTML=(good?'<b class="ok">Correcto.</b> ':'<b class="no">No.</b> ')+esc(it.w)+' <button class="btn" style="margin-left:6px">'+(i+1<items.length?'Siguiente':'Ver resultado')+'</button>';
+      $('.q-fb button',el).onclick=()=>{i++;draw()}; $('.q-fb button',el).focus();
+    });
+  }
+  draw();
+});
+
+/* flashcards */
+const FLASH=[
+ ['¿Qué es polimorfismo? Dame un ejemplo real que no sea de animales.','Es tratar objetos de tipos distintos a través de una misma interfaz, y que cada uno responda con su implementación. Ejemplo: un checkout llama pago.procesar() sin saber si es tarjeta, PSE o Nequi. Ventaja: agrego un medio de pago creando una clase, sin tocar el checkout.'],
+ ['¿Cuál es la diferencia entre una clase abstracta y una interfaz?','La clase abstracta modela una familia ("es un") y puede traer código y estado compartidos. La interfaz es solo un contrato ("puede hacer") para clases sin relación entre sí. Una clase cumple varias interfaces pero hereda de una sola clase. En Python: ABC y Protocol.'],
+ ['¿Por qué se prefiere composición sobre herencia?','La herencia acopla fuerte al hijo con el padre y queda fija al escribir el código. Con composición la clase recibe piezas que cumplen un contrato: puedo cambiarlas en ejecución, probar con dobles y evitar la explosión de subclases. Herencia solo cuando hay un "es un" real y estable.'],
+ ['Explícame SOLID.','S: una clase, una razón para cambiar. O: abierto a extensión, cerrado a modificación. L: una subclase debe poder sustituir a su padre. I: interfaces pequeñas y específicas. D: depender de abstracciones, no de implementaciones. Cierra con un ejemplo propio.'],
+ ['¿En qué se diferencian encapsulamiento y abstracción?','Encapsulamiento oculta los datos para proteger el estado: solo cambian por métodos que validan. Abstracción oculta la complejidad para simplificar el uso: expongo qué hace y no cómo. Validar retiros en una cuenta encapsula; un método transferir() que esconde el proceso abstrae.'],
+ ['¿Qué es la inyección de dependencias y para qué sirve?','Es entregarle a una clase los objetos que necesita en lugar de que los cree ella. Reduce el acoplamiento, permite cambiar implementaciones sin tocar la clase y facilita los tests. En Angular lo hace el inyector por constructor; en FastAPI, Depends.'],
+ ['¿Sobrecarga y sobrescritura? ¿Y en Python?','Sobrecarga: mismo nombre con distintos parámetros en la misma clase, resuelta al compilar. Sobrescritura: la subclase redefine un método heredado, resuelta en ejecución. Python no tiene sobrecarga: la última definición reemplaza a la anterior, así que se usan valores por defecto o *args.'],
+ ['Cuéntame de un patrón de diseño que hayas usado.','Primero el problema y luego el patrón. Por ejemplo Observer con RxJS para que varios componentes reaccionen a un cambio sin conocerse, o Strategy para reemplazar un if enorme por clases intercambiables. Menciona qué mejoró: menos acoplamiento, agregar casos sin tocar lo existente.'],
+ ['¿Qué opinas del Singleton?','Garantiza una sola instancia, útil para configuración o pools. Pero es estado global: esconde dependencias y complica los tests. Prefiero una instancia única gestionada por un contenedor de inyección, como providedIn: root en Angular.']
+];
+const fc=$('#flash'); let sabia=0, vistas=0;
+FLASH.forEach((f,i)=>{
+  const d=document.createElement('div'); d.className='flash';
+  d.innerHTML='<span class="tag">Pregunta '+(i+1)+'</span><p class="q-text">'+esc(f[0])+'</p><div class="row"><button class="btn">Ver respuesta modelo</button></div><div class="ans" hidden><p>'+esc(f[1])+'</p><div class="row" style="margin-top:10px"><button class="btn" data-s="1">La dije bien</button><button class="btn ghost" data-s="0">Debo repasarla</button></div></div>';
+  $('.row .btn',d).onclick=e=>{$('.ans',d).hidden=false;e.target.parentElement.remove()};
+  $$('[data-s]',d).forEach(b=>b.onclick=()=>{vistas++;if(b.dataset.s==='1')sabia++;b.parentElement.innerHTML='<span class="tag">'+(b.dataset.s==='1'?'✓ Dominada':'↻ A repasar')+'</span>';$('#flashScore').textContent='Llevas '+sabia+' dominadas de '+vistas+' respondidas ('+FLASH.length+' en total).'});
+  fc.appendChild(d);
+});
+</script>
+</body>
+</html>
