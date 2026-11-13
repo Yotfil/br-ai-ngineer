@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import type { BrainRendererProps } from '../types.ts'
 import { AUTO_ROTATE_PER_MS, initialCamera, panBy, rotateBy, wheelFactor, zoomAt, type Camera } from './camera.ts'
 import { DRAG_THRESHOLD, midpoint, pinchFactor, type Point } from './gestures.ts'
+import { canvasDpr } from './density.ts'
 import { FrameLoop } from './loop.ts'
 import { pick } from './pick.ts'
 import { Scene } from './scene.ts'
@@ -62,7 +63,7 @@ export default function CanvasRenderer(props: BrainRendererProps) {
     const pointers = new Map<number, Point>()
 
     const resize = () => {
-      dpr = window.devicePixelRatio || 1
+      dpr = canvasDpr(window.devicePixelRatio)
       width = window.innerWidth
       height = window.innerHeight
       canvas.width = Math.round(width * dpr)
@@ -70,7 +71,8 @@ export default function CanvasRenderer(props: BrainRendererProps) {
       const init = initialCamera(width, height, insetLeft())
       cam = { ...init, rotX: cam.rotX, rotY: cam.rotY }
       k0 = init.k
-      loop.invalidate()
+      // En pausa, cambiar el tamaño borra el lienzo: se dibuja un único cuadro (decisión 6).
+      loop.redrawOnce()
     }
 
     const draw = (t: number): boolean => {
@@ -93,6 +95,7 @@ export default function CanvasRenderer(props: BrainRendererProps) {
         labels: p.labels,
         drift: animate && !p.readerOpen,
         pulses: animate,
+        compact: p.compact,
         dpr,
         width,
         height,
@@ -105,6 +108,7 @@ export default function CanvasRenderer(props: BrainRendererProps) {
     })
     loopRef.current = loop
     loop.continuous = propsRef.current.motion === 'on'
+    loop.paused = propsRef.current.paused
     resize()
 
     const local = (e: PointerEvent | WheelEvent): Point => {
@@ -145,7 +149,10 @@ export default function CanvasRenderer(props: BrainRendererProps) {
     const onMove = (e: PointerEvent) => {
       const pt = local(e)
       if (pointers.has(e.pointerId)) pointers.set(e.pointerId, pt)
+      // En pausa el arrastre y el pellizco no mueven el cerebro; el toque sigue funcionando (decisión 6).
+      const frozen = propsRef.current.paused
       if (pinch && pointers.size >= 2) {
+        if (frozen) return
         const [a, b] = [...pointers.values()]
         const mid = midpoint(a, b)
         const moved = panBy(pinch.cam, mid.x - pinch.mid.x, mid.y - pinch.mid.y)
@@ -157,7 +164,7 @@ export default function CanvasRenderer(props: BrainRendererProps) {
         const dx = pt.x - drag.x
         const dy = pt.y - drag.y
         if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) drag.moved = true
-        if (drag.moved) {
+        if (drag.moved && !frozen) {
           cam = drag.pan ? panBy(drag.start, dx, dy) : rotateBy(drag.start, dx, dy)
           loop.invalidate()
         }
@@ -201,6 +208,7 @@ export default function CanvasRenderer(props: BrainRendererProps) {
     }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
+      if (propsRef.current.paused) return
       const pt = local(e)
       cam = zoomAt(cam, pt.x, pt.y, wheelFactor(e.deltaY))
       idleUntil = performance.now() + IDLE_AFTER_INTERACTION_MS
@@ -239,6 +247,11 @@ export default function CanvasRenderer(props: BrainRendererProps) {
   useEffect(() => {
     loopRef.current?.setContinuous(props.motion === 'on')
   }, [props.motion])
+
+  // Pausa total con un tema abierto en teléfono (decisión 6).
+  useEffect(() => {
+    loopRef.current?.setPaused(props.paused)
+  }, [props.paused])
 
   // Cualquier cambio de foco, resaltado, nombres o lector abierto pide un redibujo.
   useEffect(() => {

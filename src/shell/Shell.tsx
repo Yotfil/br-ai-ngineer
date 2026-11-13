@@ -8,7 +8,7 @@ import type { BrainFocus } from '../graph/types.ts'
 import { usePrefs } from '../prefs/PrefsContext.tsx'
 import SearchBox from '../search/SearchBox.tsx'
 import BottomBar from './BottomBar.tsx'
-import Reader from './Reader.tsx'
+import Reader, { type ReaderLayout } from './Reader.tsx'
 import Related from './Related.tsx'
 import Sidebar from './Sidebar.tsx'
 import TopBar from './TopBar.tsx'
@@ -156,7 +156,10 @@ export default function Shell({ locale, path, graph, docs, labels, listLabels }:
     if (l !== locale) navigate(`/${l}${path ? `/${path}` : ''}${location.hash}`)
   }
 
-  useRootAttributes({ reading: !!topic, 'reader-mode': prefs.readerMode, motion, collapsed: prefs.sidebarCollapsed })
+  // Decisión 2 de rendimiento-movil: en teléfono el modo efectivo es Sólido; la preferencia guardada no se toca.
+  const readerMode = isPhone ? 'solid' : prefs.readerMode
+  const layout: ReaderLayout = isPhone ? 'phone' : isDesktop ? 'desktop' : 'tablet'
+  useRootAttributes({ reading: !!topic, 'reader-mode': readerMode, motion, collapsed: prefs.sidebarCollapsed })
   useEffect(() => {
     document.documentElement.lang = locale
   }, [locale])
@@ -167,8 +170,8 @@ export default function Shell({ locale, path, graph, docs, labels, listLabels }:
   const neighbor = (i: number) => (i >= 0 && i < list.length ? { id: list[i].id, name: labels[list[i].id] ?? list[i].id } : null)
   const concepts = shownTopic ? (idx.conceptsOfTopic.get(shownTopic.id) ?? []) : []
   const related = shownTopic ? relatedOf(idx, shownTopic.id) : []
-  const relatedPanel = (cls?: string) => (
-    <Related concepts={concepts} related={related} tracks={trackById} labels={labels} onOpen={go} onHover={setHovered} className={cls} />
+  const relatedPanel = (inline: boolean) => (
+    <Related concepts={concepts} related={related} tracks={trackById} labels={labels} onOpen={go} onHover={setHovered} inline={inline} />
   )
 
   return (
@@ -183,6 +186,8 @@ export default function Shell({ locale, path, graph, docs, labels, listLabels }:
         focus={focus}
         motion={motion}
         readerOpen={!!topic}
+        paused={isPhone && !!topic}
+        compact={isPhone}
         onNodeHover={setHovered}
         onNodeOpen={onNodeOpen}
         onBackgroundClick={onBackgroundClick}
@@ -229,16 +234,17 @@ export default function Shell({ locale, path, graph, docs, labels, listLabels }:
               track={trackById.get(shownTopic.track)}
               tab={tab}
               onTab={setTab}
-              mode={prefs.readerMode}
+              layout={layout}
+              mode={readerMode}
               onMode={(m) => update({ readerMode: m })}
               onClose={closeReader}
               prev={neighbor(pos - 1)}
               next={neighbor(pos + 1)}
               onGo={go}
               onLink={go}
-              footer={relatedPanel(styles.inlineRelated)}
+              footer={isDesktop ? undefined : relatedPanel(true)}
             />
-            {relatedPanel(styles.sideRelated)}
+            {isDesktop && relatedPanel(false)}
           </>
         )}
       </div>

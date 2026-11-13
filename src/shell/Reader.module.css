@@ -16,14 +16,9 @@
   transition: background 0.4s;
 }
 :root[data-reader-mode='solid'] .reader {
-  background: var(--glass-strong) !important;
-}
-:root[data-reader-mode='pure'] .reader {
-  background: var(--glass-reader-none) !important;
-}
-.rhead,
-.rbody {
-  text-shadow: 0 1px 10px rgba(4, 5, 10, 0.7);
+  background: rgb(9, 10, 20) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 .rhead {
   padding: 20px 26px 0;
@@ -69,7 +64,6 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: none;
 }
 .lead {
   color: var(--muted);
@@ -99,8 +93,10 @@
   border-color: var(--track);
 }
 .scroll {
+  position: relative;
   flex: 1;
   overflow: hidden auto;
+  overscroll-behavior: contain;
   min-height: 0;
 }
 .rbody {
@@ -191,6 +187,16 @@
 .loading {
   color: var(--muted);
 }
+.loadError {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.loadError p {
+  margin: 0;
+  color: var(--muted);
+}
 .rfoot {
   display: flex;
   gap: 10px;
@@ -218,17 +224,11 @@
   color: #04050a;
   font-weight: 700;
   background: linear-gradient(120deg, var(--green), var(--cyan), var(--violet), var(--cyan), var(--green));
-  background-size: 300% 100%;
+  background-size: 100% 100%;
   box-shadow: 0 0 26px rgba(34, 211, 238, 0.3);
-  animation: shimmer 6s linear infinite;
 }
 .go:hover {
   color: #04050a;
-}
-@keyframes shimmer {
-  to {
-    background-position: -300% 0;
-  }
 }
 .demo {
   margin-top: 22px;
@@ -247,21 +247,48 @@
   color: var(--track);
 }
 .footer {
-  display: none;
+  padding: 0 12px 12px;
 }
-@media (max-width: 1080px) {
-  .reader {
-    flex: none;
-    width: 100%;
-    overflow: visible;
-  }
-  .scroll {
-    overflow: visible;
-  }
-  .footer {
-    display: block;
-    padding: 0 12px 12px;
-  }
+/* Tableta y teléfono (rendimiento-movil, decisión 4): el lector mide lo que su contenido, como máximo el
+   alto del escenario, y se desplaza por dentro. */
+.tablet,
+.phone {
+  flex: 0 1 auto;
+  width: 100%;
+  max-height: 100%;
+  min-height: 0;
+}
+.tablet .scroll,
+.phone .scroll {
+  flex: 0 1 auto;
+}
+/* Teléfono (decisión 5): pestañas adhesivas y cerrar anclado a la esquina, fuera del desplazamiento. */
+.phone {
+  position: relative;
+}
+.phone .close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 3;
+}
+.phone .crumbs {
+  padding-right: 48px;
+}
+.tabsAnchor {
+  height: 0;
+}
+.phone .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  /* El margen derecho reserva el sitio del botón de cerrar; las sombras pintan el mismo fondo en los márgenes
+     para que el texto no se vea pasar por ellos. */
+  margin: 0 48px 0 16px;
+  background: rgb(9, 10, 20);
+  box-shadow:
+    48px 0 0 rgb(9, 10, 20),
+    -16px 0 0 rgb(9, 10, 20);
 }
 @media (max-width: 760px) {
   .rhead {

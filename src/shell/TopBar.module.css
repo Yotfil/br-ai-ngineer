@@ -1,8 +1,8 @@
 .top {
   position: fixed;
-  top: var(--gap);
-  left: var(--gap);
-  right: var(--gap);
+  top: calc(var(--gap) + var(--safe-top));
+  left: calc(var(--gap) + var(--safe-left));
+  right: calc(var(--gap) + var(--safe-right));
   height: var(--top-h);
   display: flex;
   align-items: center;

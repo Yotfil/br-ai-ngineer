@@ -31,6 +31,14 @@ export interface BrainProps {
   motion: MotionState
   /** Hay un tema abierto en el lector: no hay rotación automática. */
   readerOpen: boolean
+  /**
+   * Cerebro en pausa total (rendimiento-movil, decisión 6): no se programa ningún cuadro, el arrastre y el pellizco
+   * no lo mueven y el toque sigue funcionando. Solo se redibuja una vez si cambia el tamaño de la pantalla.
+   * Al volver a `false` se reanuda con el estado vigente.
+   */
+  paused: boolean
+  /** Pantalla de teléfono (decisión 8): menos pulsos en reposo. La implementación no consulta el ancho por su cuenta. */
+  compact: boolean
   onNodeHover: (id: string | null) => void
   onNodeOpen: (id: string) => void
   onBackgroundClick: () => void

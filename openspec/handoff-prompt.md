@@ -1,42 +1,34 @@
-# Prompt de arranque — puesta en marcha del flujo de Git
+# Prompt de arranque — retomar `despliegue-automatico` en las tareas 2.5 y 3.2
 
-> Escrito por Fable 5.2 el 2026-11-13, tras definir con el usuario la estrategia de ramas. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer/ai-engineer-path`.
+> Escrito por Fable 5.2 el 2026-11-13, tras resolver con el usuario el vacío de la tarea 3.2. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer/ai-engineer-path`.
 
 ---
 
-Vas a poner en marcha el flujo de Git del proyecto. No hay ningún cambio de OpenSpec en curso: esto es mantenimiento del repositorio. Respóndeme en español.
+Vas a retomar la implementación del cambio de OpenSpec `despliegue-automatico`. Respóndeme en español.
 
-**Reglas insaltables de este proyecto** (también están en la memoria del proyecto):
+**Reglas insaltables de este proyecto** (también están en la memoria del proyecto; léela antes de actuar):
 
-1. Implementas tú, Opus 5.5. Las decisiones las toma Fable 5.2 conmigo en otra sesión.
-2. Si encuentras un vacío, una ambigüedad o una contradicción, **no decidas**. Detente, dime exactamente qué falta y espera.
-3. Si te digo que se retoma en otro contexto, actualiza la memoria del proyecto y sobrescribe este archivo con un prompt de arranque nuevo; dime la ruta. Nunca lo pongas en un `CLAUDE.md`.
+1. Eres Opus 5.5: implementas las specs ya definidas. No tomas decisiones de producto ni de diseño. Ante un vacío, una ambigüedad o una contradicción, te detienes, me dices exactamente qué falta (archivo y requisito o tarea) y lo dejas para una sesión con Fable 5.2.
+2. No modificas `proposal.md`, `design.md` ni los archivos de `specs/`. En `tasks.md` solo marcas casillas.
+3. Commits y push, solo cuando yo los pida en la sesión. Sin credenciales de Cloudflare: no ejecutas `wrangler deploy`, `wrangler preview` ni `wrangler login`.
+4. Si te detienes o vamos a cambiar de contexto, actualiza la memoria y sobrescribe este archivo (`openspec/handoff-prompt.md`) con el prompt para la sesión siguiente. Nunca en un `CLAUDE.md`.
 
-**Lee primero** `openspec/git-workflow.md` completo. Es vinculante. No lo modifiques.
+**Antes de escribir nada:**
 
-**Estado de partida** (compruébalo con `git status` y `git branch -a` antes de empezar):
+- Comprueba la rama con `git branch --show-current`. Debe ser `feature/despliegue-automatico`. Si no lo es, detente y avísame.
+- Lee `openspec/changes/despliegue-automatico/tasks.md`, `design.md` (decisiones 3, 8 y 11, que cambiaron) y `specs/localization/spec.md` (nuevo).
+- En el árbol de trabajo están sin commit los cambios de tu sesión anterior (código, pruebas, configuración, README). Es lo esperado.
 
-- Solo existe `main`, con dos commits (`7a4cb0d`, `664e2b7`), sincronizada con `origin` (`https://github.com/Yotfil/br-ai-ngineer.git`).
-- Hay tres cambios sin commit en el árbol de trabajo, hechos por Fable: `openspec/git-workflow.md` (nuevo), `openspec/config.yaml` (bloque `context`) y este archivo.
-- `src/generated/` está versionado (3 archivos) y no figura en `.gitignore`.
-- La CLI `gh` no está instalada.
+**Estado:** 12 de 18 tareas marcadas (1.1, 1.2, 2.1–2.4, 3.1, 3.3–3.5, 4.1, 4.6). El cambio valida con `openspec validate despliegue-automatico --strict`. En tu última ejecución: 258 pruebas en 13 archivos, typecheck, lint y build en verde.
 
-**Qué hacer**, con mi autorización expresa para estos comandos de Git, siguiendo la sección "Puesta en marcha" del documento:
+**Qué decidió el usuario con Fable el 2026-11-13:**
 
-1. Crea `develop` desde `main` y súbela (`git push -u origin develop`). Los cambios sin commit no deben quedar en `develop`.
-2. Crea `chore/flujo-git` desde `develop`. Añade `src/generated` a `.gitignore` y retíralo del índice con `git rm -r --cached src/generated` (los archivos se quedan en disco). Haz un commit `chore: flujo de Git y salida generada fuera del repositorio` con eso y los tres archivos de Fable. Sube la rama.
-3. Comprueba que `npm run typecheck`, `npm test` y `npm run build` siguen en verde.
-4. Dame la URL para abrir el pull request de `chore/flujo-git` a `develop`. Yo lo abro y hago el merge con squash en GitHub. Después abro el de `develop` a `main` con merge commit.
-5. Cuando te confirme que ambos están integrados: actualiza `main` y `develop` en local, crea los tags anotados `v0.1.0` sobre `7a4cb0d` y `v0.2.0` sobre `664e2b7`, y súbelos.
-6. Recuérdame la lista de la sección "Configuración en GitHub" del documento; la aplico yo a mano en la web.
+- **Tarea 3.2 (el vacío).** La prueba de paridad de textos no existía: ahora hay que crearla. Exige mismas claves en `src/locales/es.json` y `en.json`, todo valor final cadena no vacía y mismos marcadores `{{nombre}}` por clave. El detalle está en design.md decisión 11 y el requisito con sus cuatro escenarios en `specs/localization/spec.md`. Hoy los dos archivos tienen 55 claves y cumplen: la prueba nace en verde. Si falla con los archivos reales, no corrijas el texto: anota la clave y detente. Las claves `reader.loadError` y `reader.retry` ya están añadidas.
+- **Tarea 3.5.** Tu forma de cortar la red (detener el servidor de `npm run preview`) vale; la tarea sigue marcada y `ai-engineer-path-preview` en `.claude/launch.json` se conserva. No hay nada que hacer.
+- **Tarea 2.5 (nueva).** En el `README.md`, el contenido de "Despliegue estático" pasa, con el texto tal cual, a una subsección `### Otro hosting` al final de "Despliegue" (design.md decisión 8).
 
-**Límites:**
+**Orden de trabajo:** 2.5, 3.2, y después 4.2 a 4.5 (confirmación del panel por mi parte, push cuando yo lo pida, comprobaciones con `curl`). Tras la 3.2, repite typecheck, test y lint y anota el número de pruebas.
 
-- No hagas push a `main`. A `develop` solo el push inicial del paso 1.
-- No hagas merges locales entre ramas: los merges son los de los pull requests.
-- No toques código de la app, `content/`, `legacy/` ni las specs de `openspec/specs/`.
-- No instales `gh` ni ninguna otra herramienta.
+**Dato para la tarea 4.5:** antes de cualquier push, producción servía el script de entrada `/assets/index-DneNDzhk.js`.
 
-**Al terminar o al detenerte**, dame un resumen con: ramas y tags creados, resultado de typecheck, test y build, y lo que quede pendiente de mi parte en GitHub.
-
-**Qué sigue después:** la definición de la pista SQL, con Fable 5.2, en la rama `feature/pista-sql` creada desde `develop`. Esa rama la creo yo o te la pido a ti antes de abrir la sesión de Fable.
+**Pendientes que no cambian:** `rendimiento-movil` sigue integrado en `develop` sin archivar (faltan mi comparación visual y mi prueba en iPhone, que haré en la vista previa de esta rama). Tag de este cambio: `v0.2.2`. Después: la pista SQL en `feature/pista-sql`.

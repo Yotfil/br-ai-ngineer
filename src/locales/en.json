@@ -41,10 +41,11 @@
     "mode": {
       "label": "Reader background mode",
       "glass": "◻ Glass",
-      "pure": "○ No background",
       "solid": "◼ Solid"
     },
-    "notFound": "Topic not found."
+    "notFound": "Topic not found.",
+    "loadError": "Couldn't load the content. Check your connection.",
+    "retry": "Retry"
   },
   "section": {
     "code:example": "Example: the store API",

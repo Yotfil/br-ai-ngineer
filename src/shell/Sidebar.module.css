@@ -1,8 +1,8 @@
 .side {
   position: fixed;
-  top: calc(var(--gap) + var(--top-h) + var(--gap));
-  left: var(--gap);
-  bottom: var(--gap);
+  top: calc(var(--gap) + var(--top-h) + var(--gap) + var(--safe-top));
+  left: calc(var(--gap) + var(--safe-left));
+  bottom: calc(var(--gap) + var(--safe-bottom));
   width: var(--sw);
   z-index: 20;
   padding: 10px 8px;
