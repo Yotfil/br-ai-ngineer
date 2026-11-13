@@ -4,7 +4,7 @@
     {
       "name": "ai-engineer-path",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "ai-engineer-path", "--", "--port", "5173", "--strictPort"],
+      "runtimeArgs": ["run", "dev", "--", "--port", "5173", "--strictPort"],
       "port": 5173
     }
   ]

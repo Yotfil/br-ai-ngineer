@@ -28,21 +28,42 @@ function LocationProbe() {
   return <span data-testid="location">{l.pathname + l.hash}</span>
 }
 
+type MediaState = { phone?: boolean; tablet?: boolean; reducedMotion?: boolean }
+let media: MediaState = {}
+const mediaListeners = new Set<{ query: string; cb: () => void }>()
+const matchesQuery = (query: string) =>
+  (query.includes('max-width: 760px') && !!media.phone) ||
+  (query.includes('max-width: 1080px') && (!!media.phone || !!media.tablet)) ||
+  (query.includes('prefers-reduced-motion') && !!media.reducedMotion)
+
 /** Simula el ancho de pantalla (`max-width: 760px` teléfono, `max-width: 1080px` tableta o teléfono) y el movimiento reducido. */
-export function mockMedia({ phone = false, tablet = false, reducedMotion = false } = {}) {
-  window.matchMedia = ((query: string) => ({
-    matches:
-      (query.includes('max-width: 760px') && phone) ||
-      (query.includes('max-width: 1080px') && (phone || tablet)) ||
-      (query.includes('prefers-reduced-motion') && reducedMotion),
-    media: query,
-    onchange: null,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    addListener: () => {},
-    removeListener: () => {},
-    dispatchEvent: () => false,
-  })) as unknown as typeof window.matchMedia
+export function mockMedia(state: MediaState = {}) {
+  media = { ...state }
+  mediaListeners.clear()
+  window.matchMedia = ((query: string) => {
+    const entry = { query, cb: () => {} }
+    return {
+      get matches() {
+        return matchesQuery(query)
+      },
+      media: query,
+      onchange: null,
+      addEventListener: (_: string, cb: () => void) => {
+        entry.cb = cb
+        mediaListeners.add(entry)
+      },
+      removeEventListener: () => mediaListeners.delete(entry),
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }
+  }) as unknown as typeof window.matchMedia
+}
+
+/** Cambia el ancho simulado y avisa a quien escucha las consultas (como al estrechar la ventana). */
+export function setMedia(state: MediaState) {
+  media = { ...state }
+  for (const l of [...mediaListeners]) l.cb()
 }
 
 export function renderApp(path: string) {

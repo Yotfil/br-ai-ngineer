@@ -46,6 +46,8 @@ export interface DrawState {
   drift: boolean
   /** Pulsos de energía en las conexiones. */
   pulses: boolean
+  /** Teléfono: en reposo lleva pulso una de cada seis conexiones en lugar de una de cada tres (decisión 8). */
+  compact: boolean
   dpr: number
   width: number
   height: number
@@ -56,12 +58,83 @@ const rgba = (hex: string, a: number) => {
   return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`
 }
 
+/** Superficie auxiliar donde se pinta una imagen de resplandor (inyectable en las pruebas). */
+export type GlowSurfaceFactory = (size: number) => { image: CanvasImageSource; ctx: CanvasRenderingContext2D | null }
+
+const defaultSurface: GlowSurfaceFactory = (size) => {
+  const c = document.createElement('canvas')
+  c.width = size
+  c.height = size
+  return { image: c, ctx: c.getContext('2d') }
+}
+
+/** Lado en píxeles de cada imagen de resplandor (de implementación). */
+const GLOW_SIZE = 64
+/**
+ * Perfiles de resplandor (decisión 11; de implementación). `node` imita la sombra difuminada que tenían pistas,
+ * temas y nodo enfocado; `pulse` reproduce el degradado radial de la cabeza del pulso (0.55 → 0.18 → 0).
+ */
+const GLOW_STOPS = {
+  node: [
+    [0, 0.9],
+    [0.3, 0.55],
+    [0.55, 0.22],
+    [0.8, 0.06],
+    [1, 0],
+  ],
+  pulse: [
+    [0, 0.55],
+    [0.4, 0.18],
+    [1, 0],
+  ],
+} as const
+type GlowKind = keyof typeof GLOW_STOPS
+
+/**
+ * Imágenes de resplandor generadas una sola vez por color y tipo, y reutilizadas en cada cuadro con `drawImage`
+ * en lugar de `shadowBlur` o de un degradado radial nuevo por cuadro.
+ */
+export class GlowCache {
+  private readonly cache = new Map<string, CanvasImageSource | null>()
+  private readonly surface: GlowSurfaceFactory
+  constructor(surface: GlowSurfaceFactory = defaultSurface) {
+    this.surface = surface
+  }
+  get(kind: GlowKind, color: string): CanvasImageSource | null {
+    const key = `${kind}:${color}`
+    if (this.cache.has(key)) return this.cache.get(key)!
+    const { image, ctx } = this.surface(GLOW_SIZE)
+    let out: CanvasImageSource | null = null
+    if (ctx) {
+      const h = GLOW_SIZE / 2
+      const g = ctx.createRadialGradient(h, h, 0, h, h, h)
+      for (const [at, a] of GLOW_STOPS[kind]) g.addColorStop(at, rgba(color, a))
+      ctx.fillStyle = g
+      ctx.fillRect(0, 0, GLOW_SIZE, GLOW_SIZE)
+      out = image
+    }
+    this.cache.set(key, out)
+    return out
+  }
+  get size(): number {
+    return this.cache.size
+  }
+}
+
+/** Alcance del resplandor de cada nodo (equivale al antiguo `shadowBlur`, en píxeles CSS a perspectiva 1). */
+const GLOW_REACH = { focus: 32, track: 28, trackEmpty: 10, topic: 11 } as const
+/** Radio del halo de la cabeza del pulso. */
+const PULSE_HALO = 9
+const LABEL_OUTLINE = 'rgba(4, 5, 10, 0.85)'
+
 export class Scene {
   readonly nodes: SceneNode[]
   readonly links: SceneLink[]
   projected: Projected[] = []
+  readonly glows: GlowCache
 
-  constructor(graph: GraphData) {
+  constructor(graph: GraphData, surface?: GlowSurfaceFactory) {
+    this.glows = new GlowCache(surface)
     const rnd = seeded(7)
     const color = new Map(graph.tracks.map((t) => [t.id, t.color]))
     this.nodes = graph.nodes.map((n) => ({
@@ -126,7 +199,7 @@ export class Scene {
       ctx.lineTo(pb.sx, pb.sy)
       ctx.stroke()
 
-      if (s.pulses && (i % 3 === 0 || l.on > 0.5)) {
+      if (s.pulses && (i % (s.compact ? 6 : 3) === 0 || l.on > 0.5)) {
         const u = (t * 0.00013 * l.sp + l.ph) % 1
         const u0 = Math.max(0, u - 0.22)
         const e = Math.sin(u * Math.PI)
@@ -149,15 +222,13 @@ export class Scene {
         ctx.lineTo(hx, hy)
         ctx.stroke()
         ctx.lineCap = 'butt'
-        // Halo de la cabeza.
-        const h = ctx.createRadialGradient(hx, hy, 0, hx, hy, 9)
-        h.addColorStop(0, rgba(c, 0.55 * k))
-        h.addColorStop(0.4, rgba(c, 0.18 * k))
-        h.addColorStop(1, rgba(c, 0))
-        ctx.fillStyle = h
-        ctx.beginPath()
-        ctx.arc(hx, hy, 9, 0, 6.283)
-        ctx.fill()
+        // Halo de la cabeza: imagen de resplandor del color, modulada con globalAlpha.
+        const halo = this.glows.get('pulse', c)
+        if (halo && k > 0) {
+          ctx.globalAlpha = Math.min(1, k)
+          ctx.drawImage(halo, hx - PULSE_HALO, hy - PULSE_HALO, PULSE_HALO * 2, PULSE_HALO * 2)
+          ctx.globalAlpha = 1
+        }
         ctx.fillStyle = `rgba(255,255,255,${0.95 * k})`
         ctx.beginPath()
         ctx.arc(hx, hy, 1.2, 0, 6.283)
@@ -173,15 +244,17 @@ export class Scene {
       const focus = n.id === s.hovered || n.id === s.selected
       const dim = n.empty ? 0.38 : 1
       ctx.globalAlpha = n.al * p.fade * dim
+      const sr = p.sr + (focus ? 2 : 0)
       if (n.type !== 'concept' || focus) {
-        ctx.shadowColor = n.color
-        ctx.shadowBlur = (focus ? 32 : n.type === 'track' ? (n.empty ? 10 : 28) : 11) * dpr * p.p
+        const glow = this.glows.get('node', n.color)
+        const reach = (focus ? GLOW_REACH.focus : n.type === 'track' ? (n.empty ? GLOW_REACH.trackEmpty : GLOW_REACH.track) : GLOW_REACH.topic) * p.p
+        const R = sr + reach
+        if (glow) ctx.drawImage(glow, p.sx - R, p.sy - R, R * 2, R * 2)
       }
       ctx.fillStyle = n.type === 'concept' ? rgba(n.color, 0.8) : n.color
       ctx.beginPath()
-      ctx.arc(p.sx, p.sy, p.sr + (focus ? 2 : 0), 0, 6.283)
+      ctx.arc(p.sx, p.sy, sr, 0, 6.283)
       ctx.fill()
-      ctx.shadowBlur = 0
       if (n.type === 'track') {
         ctx.strokeStyle = rgba(n.color, 0.35)
         ctx.lineWidth = 1
@@ -195,6 +268,10 @@ export class Scene {
     const rel = s.cam.k / s.k0
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
+    // Contorno oscuro en lugar de sombra (decisión 11).
+    ctx.strokeStyle = LABEL_OUTLINE
+    ctx.lineWidth = 3
+    ctx.lineJoin = 'round'
     for (const i of order) {
       const n = this.nodes[i]
       const p = P[i]
@@ -206,12 +283,12 @@ export class Scene {
       const fs = (n.type === 'track' ? 13 : n.type === 'topic' ? 11.5 : 10.5) * Math.max(0.82, Math.min(1.25, p.p))
       ctx.font = `${n.type === 'track' ? 800 : n.type === 'topic' ? 600 : 500} ${fs}px Inter, sans-serif`
       ctx.fillStyle = n.type === 'track' ? '#fff' : n.type === 'topic' ? 'rgba(230,231,242,.92)' : 'rgba(190,193,220,.85)'
-      ctx.shadowColor = '#04050a'
-      ctx.shadowBlur = 6 * dpr
-      ctx.fillText(label, p.sx, p.sy + p.sr + (n.type === 'track' ? 10 : 5))
-      ctx.shadowBlur = 0
+      const ly = p.sy + p.sr + (n.type === 'track' ? 10 : 5)
+      ctx.strokeText(label, p.sx, ly)
+      ctx.fillText(label, p.sx, ly)
     }
     ctx.globalAlpha = 1
+    ctx.lineJoin = 'miter'
     return settling
   }
 }

@@ -12,10 +12,10 @@
 
 .stage {
   position: fixed;
-  top: calc(var(--gap) + var(--top-h) + var(--gap));
-  bottom: var(--gap);
-  left: calc(var(--sw) + 2 * var(--gap));
-  right: var(--gap);
+  top: calc(var(--gap) + var(--top-h) + var(--gap) + var(--safe-top));
+  bottom: calc(var(--gap) + var(--safe-bottom));
+  left: calc(var(--sw) + 2 * var(--gap) + var(--safe-left));
+  right: calc(var(--gap) + var(--safe-right));
   z-index: 10;
   display: flex;
   gap: var(--gap);
@@ -35,38 +35,28 @@
 .stage.open > * {
   pointer-events: auto;
 }
-.inlineRelated {
-  display: none;
-}
 
+/* Tableta y teléfono: el escenario no se desplaza; lo hace la zona interior del lector (rendimiento-movil, decisión 4). */
 @media (max-width: 1080px) {
   .stage {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  .sideRelated {
-    display: none;
-  }
-  .inlineRelated {
-    display: block;
   }
 }
 @media (max-width: 760px) {
   .stage {
-    left: var(--gap);
-    bottom: calc(var(--gap) + 72px + var(--gap));
+    left: calc(var(--gap) + var(--safe-left));
+    bottom: calc(var(--gap) + 72px + var(--gap) + var(--safe-bottom));
   }
 }
 
 /* Decisión 18: ayuda de gestos (leyenda de la maqueta sin los colores de las pistas). */
 .gestureHint {
   position: fixed;
-  left: calc(var(--sw) + 2 * var(--gap));
-  right: var(--gap);
-  bottom: 20px;
+  left: calc(var(--sw) + 2 * var(--gap) + var(--safe-left));
+  right: calc(var(--gap) + var(--safe-right));
+  bottom: calc(20px + var(--safe-bottom));
   z-index: 5;
   margin: 0;
   text-align: center;
@@ -91,7 +81,7 @@
 
 .toast {
   position: fixed;
-  top: calc(var(--gap) + var(--top-h) + 2 * var(--gap));
+  top: calc(var(--gap) + var(--top-h) + 2 * var(--gap) + var(--safe-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 40;
