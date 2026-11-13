@@ -1,0 +1,56 @@
+{
+  "id": "rutas-y-parametros",
+  "track": "python",
+  "order": 11,
+  "freq": "always",
+  "title": "Routes, path parameters, query params and body",
+  "short": "Routes and parameters",
+  "summary": "A path operation is method + path + function.",
+  "sections": {
+    "definition": "<p>A <strong>path operation</strong> is method + path + function. FastAPI decides where each parameter comes from based on its declaration: if its name appears in the path it's a <strong>path param</strong>; if it's a simple type that isn't in the path, it's a <strong>query param</strong>; if it's a Pydantic model, it's the <strong>body</strong>. With <code>Annotated</code> and <code>Path</code>/<code>Query</code> you add constraints.</p>\n",
+    "analogy": "<p>A delivery address: the path is the street and number (it identifies the resource), the query params are the optional instructions (\"leave it at the front desk\") and the body is the package.</p>\n",
+    "problem": "<p>Routes are evaluated in order. If the dynamic one comes first, <code>/productos/destacados</code> tries to convert \"destacados\" to int and responds 422.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> typing </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> Annotated</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> fastapi </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> FastAPI, Path, Query</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> pydantic </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> BaseModel</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">app </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> FastAPI()</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ProductoCrear(BaseModel):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    precio: int</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    categoria: str </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#7DD3FC\"> None</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos/destacados\"</span><span style=\"color:#CFD3EA\">)          </span><span style=\"color:#5F6388\"># rutas fijas antes que las dinámicas</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> destacados():</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> [{</span><span style=\"color:#FCD34D\">\"id\"</span><span style=\"color:#CFD3EA\">: 1, </span><span style=\"color:#FCD34D\">\"nombre\"</span><span style=\"color:#CFD3EA\">: </span><span style=\"color:#FCD34D\">\"Café de origen\"</span><span style=\"color:#CFD3EA\">}]</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos/{producto_id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> obtener_producto(producto_id: Annotated[int, Path(gt</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">0)]):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> {</span><span style=\"color:#FCD34D\">\"id\"</span><span style=\"color:#CFD3EA\">: producto_id}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> listar_productos(</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    categoria: str </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#CFD3EA\">,</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    limite: Annotated[int, Query(ge</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">1, le</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">100)] </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> 20,</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> {</span><span style=\"color:#FCD34D\">\"categoria\"</span><span style=\"color:#CFD3EA\">: categoria, </span><span style=\"color:#FCD34D\">\"limite\"</span><span style=\"color:#CFD3EA\">: limite}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/productos\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">201)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> crear_producto(producto: ProductoCrear):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> producto</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos/{producto_id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> obtener(producto_id: int): ...</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos/destacados\"</span><span style=\"color:#CFD3EA\">)    </span><span style=\"color:#5F6388\"># nunca se alcanza</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> destacados(): ...</span></span></code></pre><p>GET /productos/destacados → 422 int_parsing.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos/destacados\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> destacados(): ...</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos/{producto_id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> obtener(producto_id: int): ...</span></span></code></pre><p>Specific first, generic after.</p>\n",
+    "bridge:typescript": "<p>In Express you'd write <code>app.get('/productos/:id', (req, res) =&gt; ...)</code> and convert <code>req.params.id</code> by hand. Here the conversion and validation come from the type hint. It's the same idea as <code>:id</code> in a SPA router, but without parsing the value yourself.</p>\n",
+    "interview": "<p>FastAPI infers where each parameter comes from: if the name is in the path it's a path param, if it's a simple type outside the path it's a query param, and if it's a Pydantic model it's the body. The type hints convert and validate, and with Annotated plus Path or Query I add constraints like minimums and maximums. If something doesn't comply, it responds 422 without me writing validations. Watch the order: fixed routes go before routes with parameters.</p>\n",
+    "myths": "<ul>\n<li>Route order matters.</li>\n<li>Query params arrive as text; FastAPI converts them according to the hint (<code>?activo=true</code> → <code>True</code>).</li>\n<li>A parameter without a default is required, even if it's a query param.</li>\n<li><code>/productos/</code> with a trailing slash redirects with a 307 to <code>/productos</code> if that's how you defined it.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "Quick question",
+      "items": [
+        {
+          "q": "With the path <code>/productos/{producto_id}</code> and the signature <code>def f(producto_id: int, categoria: str, datos: ProductoCrear)</code>, where does <code>categoria</code> come from?",
+          "options": [
+            "From the path",
+            "From the query string",
+            "From the body",
+            "From the headers"
+          ],
+          "answer": 1,
+          "why": "Simple type that doesn't appear in the path: query param, and required because it has no default."
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "prompt": "Which status code does it return?",
+      "items": [
+        {
+          "q": "<code>GET /productos/0</code> with <code>producto_id: Annotated[int, Path(gt=0)]</code>.",
+          "options": [
+            "200",
+            "400",
+            "404",
+            "422"
+          ],
+          "answer": 3,
+          "why": "0 doesn't satisfy gt=0: <code>greater_than</code> validation error, 422."
+        }
+      ]
+    }
+  ]
+}

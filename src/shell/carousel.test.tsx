@@ -118,7 +118,7 @@ describe('5.11 barra inferior de pistas en teléfono', () => {
     renderPhone('/es')
     slideTo(scrollFor(N + 1, PAD, WIDTH) + 12)
     expect(carousel().scrollLeft).toBe(scrollFor(N + 1, PAD, WIDTH) + 12)
-    expect(centered()).toHaveAccessibleName('Python y FastAPI · Próximamente')
+    expect(centered()).toHaveAccessibleName('Python y FastAPI')
     expect(brain.props?.focus.selected).toBe('python')
     const items = carousel().querySelectorAll('button')
     const s = (i: number) => Number((items[i] as HTMLElement).style.getPropertyValue('--s'))
@@ -160,11 +160,14 @@ describe('5.11 barra inferior de pistas en teléfono', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
-  it('9.5 hoja de temas legible: fondo casi opaco y sin cristal en los tres modos del lector', () => {
+  it('9.5 hoja de temas legible: fondo totalmente opaco y sin cristal en los tres modos del lector', () => {
     const start = bottomBarCss.indexOf('.sheet {')
     const rule = bottomBarCss.slice(start, bottomBarCss.indexOf('}', start))
-    expect(rule).toContain('background: var(--glass-strong)')
+    // Decisión 12 de pista-python: 100 % opaca, con el color base de --glass-strong, que no cambia.
+    expect(rule).toContain('background: rgb(9, 10, 20);')
+    expect(rule).not.toContain('var(--glass-strong)')
     expect(rule).not.toContain('backdrop-filter')
+    expect(fs.readFileSync(`${process.cwd()}/src/styles/tokens.css`, 'utf8')).toContain('--glass-strong: rgba(9, 10, 20, 0.9);')
     for (const mode of ['glass', 'pure', 'solid']) {
       savePrefs({ ...DEFAULT_PREFS, readerMode: mode as ReaderMode })
       expect(loadPrefs().readerMode).toBe(mode)
@@ -174,6 +177,24 @@ describe('5.11 barra inferior de pistas en teléfono', () => {
       expect(sheet).toHaveClass('sheet')
       expect(sheet).not.toHaveClass('glass')
       expect(screen.getByRole('navigation', { name: 'Pistas' })).toHaveClass('glass')
+      unmount()
+    }
+  })
+
+  it('hoja sobre un tema abierto: es opaca, sin cristal, y queda encima del lector en los tres modos', () => {
+    const start = bottomBarCss.indexOf('.sheet {')
+    const rule = bottomBarCss.slice(start, bottomBarCss.indexOf('}', start))
+    expect(rule).toMatch(/background: rgb\(9, 10, 20\);/)
+    expect(rule).not.toMatch(/rgba|opacity|backdrop-filter/)
+    for (const mode of ['glass', 'pure', 'solid']) {
+      savePrefs({ ...DEFAULT_PREFS, readerMode: mode as ReaderMode })
+      const { unmount } = renderPhone('/es/rest/cors')
+      expect(document.documentElement).toHaveAttribute('data-reading')
+      fireEvent.click(centered()!)
+      const sheet = screen.getByRole('dialog', { name: 'Temas de HTTP y REST' })
+      expect(sheet).toHaveClass('sheet')
+      expect(sheet).not.toHaveClass('glass')
+      expect(document.documentElement).toHaveAttribute('data-reader-mode', mode)
       unmount()
     }
   })

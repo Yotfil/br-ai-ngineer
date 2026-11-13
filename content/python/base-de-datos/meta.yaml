@@ -1,0 +1,14 @@
+id: base-de-datos
+track: python
+order: 16
+freq: always
+group: fastapi
+concepts:
+  - orm
+  - sqlalchemy
+  - sqlmodel
+  - session-orm
+  - alembic
+related:
+  - depends
+  - context-manager

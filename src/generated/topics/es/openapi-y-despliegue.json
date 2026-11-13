@@ -1,0 +1,50 @@
+{
+  "id": "openapi-y-despliegue",
+  "track": "python",
+  "order": 21,
+  "freq": "often",
+  "title": "OpenAPI automático y despliegue con Uvicorn y Docker",
+  "short": "OpenAPI, Uvicorn y Docker",
+  "summary": "FastAPI genera un esquema OpenAPI a partir de rutas, type hints y modelos, y lo sirve en /docs, /redoc y /openapi.json.",
+  "sections": {
+    "definition": "<p>FastAPI genera un esquema <strong>OpenAPI</strong> a partir de rutas, type hints y modelos, y lo sirve en <code>/docs</code> (Swagger UI), <code>/redoc</code> y <code>/openapi.json</code>. En producción corre sobre <strong>Uvicorn</strong>, un servidor ASGI; <code>fastapi run</code> lo usa por debajo. La documentación oficial lo empaqueta en Docker con la imagen <code>python:3.14</code>.</p>\n",
+    "analogy": "<p>OpenAPI es la carta del restaurante que se reimprime sola cada vez que cambias una receta.</p>\n",
+    "problem": "<p>La documentación escrita a mano se desactualiza al primer cambio. En despliegue, usar el modo dev o la forma shell del CMD causa problemas: recarga innecesaria y un apagado que no ejecuta el lifespan.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">app </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> FastAPI(title</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"Tienda API\"</span><span style=\"color:#CFD3EA\">, version</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"1.0.0\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span></span>\n<span class=\"line\"><span style=\"color:#FCD34D\">    \"/productos/{producto_id}\"</span><span style=\"color:#CFD3EA\">,</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    tags</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">[</span><span style=\"color:#FCD34D\">\"productos\"</span><span style=\"color:#CFD3EA\">],</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    summary</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"Obtener un producto\"</span><span style=\"color:#CFD3EA\">,</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    responses</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">{404: {</span><span style=\"color:#FCD34D\">\"description\"</span><span style=\"color:#CFD3EA\">: </span><span style=\"color:#FCD34D\">\"El producto no existe\"</span><span style=\"color:#CFD3EA\">}},</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> obtener(producto_id: int) -> ProductoPublico: ...</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># Desarrollo: recarga automática, solo en 127.0.0.1</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">#   uv run fastapi dev app/main.py</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># Producción: sin recarga, escucha en 0.0.0.0</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">#   fastapi run app/main.py --port 80</span></span></code></pre><pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span># Dockerfile (basado en la documentación oficial)</span></span>\n<span class=\"line\"><span>FROM python:3.14</span></span>\n<span class=\"line\"><span>WORKDIR /code</span></span>\n<span class=\"line\"><span>COPY ./requirements.txt /code/requirements.txt      # generado con uv export</span></span>\n<span class=\"line\"><span>RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt</span></span>\n<span class=\"line\"><span>COPY ./app /code/app</span></span>\n<span class=\"line\"><span>CMD [\"fastapi\", \"run\", \"app/main.py\", \"--port\", \"80\"]</span></span>\n<span class=\"line\"><span></span></span>\n<span class=\"line\"><span># compose.yaml</span></span>\n<span class=\"line\"><span>services:</span></span>\n<span class=\"line\"><span>  api:</span></span>\n<span class=\"line\"><span>    build: .</span></span>\n<span class=\"line\"><span>    ports: [\"8000:80\"]</span></span>\n<span class=\"line\"><span>    env_file: .env          # DATABASE_URL=postgresql+psycopg://tienda:secreto@db:5432/tienda</span></span>\n<span class=\"line\"><span>    depends_on: [db]</span></span>\n<span class=\"line\"><span>  db:</span></span>\n<span class=\"line\"><span>    image: postgres:17</span></span>\n<span class=\"line\"><span>    environment:</span></span>\n<span class=\"line\"><span>      POSTGRES_USER: tienda</span></span>\n<span class=\"line\"><span>      POSTGRES_PASSWORD: secreto</span></span>\n<span class=\"line\"><span>      POSTGRES_DB: tienda</span></span>\n<span class=\"line\"><span>    volumes: [\"pgdata:/var/lib/postgresql/data\"]</span></span>\n<span class=\"line\"><span>volumes:</span></span>\n<span class=\"line\"><span>  pgdata:</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">CMD fastapi dev app</span><span style=\"color:#7DD3FC\">/</span><span style=\"color:#CFD3EA\">main.py --host 0.0.0.0</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># DATABASE_URL=...@localhost:5432/tienda</span></span></code></pre><p>Modo dev en producción, CMD en forma shell (sin apagado limpio) y localhost dentro del contenedor, que es el propio contenedor.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">CMD [</span><span style=\"color:#FCD34D\">\"fastapi\"</span><span style=\"color:#CFD3EA\">, </span><span style=\"color:#FCD34D\">\"run\"</span><span style=\"color:#CFD3EA\">, </span><span style=\"color:#FCD34D\">\"app/main.py\"</span><span style=\"color:#CFD3EA\">, </span><span style=\"color:#FCD34D\">\"--port\"</span><span style=\"color:#CFD3EA\">, </span><span style=\"color:#FCD34D\">\"80\"</span><span style=\"color:#CFD3EA\">]</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># DATABASE_URL=...@db:5432/tienda</span></span></code></pre><p>Forma exec y el nombre del servicio de Compose como host.</p>\n",
+    "bridge:typescript": "<p><code>fastapi dev</code> vs <code>fastapi run</code> ≈ el servidor de desarrollo (<code>vite dev</code>) vs servir el build. Uvicorn ocupa el lugar del servidor HTTP de Node. Con <code>/openapi.json</code> puedes generar el cliente tipado de TypeScript con openapi-generator y dejar de escribir interfaces a mano.</p>\n",
+    "interview": "<p>FastAPI genera OpenAPI automáticamente a partir de los type hints y los modelos Pydantic, así que Swagger siempre refleja el código y puedo generar clientes tipados. Para producción uso fastapi run, que corre Uvicorn sin recarga, dentro de un contenedor Docker con el CMD en forma exec para un apagado limpio. La configuración llega por variables de entorno, y con Docker Compose levanto la API junto a PostgreSQL usando el nombre del servicio como host.</p>\n",
+    "myths": "<ul>\n<li>Usar <code>localhost</code> para la BD dentro de Docker Compose: usa el nombre del servicio.</li>\n<li>Meter secretos en la imagen en vez de variables de entorno.</li>\n<li>Dejar <code>/docs</code> público en una API interna sin pensarlo.</li>\n<li>Varios workers en un contenedor cuando ya escalas con réplicas: la doc recomienda un proceso por contenedor en ese caso.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "Pregunta rápida",
+      "items": [
+        {
+          "q": "Dentro de Docker Compose, ¿qué host va en DATABASE_URL para llegar a Postgres?",
+          "options": [
+            "localhost",
+            "127.0.0.1",
+            "db (el nombre del servicio)",
+            "0.0.0.0"
+          ],
+          "answer": 2,
+          "why": "Compose crea una red donde cada servicio se resuelve por su nombre."
+        },
+        {
+          "q": "¿Qué diferencia a <code>fastapi run</code> de <code>fastapi dev</code>?",
+          "options": [
+            "Ninguna",
+            "run es para producción: sin recarga y escucha en 0.0.0.0",
+            "run no usa Uvicorn",
+            "dev no genera /docs"
+          ],
+          "answer": 1,
+          "why": "dev recarga al guardar y escucha en 127.0.0.1; run está pensado para producción."
+        }
+      ]
+    }
+  ]
+}

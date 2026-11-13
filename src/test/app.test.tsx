@@ -121,7 +121,7 @@ describe('4.8 cerebro conectado con la navegación (renderizador falso)', () => 
   })
   it('clic en el vacío cierra el lector', async () => {
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(screen.getByTestId('brain-background'))
     expect(loc()).toBe('/es')
     expect(brain.props?.readerOpen).toBe(false)
@@ -186,7 +186,7 @@ describe('5.3 lector central', () => {
   })
   it('En código muestra los bloques en orden, con resaltado y el puente', async () => {
     renderApp('/es/rest/metodos-seguros-idempotentes')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(tab('En código'))
     const panel = screen.getByRole('tabpanel')
     const labels = [...panel.querySelectorAll('h3, [class*="lbl"]')].map((e) => e.textContent)
@@ -195,18 +195,18 @@ describe('5.3 lector central', () => {
   })
   it('un tema sin ejercicios ni demo muestra tres pestañas', async () => {
     renderApp('/es/rest/url-a-respuesta')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Entender', 'En código', 'En la entrevista'])
   })
   it('un tema sin par riesgoso/correcto no muestra ese bloque', async () => {
     renderApp('/es/rest/url-a-respuesta')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(tab('En código'))
     expect(screen.getByRole('tabpanel')).not.toHaveTextContent('Riesgoso')
   })
   it('En la entrevista: respuesta modelo destacada y debajo los malentendidos', async () => {
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(tab('En la entrevista'))
     const hs = within(screen.getByRole('tabpanel')).getAllByRole('heading').map((h) => h.textContent)
     expect(hs).toEqual(['Para decir en la entrevista', 'Malentendidos comunes'])
@@ -214,7 +214,7 @@ describe('5.3 lector central', () => {
   })
   it('se cierra con el botón y con Escape', async () => {
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
     expect(loc()).toBe('/es')
     act(() => {
@@ -223,13 +223,13 @@ describe('5.3 lector central', () => {
   })
   it('Escape cierra el lector', async () => {
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(loc()).toBe('/es')
   })
   it('Siguiente tema muestra el siguiente de la pista', async () => {
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente tema →' }))
     expect(loc()).toBe('/es/rest/cache-http')
     expect(await screen.findByRole('heading', { level: 1, name: 'Caché HTTP: Cache-Control, ETag y 304' })).toBeInTheDocument()
@@ -257,7 +257,7 @@ describe('5.4 tema no encontrado', () => {
 describe('5.5 relacionados', () => {
   it('clic en un relacionado cambia el tema y actualiza el panel', async () => {
     renderApp('/es/rest/metodos-seguros-idempotentes')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     const panel = () => screen.getAllByRole('complementary', { name: 'Relacionados' })[0]
     expect(within(panel()).getByRole('button', { name: /idempotencia\s*RE/ })).toBeInTheDocument()
     fireEvent.click(within(panel()).getByRole('button', { name: /Idempotencia en la práctica/ }))
@@ -271,7 +271,7 @@ describe('5.5 relacionados', () => {
 describe('5.6 modos del lector', () => {
   it('Cristal por defecto; el modo elegido se conserva al recargar', async () => {
     const { unmount } = renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     expect(document.documentElement).toHaveAttribute('data-reader-mode', 'glass')
     fireEvent.click(screen.getByRole('button', { name: /Modo de fondo del lector: ◻ Cristal/ }))
     expect(screen.getByRole('button', { name: /Modo de fondo del lector: ○ Sin fondo/ })).toBeInTheDocument()
@@ -282,7 +282,7 @@ describe('5.6 modos del lector', () => {
     fireEvent.click(screen.getByRole('button', { name: /◻ Cristal/ }))
     unmount()
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     expect(screen.getByRole('button', { name: /○ Sin fondo/ })).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('data-reader-mode', 'pure')
   })
@@ -291,7 +291,7 @@ describe('5.6 modos del lector', () => {
 describe('5.7 ejercicios y pestaña Practicar', () => {
   it('opción múltiple incorrecta: se marca y se muestra la explicación', async () => {
     renderApp('/es/rest/metodos-http')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(await screen.findByRole('tab', { name: 'Practicar' }))
     const panel = screen.getByRole('tabpanel')
     expect(within(panel).getByRole('heading', { name: '¿Qué método o respuesta corresponde?' })).toBeInTheDocument()
@@ -302,7 +302,7 @@ describe('5.7 ejercicios y pestaña Practicar', () => {
   })
   it('veredicto: "Está bien" en un endpoint con error se marca incorrecto con su explicación', async () => {
     renderApp('/es/rest/diseno-api-rest')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(await screen.findByRole('tab', { name: 'Practicar' }))
     expect(screen.getByRole('heading', { name: 'Revisa este diseño: ¿cada endpoint está bien o tiene un error?' })).toBeInTheDocument()
     const q = screen.getByText('POST /v1/crearPedido').closest('div')!
@@ -312,7 +312,7 @@ describe('5.7 ejercicios y pestaña Practicar', () => {
   })
   it('al volver al tema el ejercicio aparece sin responder', async () => {
     renderApp('/es/rest/metodos-http')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(await screen.findByRole('tab', { name: 'Practicar' }))
     fireEvent.click(screen.getAllByRole('button', { name: 'PATCH' })[0])
     expect(screen.getAllByRole('status').length).toBe(1)
@@ -325,7 +325,7 @@ describe('5.7 ejercicios y pestaña Practicar', () => {
   })
   it('tema con ejercicios y demo', async () => {
     renderApp('/es/rest/metodos-seguros-idempotentes')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(await screen.findByRole('tab', { name: 'Practicar' }))
     expect(screen.getByRole('heading', { name: '¿Qué método o respuesta corresponde?' })).toBeInTheDocument()
     expect(await screen.findByText('Envía la misma petición tres veces')).toBeInTheDocument()
@@ -334,14 +334,14 @@ describe('5.7 ejercicios y pestaña Practicar', () => {
   })
   it('tema con demo y sin ejercicios: solo la demo', async () => {
     renderApp('/es/rest/rate-limiting')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(await screen.findByRole('tab', { name: 'Practicar' }))
     expect(await screen.findByText(/Token bucket: 5 de capacidad/)).toBeInTheDocument()
     expect(screen.getByRole('tabpanel').querySelectorAll('h3')).toHaveLength(0)
   })
   it('tema con ejercicios y sin demo: solo los ejercicios', async () => {
     renderApp('/es/rest/metodos-http')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(await screen.findByRole('tab', { name: 'Practicar' }))
     expect(screen.getByRole('tabpanel')).not.toHaveTextContent('Demo interactiva')
   })
@@ -408,7 +408,7 @@ describe('6.2 buscador', () => {
   it('Escape cierra la lista y saca el foco sin cerrar el lector', async () => {
     const user = userEvent.setup()
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     const input = screen.getByRole('combobox')
     await user.click(input)
     await user.type(input, 'cors')
@@ -420,7 +420,7 @@ describe('6.2 buscador', () => {
   })
   it('Ctrl+K con un tema abierto lleva el cursor al buscador', async () => {
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.keyDown(window, { key: 'k', ctrlKey: true })
     expect(screen.getByRole('combobox')).toHaveFocus()
     fireEvent.keyDown(window, { key: 'K', metaKey: true })
@@ -438,7 +438,7 @@ describe('6.2 buscador', () => {
 describe('9.1 enlaces a otros temas dentro del texto', () => {
   it('el enlace del puente muestra el título del destino y abre ese tema', async () => {
     renderApp('/es/rest/metodos-http')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(tab('En código'))
     const link = await within(screen.getByRole('tabpanel')).findByRole('link', { name: 'CORS y el preflight con OPTIONS' })
     fireEvent.click(link)
@@ -449,7 +449,7 @@ describe('9.1 enlaces a otros temas dentro del texto', () => {
   it('en inglés el enlace muestra el título en inglés', async () => {
     void i18n.changeLanguage('en')
     renderApp('/en/rest/metodos-http')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(tab('In code'))
     expect(await within(screen.getByRole('tabpanel')).findByRole('link', { name: 'CORS and the OPTIONS preflight' })).toBeInTheDocument()
   })
@@ -474,7 +474,7 @@ describe('9.4 ayuda de gestos del cerebro', () => {
   it('al abrir un tema desaparece con la transición de los paneles', async () => {
     renderApp('/es')
     fireEvent.click(screen.getByTestId('node-cors'))
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     expect(hint()).toHaveClass('hintHidden')
     expect(hint()).toHaveAttribute('aria-hidden', 'true')
   })
@@ -499,7 +499,7 @@ describe('9.4 ayuda de gestos del cerebro', () => {
 describe('localización: cambio de idioma sin perder el lugar', () => {
   it('conserva el tema y la pestaña En código', async () => {
     renderApp('/es/rest/cors')
-    await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(tab('En código'))
     fireEvent.click(screen.getByRole('button', { name: 'EN' }))
     expect(loc()).toBe('/en/rest/cors')

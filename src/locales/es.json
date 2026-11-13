@@ -47,6 +47,7 @@
     "notFound": "No se encontró el tema."
   },
   "section": {
+    "code:example": "Ejemplo: la API de la tienda",
     "analogy": "Analogía",
     "problem": "Qué problema resuelve",
     "code:wire": "Así viaja por la red",

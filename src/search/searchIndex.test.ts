@@ -46,7 +46,8 @@ describe('6.1 búsqueda', () => {
 
   it('una pista "Próximamente" no produce resultados', () => {
     expect(es.search('Git')).toEqual([])
-    expect(es.search('SQL')).toEqual([])
+    // "SQL" aparece en temas de Python (SQLAlchemy, SQLModel), pero ningún resultado es de la pista SQL.
+    expect(es.search('SQL').filter((h) => h.track === 'sql')).toEqual([])
     expect(en.search('OOP')).toEqual([])
   })
 

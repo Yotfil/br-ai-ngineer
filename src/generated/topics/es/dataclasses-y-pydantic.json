@@ -1,0 +1,50 @@
+{
+  "id": "dataclasses-y-pydantic",
+  "track": "python",
+  "order": 9,
+  "freq": "always",
+  "title": "Dataclasses y Pydantic",
+  "short": "Dataclasses y Pydantic",
+  "summary": "@dataclass genera __init__, __repr__ y __eq__ a partir de las anotaciones, sin validar.",
+  "sections": {
+    "definition": "<p><code>@dataclass</code> genera <code>__init__</code>, <code>__repr__</code> y <code>__eq__</code> a partir de las anotaciones, <strong>sin validar</strong>. <strong>Pydantic</strong> (<code>BaseModel</code>, v2) valida y convierte datos en ejecución, serializa a dict o JSON y genera JSON Schema. FastAPI está construido sobre Pydantic.</p>\n",
+    "analogy": "<p>La dataclass es un formulario impreso: tiene casillas, pero nadie revisa lo que escribes. Pydantic es el funcionario de ventanilla que revisa cada casilla y te devuelve el formulario con la lista de errores.</p>\n",
+    "problem": "<p>Los datos externos (JSON de un cliente, variables de entorno) no son confiables. Una dataclass los acepta tal cual; Pydantic los valida en la frontera de tu sistema.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> dataclasses </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> dataclass, field</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> pydantic </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> BaseModel, EmailStr, Field, field_validator</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@dataclass</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ItemCarrito:</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    producto_id: int</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    cantidad: int </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> 1</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    notas: list[str] </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> field(default_factory</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">list)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> Cliente(BaseModel):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> Field(min_length</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">2)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    email: EmailStr                      </span><span style=\"color:#5F6388\"># requiere email-validator</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    edad: int </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#CFD3EA\"> Field(default</span><span style=\"color:#7DD3FC\">=None</span><span style=\"color:#CFD3EA\">, ge</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">18)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    @field_validator(</span><span style=\"color:#FCD34D\">\"nombre\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    @classmethod</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    def</span><span style=\"color:#CFD3EA\"> limpiar_nombre(cls, v: str) -> str:</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">        return</span><span style=\"color:#CFD3EA\"> v.strip().title()</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">c </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> Cliente(nombre</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"  ana  \"</span><span style=\"color:#CFD3EA\">, email</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"ana@mail.com\"</span><span style=\"color:#CFD3EA\">, edad</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"30\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">c.edad            </span><span style=\"color:#5F6388\"># 30 (convirtió el string a int)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">c.model_dump()    </span><span style=\"color:#5F6388\"># {'nombre': 'Ana', 'email': 'ana@mail.com', 'edad': 30}</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">c.model_dump_json()</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> Cliente(BaseModel):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    class</span><span style=\"color:#CFD3EA\"> Config:              </span><span style=\"color:#5F6388\"># Pydantic v1</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">        orm_mode </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#7DD3FC\"> True</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    @validator(</span><span style=\"color:#FCD34D\">\"nombre\"</span><span style=\"color:#CFD3EA\">)       </span><span style=\"color:#5F6388\"># v1, obsoleto</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    def</span><span style=\"color:#CFD3EA\"> v(cls, v): ...</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">cliente.dict()                 </span><span style=\"color:#5F6388\"># v1</span></span></code></pre><p>Sintaxis de v1 que aún aparece en tutoriales viejos.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> pydantic </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> BaseModel, ConfigDict, field_validator</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> Cliente(BaseModel):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    model_config </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> ConfigDict(from_attributes</span><span style=\"color:#7DD3FC\">=True</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    @field_validator(</span><span style=\"color:#FCD34D\">\"nombre\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    @classmethod</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    def</span><span style=\"color:#CFD3EA\"> v(cls, v: str) -> str: ...</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">cliente.model_dump()</span></span></code></pre><p>Pydantic v2: model_config, field_validator, model_dump.</p>\n",
+    "bridge:typescript": "<p>La dataclass ≈ una <code>interface</code> más una clase con constructor automático. Pydantic ≈ <strong>Zod</strong>: <code>Cliente(**datos)</code> o <code>Cliente.model_validate(datos)</code> ≈ <code>schema.parse(datos)</code>. La diferencia es que en Zod defines el esquema y <em>derivas</em> el tipo con <code>z.infer</code>; en Pydantic la clase con type hints es esquema y tipo a la vez.</p>\n",
+    "interview": "<p>Una dataclass genera el boilerplate de una clase de datos pero no valida nada. Pydantic valida y convierte los datos en tiempo de ejecución usando los type hints, devuelve errores detallados y sabe serializar a JSON y generar JSON Schema. Uso dataclasses para estructuras internas y Pydantic en las fronteras: requests, respuestas y configuración. Es parecido a Zod, pero el esquema es la propia clase.</p>\n",
+    "myths": "<ul>\n<li>Poner <code>notas: list = []</code> en una dataclass: error, usa <code>field(default_factory=list)</code>.</li>\n<li>Mezclar sintaxis de Pydantic v1 y v2 copiada de distintos tutoriales.</li>\n<li>Sorprenderse de que <code>\"30\"</code> se convierta a <code>30</code>: es el modo lax por defecto; existe <code>strict=True</code>.</li>\n<li>Usar <code>EmailStr</code> sin tener instalado email-validator (viene incluido en <code>fastapi[standard]</code>).</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "Pregunta rápida",
+      "items": [
+        {
+          "q": "En Pydantic v2, ¿cómo conviertes un modelo a dict?",
+          "options": [
+            "<code>.dict()</code>",
+            "<code>.model_dump()</code>",
+            "<code>dict(modelo)</code> es lo recomendado",
+            "<code>.to_json()</code>"
+          ],
+          "answer": 1,
+          "why": "<code>.dict()</code> es de v1 y está deprecado. En v2 se usa <code>model_dump()</code> y <code>model_dump_json()</code>."
+        },
+        {
+          "q": "¿Qué pasa con <code>ItemCarrito(producto_id=\"abc\")</code> si es una dataclass?",
+          "options": [
+            "ValidationError",
+            "TypeError",
+            "Se crea sin error con producto_id = \"abc\"",
+            "Convierte a int"
+          ],
+          "answer": 2,
+          "why": "Las dataclasses no validan tipos. Para eso existe Pydantic, o las dataclasses de Pydantic."
+        }
+      ]
+    }
+  ]
+}

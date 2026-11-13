@@ -1,0 +1,11 @@
+id: inyeccion-con-depends
+track: python
+order: 13
+freq: always
+group: fastapi
+concepts:
+  - depends
+  - dependency-overrides
+related:
+  - pytest-y-testclient
+  - base-de-datos

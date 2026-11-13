@@ -1,0 +1,12 @@
+id: identidad-copias-mutabilidad
+track: python
+order: 10
+freq: always
+group: lenguaje
+concepts:
+  - is-vs-igual
+  - copia-superficial-y-profunda
+  - mutabilidad
+related:
+  - default-mutable
+  - estructuras-de-datos

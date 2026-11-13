@@ -30,6 +30,30 @@ exercises:
           - Only caching
         answer: 1
         why: GET must be safe. If it generates a file every time, it also stops being idempotent. It should be POST /v1/reportes.
+  - type: classify
+    prompt: Which HTTP method fits?
+    categories:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+    items:
+      - text: Create a new order
+        category: POST
+        why: It creates a resource and is not idempotent.
+      - text: List the products in the coffee category
+        category: GET
+        why: A read with a query param.
+      - text: Replace all the data of customer 7
+        category: PUT
+        why: A full, idempotent replacement.
+      - text: Change only the order status to “shipped”
+        category: PATCH
+        why: A partial modification.
+      - text: Delete product 3
+        category: DELETE
+        why: Deleting is idempotent.
 ---
 
 ## definition

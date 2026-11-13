@@ -11,7 +11,7 @@ export const FREQS = ['always', 'often', 'sometimes'] as const
 export type Freq = (typeof FREQS)[number]
 
 /** Tipos de `code:<tipo>` registrados. Añadir uno exige su rótulo en `src/locales/*.json`. */
-export const CODE_KINDS = ['wire', 'server'] as const
+export const CODE_KINDS = ['example', 'wire', 'server'] as const
 /** Tecnologías de `bridge:<tecnología>` admitidas. */
 export const BRIDGE_TECHS = ['typescript'] as const
 
@@ -20,6 +20,7 @@ export const SECTION_KEYS = [
   'definition',
   'analogy',
   'problem',
+  'code:example',
   'code:wire',
   'code:server',
   'bad',
@@ -39,6 +40,7 @@ export const SECTION_TAB: Record<SectionKey, Exclude<Tab, 'practice'>> = {
   definition: 'understand',
   analogy: 'understand',
   problem: 'understand',
+  'code:example': 'code',
   'code:wire': 'code',
   'code:server': 'code',
   bad: 'code',
@@ -50,12 +52,20 @@ export const SECTION_TAB: Record<SectionKey, Exclude<Tab, 'practice'>> = {
 
 // ---------- Salida generada (src/generated) ----------
 
+/** Grupo de temas dentro de una pista (design.md de pista-python, decisión 5). */
+export interface TrackGroup {
+  id: string
+  name: Record<Locale, string>
+}
+
 export interface TrackInfo {
   id: string
   abbr: string
   color: string
   order: number
   name: Record<Locale, string>
+  /** Grupos de temas, en orden; solo si la pista los declara. */
+  groups?: TrackGroup[]
   /** Pista declarada sin temas ("Próximamente"). */
   empty: boolean
 }
@@ -71,6 +81,8 @@ export interface GraphNode {
   freq?: Freq
   /** Orden del tema dentro de su pista. */
   order?: number
+  /** Grupo del tema dentro de su pista (solo en pistas con grupos). */
+  group?: string
   /** Pista sin temas. */
   empty?: boolean
   x: number
@@ -100,6 +112,8 @@ export interface SearchDoc {
   aliases: string[]
   /** Solo en temas. */
   summary?: string
+  /** Título corto (solo en temas que lo declaran). No se indexa en el buscador. */
+  short?: string
   /** Tema hogar (para conceptos, el tema al que pertenecen; para temas, el propio). */
   topic: string
   /** Nombre del tema hogar (solo en conceptos). */
@@ -108,7 +122,16 @@ export interface SearchDoc {
 
 export interface ChoiceItem {
   q: string
+  /** Bloque de código ya resaltado (HTML), entre el enunciado y las opciones. */
+  code?: string
   options: string[]
+  answer: number
+  why: string
+}
+
+export interface ClassifyItem {
+  text: string
+  /** Índice de la categoría correcta en `categories` del grupo. */
   answer: number
   why: string
 }
@@ -122,6 +145,7 @@ export interface VerdictItem {
 export type ExerciseGroup =
   | { type: 'choice'; prompt: string; items: ChoiceItem[] }
   | { type: 'verdict'; prompt: string; items: VerdictItem[] }
+  | { type: 'classify'; prompt: string; categories: string[]; items: ClassifyItem[] }
 
 export interface TopicContent {
   id: string
@@ -130,6 +154,8 @@ export interface TopicContent {
   freq: Freq
   demo?: string
   title: string
+  /** Título corto, si el tema lo declara. */
+  short?: string
   summary: string
   /** HTML ya saneado y resaltado, por clave de sección. */
   sections: Partial<Record<SectionKey, string>>

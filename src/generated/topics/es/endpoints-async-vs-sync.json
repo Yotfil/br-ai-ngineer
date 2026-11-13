@@ -1,0 +1,57 @@
+{
+  "id": "endpoints-async-vs-sync",
+  "track": "python",
+  "order": 15,
+  "freq": "often",
+  "title": "Endpoints async vs sync",
+  "short": "async def vs def",
+  "summary": "Un endpoint async def corre en el event loop: úsalo cuando todo lo que hace por dentro es awaitable.",
+  "sections": {
+    "definition": "<p>Un endpoint <code>async def</code> corre en el event loop: úsalo cuando todo lo que hace por dentro es awaitable (driver async, httpx). Un endpoint <code>def</code> normal FastAPI lo ejecuta en un <strong>threadpool</strong>, así que una llamada bloqueante no congela el servidor. Lo único realmente malo es poner código bloqueante dentro de <code>async def</code>. La propia documentación dice: si no sabes, usa <code>def</code> normal.</p>\n",
+    "analogy": "<p>Un mesero async que se queda parado frente a la cocina esperando un plato bloquea a todo el restaurante. Si la tarea es de esperar sin poder avisar, mejor contrata un ayudante (el threadpool).</p>\n",
+    "problem": "<p>Con <code>async def</code> y una llamada bloqueante, todas las peticiones concurrentes se atienden en fila. Con carga real, la latencia se dispara.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#5F6388\"># 1. Bien: librería async dentro de async def</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/productos/{producto_id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> obtener(producto_id: int, session: AsyncSessionDep):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#7DD3FC\"> await</span><span style=\"color:#CFD3EA\"> session.get(Producto, producto_id)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># 2. Bien: librería bloqueante con def (FastAPI usa el threadpool)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/tasa-cambio\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> tasa_cambio():</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> requests.get(</span><span style=\"color:#FCD34D\">\"https://api.banco.co/usd\"</span><span style=\"color:#CFD3EA\">).json()</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># 3. Mal: bloqueante dentro de async def</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/reporte\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> reporte():</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    time.sleep(2)          </span><span style=\"color:#5F6388\"># nadie más es atendido durante 2 s</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> {</span><span style=\"color:#FCD34D\">\"ok\"</span><span style=\"color:#CFD3EA\">: </span><span style=\"color:#7DD3FC\">True</span><span style=\"color:#CFD3EA\">}</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/clientes/{id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> obtener(id: int):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> psycopg2_buscar(id)   </span><span style=\"color:#5F6388\"># driver sync en async def</span></span></code></pre><p>Parece moderno y es el más lento de los tres.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/clientes/{id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> obtener(id: int):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> psycopg2_buscar(id)   </span><span style=\"color:#5F6388\"># threadpool</span></span></code></pre><p>O cambias a un driver async y usas async def con await.</p>\n",
+    "bridge:typescript": "<p>En Node todo corre en un solo hilo: bloquear en un handler bloquea el servidor entero, siempre. FastAPI te da una salida que Node no tiene: declarar el endpoint con <code>def</code> y dejar que lo ejecute en un hilo aparte.</p>\n",
+    "interview": "<p>Si dentro del endpoint uso solo librerías async, lo declaro con async def y hago await; si uso librerías bloqueantes, lo declaro con def normal y FastAPI lo ejecuta en un threadpool. El error grave es llamar código bloqueante dentro de async def, porque congela el event loop y serializa todas las peticiones. Para trabajo pesado de CPU no uso ninguno de los dos: lo mando a otro proceso o a una cola.</p>\n",
+    "myths": "<ul>\n<li>async def con <code>requests</code>, <code>time.sleep</code> o un driver sync.</li>\n<li>Creer que async siempre es más rápido.</li>\n<li>Hacer cálculo pesado dentro de un endpoint: muévelo a un proceso o a una cola de tareas.</li>\n<li>El threadpool es limitado (40 hilos por defecto en AnyIO): no es infinito.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "classify",
+      "prompt": "¿Declararías el endpoint con async def o con def?",
+      "categories": [
+        "async def",
+        "def"
+      ],
+      "items": [
+        {
+          "text": "Usa httpx.AsyncClient para consultar un proveedor",
+          "answer": 0,
+          "why": "Librería async: await dentro de async def."
+        },
+        {
+          "text": "Usa requests para consultar un proveedor",
+          "answer": 1,
+          "why": "requests es bloqueante: threadpool."
+        },
+        {
+          "text": "Usa la Session síncrona de SQLModel",
+          "answer": 1,
+          "why": "Sesión bloqueante."
+        },
+        {
+          "text": "Usa AsyncSession con asyncpg",
+          "answer": 0,
+          "why": "Driver async."
+        },
+        {
+          "text": "No sabes si la librería es async",
+          "answer": 1,
+          "why": "Es la recomendación literal de la doc de FastAPI."
+        }
+      ]
+    }
+  ]
+}

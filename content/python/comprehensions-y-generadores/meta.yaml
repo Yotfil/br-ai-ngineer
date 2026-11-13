@@ -1,0 +1,11 @@
+id: comprehensions-y-generadores
+track: python
+order: 3
+freq: often
+group: lenguaje
+concepts:
+  - comprehension
+  - generador
+  - yield
+related:
+  - estructuras-de-datos

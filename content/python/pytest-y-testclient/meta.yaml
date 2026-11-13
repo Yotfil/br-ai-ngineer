@@ -1,0 +1,11 @@
+id: pytest-y-testclient
+track: python
+order: 20
+freq: often
+group: fastapi
+concepts:
+  - pytest
+  - fixture
+  - testclient
+related:
+  - dependency-overrides

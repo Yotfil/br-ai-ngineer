@@ -1,0 +1,12 @@
+id: modulos-y-entornos
+track: python
+order: 7
+freq: often
+group: lenguaje
+concepts:
+  - modulo
+  - paquete
+  - entorno-virtual
+  - uv
+related:
+  - estructura-del-proyecto

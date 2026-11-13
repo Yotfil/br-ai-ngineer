@@ -1,0 +1,11 @@
+id: errores-y-context-managers
+track: python
+order: 6
+freq: always
+group: lenguaje
+concepts:
+  - context-manager
+  - try-except
+  - eafp
+related:
+  - errores-y-httpexception

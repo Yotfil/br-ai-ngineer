@@ -68,6 +68,22 @@ exercises:
           - "204"
         answer: 2
         why: "202 Accepted: it was accepted, but not completed yet. A URL to check the status is usually returned."
+      - q: An authenticated customer requests `GET /pedidos/1042`, but that order belongs to another customer.
+        options:
+          - "401"
+          - "403"
+          - "404"
+          - "422"
+        answer: 1
+        why: "They are authenticated, but not authorized: 403. Some APIs respond 404 on purpose so as not to reveal that the order exists; if you mention it in the interview, it earns you points."
+      - q: "`POST /clientes` with an email that is already registered."
+        options:
+          - "400"
+          - "409"
+          - "422"
+          - "500"
+        answer: 1
+        why: "The request is valid, but it conflicts with the current state: 409 Conflict."
 ---
 
 ## definition

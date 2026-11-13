@@ -22,7 +22,10 @@ export interface BrainProps {
   graph: GraphData
   /** Nombre accesible del cerebro en el idioma activo. */
   ariaLabel: string
-  /** Nombre visible de cada nodo en el idioma activo. */
+  /**
+   * Nombre visible de cada nodo en el idioma activo, el que se dibuja junto al nodo. Para un tema es su
+   * título corto cuando lo tiene y, si no, su título completo; pistas y conceptos usan su nombre.
+   */
   labels: Readonly<Record<string, string>>
   focus: BrainFocus
   motion: MotionState

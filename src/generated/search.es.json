@@ -1,0 +1,1572 @@
+[
+  {
+    "id": "tipado-y-type-hints",
+    "type": "topic",
+    "track": "python",
+    "name": "Tipado dinámico y type hints",
+    "aliases": [
+      "Dynamic typing and type hints"
+    ],
+    "summary": "Python tiene tipado dinámico y fuerte: los valores tienen tipo, las variables no, y no hay conversiones implícitas.",
+    "short": "Tipado y type hints",
+    "topic": "tipado-y-type-hints"
+  },
+  {
+    "id": "tipado-dinamico",
+    "type": "concept",
+    "track": "python",
+    "name": "tipado dinámico",
+    "aliases": [
+      "dynamic typing"
+    ],
+    "topic": "tipado-y-type-hints",
+    "topicName": "Tipado dinámico y type hints"
+  },
+  {
+    "id": "type-hints",
+    "type": "concept",
+    "track": "python",
+    "name": "type hints",
+    "aliases": [],
+    "topic": "tipado-y-type-hints",
+    "topicName": "Tipado dinámico y type hints"
+  },
+  {
+    "id": "estructuras-de-datos",
+    "type": "topic",
+    "track": "python",
+    "name": "Estructuras de datos: list, tuple, dict y set",
+    "aliases": [
+      "Data structures: list, tuple, dict and set"
+    ],
+    "summary": "list, tuple, dict y set: cuándo usar cada una según orden, mutabilidad, búsqueda por clave y elementos únicos.",
+    "short": "list, tuple, dict, set",
+    "topic": "estructuras-de-datos"
+  },
+  {
+    "id": "list",
+    "type": "concept",
+    "track": "python",
+    "name": "list",
+    "aliases": [],
+    "topic": "estructuras-de-datos",
+    "topicName": "Estructuras de datos: list, tuple, dict y set"
+  },
+  {
+    "id": "tuple",
+    "type": "concept",
+    "track": "python",
+    "name": "tuple",
+    "aliases": [],
+    "topic": "estructuras-de-datos",
+    "topicName": "Estructuras de datos: list, tuple, dict y set"
+  },
+  {
+    "id": "dict",
+    "type": "concept",
+    "track": "python",
+    "name": "dict",
+    "aliases": [],
+    "topic": "estructuras-de-datos",
+    "topicName": "Estructuras de datos: list, tuple, dict y set"
+  },
+  {
+    "id": "set",
+    "type": "concept",
+    "track": "python",
+    "name": "set",
+    "aliases": [],
+    "topic": "estructuras-de-datos",
+    "topicName": "Estructuras de datos: list, tuple, dict y set"
+  },
+  {
+    "id": "comprehensions-y-generadores",
+    "type": "topic",
+    "track": "python",
+    "name": "Comprehensions y generadores",
+    "aliases": [
+      "Comprehensions and generators"
+    ],
+    "summary": "Una comprehension construye una lista, dict o set en una sola expresión.",
+    "short": "Comprehensions y generadores",
+    "topic": "comprehensions-y-generadores"
+  },
+  {
+    "id": "comprehension",
+    "type": "concept",
+    "track": "python",
+    "name": "comprehension",
+    "aliases": [],
+    "topic": "comprehensions-y-generadores",
+    "topicName": "Comprehensions y generadores"
+  },
+  {
+    "id": "generador",
+    "type": "concept",
+    "track": "python",
+    "name": "generador",
+    "aliases": [
+      "generator"
+    ],
+    "topic": "comprehensions-y-generadores",
+    "topicName": "Comprehensions y generadores"
+  },
+  {
+    "id": "yield",
+    "type": "concept",
+    "track": "python",
+    "name": "yield",
+    "aliases": [],
+    "topic": "comprehensions-y-generadores",
+    "topicName": "Comprehensions y generadores"
+  },
+  {
+    "id": "funciones-y-closures",
+    "type": "topic",
+    "track": "python",
+    "name": "Funciones: *args, **kwargs, defaults, lambdas y closures",
+    "aliases": [
+      "Functions: *args, **kwargs, defaults, lambdas and closures"
+    ],
+    "summary": "Python acepta parámetros posicionales, con nombre y con valor por defecto.",
+    "short": "Funciones y closures",
+    "topic": "funciones-y-closures"
+  },
+  {
+    "id": "args-kwargs",
+    "type": "concept",
+    "track": "python",
+    "name": "*args y **kwargs",
+    "aliases": [
+      "*args and **kwargs",
+      "args",
+      "kwargs"
+    ],
+    "topic": "funciones-y-closures",
+    "topicName": "Funciones: *args, **kwargs, defaults, lambdas y closures"
+  },
+  {
+    "id": "closure",
+    "type": "concept",
+    "track": "python",
+    "name": "closure",
+    "aliases": [],
+    "topic": "funciones-y-closures",
+    "topicName": "Funciones: *args, **kwargs, defaults, lambdas y closures"
+  },
+  {
+    "id": "lambda",
+    "type": "concept",
+    "track": "python",
+    "name": "lambda",
+    "aliases": [],
+    "topic": "funciones-y-closures",
+    "topicName": "Funciones: *args, **kwargs, defaults, lambdas y closures"
+  },
+  {
+    "id": "default-mutable",
+    "type": "concept",
+    "track": "python",
+    "name": "default mutable",
+    "aliases": [
+      "mutable default argument",
+      "argumento mutable por defecto"
+    ],
+    "topic": "funciones-y-closures",
+    "topicName": "Funciones: *args, **kwargs, defaults, lambdas y closures"
+  },
+  {
+    "id": "decoradores",
+    "type": "topic",
+    "track": "python",
+    "name": "Decoradores",
+    "aliases": [
+      "Decorators"
+    ],
+    "summary": "Un decorador es una función que recibe otra función y devuelve una que la envuelve para añadirle comportamiento sin tocar su código.",
+    "short": "Decoradores",
+    "topic": "decoradores"
+  },
+  {
+    "id": "decorador",
+    "type": "concept",
+    "track": "python",
+    "name": "decorador",
+    "aliases": [
+      "decorator"
+    ],
+    "topic": "decoradores",
+    "topicName": "Decoradores"
+  },
+  {
+    "id": "errores-y-context-managers",
+    "type": "topic",
+    "track": "python",
+    "name": "Manejo de errores y context managers",
+    "aliases": [
+      "Error handling and context managers"
+    ],
+    "summary": "try / except / else / finally controla errores: else corre si no hubo excepción y finally corre siempre.",
+    "short": "Errores y with",
+    "topic": "errores-y-context-managers"
+  },
+  {
+    "id": "context-manager",
+    "type": "concept",
+    "track": "python",
+    "name": "context manager",
+    "aliases": [],
+    "topic": "errores-y-context-managers",
+    "topicName": "Manejo de errores y context managers"
+  },
+  {
+    "id": "try-except",
+    "type": "concept",
+    "track": "python",
+    "name": "try/except/finally",
+    "aliases": [
+      "try except",
+      "try except finally"
+    ],
+    "topic": "errores-y-context-managers",
+    "topicName": "Manejo de errores y context managers"
+  },
+  {
+    "id": "eafp",
+    "type": "concept",
+    "track": "python",
+    "name": "EAFP",
+    "aliases": [],
+    "topic": "errores-y-context-managers",
+    "topicName": "Manejo de errores y context managers"
+  },
+  {
+    "id": "modulos-y-entornos",
+    "type": "topic",
+    "track": "python",
+    "name": "Módulos, paquetes, entornos virtuales y dependencias",
+    "aliases": [
+      "Modules, packages, virtual environments and dependencies"
+    ],
+    "summary": "Un módulo es un archivo .py; un paquete es una carpeta de módulos, normalmente con __init__.py.",
+    "short": "Módulos, venv y uv",
+    "topic": "modulos-y-entornos"
+  },
+  {
+    "id": "modulo",
+    "type": "concept",
+    "track": "python",
+    "name": "módulo",
+    "aliases": [
+      "module"
+    ],
+    "topic": "modulos-y-entornos",
+    "topicName": "Módulos, paquetes, entornos virtuales y dependencias"
+  },
+  {
+    "id": "paquete",
+    "type": "concept",
+    "track": "python",
+    "name": "paquete",
+    "aliases": [
+      "package"
+    ],
+    "topic": "modulos-y-entornos",
+    "topicName": "Módulos, paquetes, entornos virtuales y dependencias"
+  },
+  {
+    "id": "entorno-virtual",
+    "type": "concept",
+    "track": "python",
+    "name": "entorno virtual",
+    "aliases": [
+      "virtual environment",
+      "venv",
+      "virtualenv"
+    ],
+    "topic": "modulos-y-entornos",
+    "topicName": "Módulos, paquetes, entornos virtuales y dependencias"
+  },
+  {
+    "id": "uv",
+    "type": "concept",
+    "track": "python",
+    "name": "uv",
+    "aliases": [],
+    "topic": "modulos-y-entornos",
+    "topicName": "Módulos, paquetes, entornos virtuales y dependencias"
+  },
+  {
+    "id": "concurrencia",
+    "type": "topic",
+    "track": "python",
+    "name": "Concurrencia: async/await, event loop, hilos, procesos y GIL",
+    "aliases": [
+      "Concurrency: async/await, event loop, threads, processes and GIL"
+    ],
+    "summary": "async/await da concurrencia cooperativa en un solo hilo con un event loop (asyncio), ideal para esperas de I/O.",
+    "short": "async, hilos y GIL",
+    "topic": "concurrencia"
+  },
+  {
+    "id": "async-await",
+    "type": "concept",
+    "track": "python",
+    "name": "async/await",
+    "aliases": [
+      "async await"
+    ],
+    "topic": "concurrencia",
+    "topicName": "Concurrencia: async/await, event loop, hilos, procesos y GIL"
+  },
+  {
+    "id": "event-loop",
+    "type": "concept",
+    "track": "python",
+    "name": "event loop",
+    "aliases": [],
+    "topic": "concurrencia",
+    "topicName": "Concurrencia: async/await, event loop, hilos, procesos y GIL"
+  },
+  {
+    "id": "gil",
+    "type": "concept",
+    "track": "python",
+    "name": "GIL",
+    "aliases": [
+      "Global Interpreter Lock"
+    ],
+    "topic": "concurrencia",
+    "topicName": "Concurrencia: async/await, event loop, hilos, procesos y GIL"
+  },
+  {
+    "id": "hilos-vs-procesos",
+    "type": "concept",
+    "track": "python",
+    "name": "hilos vs. procesos",
+    "aliases": [
+      "threads vs. processes"
+    ],
+    "topic": "concurrencia",
+    "topicName": "Concurrencia: async/await, event loop, hilos, procesos y GIL"
+  },
+  {
+    "id": "dataclasses-y-pydantic",
+    "type": "topic",
+    "track": "python",
+    "name": "Dataclasses y Pydantic",
+    "aliases": [
+      "Dataclasses and Pydantic"
+    ],
+    "summary": "@dataclass genera __init__, __repr__ y __eq__ a partir de las anotaciones, sin validar.",
+    "short": "Dataclasses y Pydantic",
+    "topic": "dataclasses-y-pydantic"
+  },
+  {
+    "id": "dataclass",
+    "type": "concept",
+    "track": "python",
+    "name": "dataclass",
+    "aliases": [],
+    "topic": "dataclasses-y-pydantic",
+    "topicName": "Dataclasses y Pydantic"
+  },
+  {
+    "id": "pydantic",
+    "type": "concept",
+    "track": "python",
+    "name": "Pydantic",
+    "aliases": [],
+    "topic": "dataclasses-y-pydantic",
+    "topicName": "Dataclasses y Pydantic"
+  },
+  {
+    "id": "identidad-copias-mutabilidad",
+    "type": "topic",
+    "track": "python",
+    "name": "Comparaciones clásicas: is vs ==, copias, mutabilidad",
+    "aliases": [
+      "Classic comparisons: is vs ==, copies, mutability"
+    ],
+    "summary": "== compara valor (llama a __eq__); is compara identidad: si es el mismo objeto en memoria.",
+    "short": "is, ==, copias",
+    "topic": "identidad-copias-mutabilidad"
+  },
+  {
+    "id": "is-vs-igual",
+    "type": "concept",
+    "track": "python",
+    "name": "is vs. ==",
+    "aliases": [],
+    "topic": "identidad-copias-mutabilidad",
+    "topicName": "Comparaciones clásicas: is vs ==, copias, mutabilidad"
+  },
+  {
+    "id": "copia-superficial-y-profunda",
+    "type": "concept",
+    "track": "python",
+    "name": "copia superficial y profunda",
+    "aliases": [
+      "shallow and deep copy",
+      "deepcopy",
+      "shallow copy",
+      "deep copy"
+    ],
+    "topic": "identidad-copias-mutabilidad",
+    "topicName": "Comparaciones clásicas: is vs ==, copias, mutabilidad"
+  },
+  {
+    "id": "mutabilidad",
+    "type": "concept",
+    "track": "python",
+    "name": "mutabilidad",
+    "aliases": [
+      "mutability"
+    ],
+    "topic": "identidad-copias-mutabilidad",
+    "topicName": "Comparaciones clásicas: is vs ==, copias, mutabilidad"
+  },
+  {
+    "id": "rutas-y-parametros",
+    "type": "topic",
+    "track": "python",
+    "name": "Rutas, parámetros de ruta, query params y cuerpo",
+    "aliases": [
+      "Routes, path parameters, query params and body"
+    ],
+    "summary": "Una path operation es método + ruta + función.",
+    "short": "Rutas y parámetros",
+    "topic": "rutas-y-parametros"
+  },
+  {
+    "id": "path-operation",
+    "type": "concept",
+    "track": "python",
+    "name": "path operation",
+    "aliases": [],
+    "topic": "rutas-y-parametros",
+    "topicName": "Rutas, parámetros de ruta, query params y cuerpo"
+  },
+  {
+    "id": "modelos-y-response-model",
+    "type": "topic",
+    "track": "python",
+    "name": "Modelos de entrada y salida, validación y response_model",
+    "aliases": [
+      "Input and output models, validation and response_model"
+    ],
+    "summary": "Separa los esquemas: lo que entra, lo que sale y lo que se guarda.",
+    "short": "Modelos y response_model",
+    "topic": "modelos-y-response-model"
+  },
+  {
+    "id": "response-model",
+    "type": "concept",
+    "track": "python",
+    "name": "response_model",
+    "aliases": [],
+    "topic": "modelos-y-response-model",
+    "topicName": "Modelos de entrada y salida, validación y response_model"
+  },
+  {
+    "id": "modelos-de-entrada-y-salida",
+    "type": "concept",
+    "track": "python",
+    "name": "modelos de entrada y salida",
+    "aliases": [
+      "input and output models"
+    ],
+    "topic": "modelos-y-response-model",
+    "topicName": "Modelos de entrada y salida, validación y response_model"
+  },
+  {
+    "id": "inyeccion-con-depends",
+    "type": "topic",
+    "track": "python",
+    "name": "Inyección de dependencias con Depends",
+    "aliases": [
+      "Dependency injection with Depends"
+    ],
+    "summary": "Depends declara que el valor de un parámetro lo provee una función que FastAPI ejecuta antes del handler, en cada petición.",
+    "short": "Depends",
+    "topic": "inyeccion-con-depends"
+  },
+  {
+    "id": "depends",
+    "type": "concept",
+    "track": "python",
+    "name": "Depends",
+    "aliases": [],
+    "topic": "inyeccion-con-depends",
+    "topicName": "Inyección de dependencias con Depends"
+  },
+  {
+    "id": "dependency-overrides",
+    "type": "concept",
+    "track": "python",
+    "name": "dependency_overrides",
+    "aliases": [],
+    "topic": "inyeccion-con-depends",
+    "topicName": "Inyección de dependencias con Depends"
+  },
+  {
+    "id": "errores-y-httpexception",
+    "type": "topic",
+    "track": "python",
+    "name": "Manejo de errores y HTTPException",
+    "aliases": [
+      "Error handling and HTTPException"
+    ],
+    "summary": "raise HTTPException(status_code, detail) corta la ejecución y FastAPI responde un JSON con detail y ese código.",
+    "short": "HTTPException",
+    "topic": "errores-y-httpexception"
+  },
+  {
+    "id": "httpexception",
+    "type": "concept",
+    "track": "python",
+    "name": "HTTPException",
+    "aliases": [],
+    "topic": "errores-y-httpexception",
+    "topicName": "Manejo de errores y HTTPException"
+  },
+  {
+    "id": "exception-handler",
+    "type": "concept",
+    "track": "python",
+    "name": "exception handler",
+    "aliases": [],
+    "topic": "errores-y-httpexception",
+    "topicName": "Manejo de errores y HTTPException"
+  },
+  {
+    "id": "endpoints-async-vs-sync",
+    "type": "topic",
+    "track": "python",
+    "name": "Endpoints async vs sync",
+    "aliases": [
+      "Async vs sync endpoints"
+    ],
+    "summary": "Un endpoint async def corre en el event loop: úsalo cuando todo lo que hace por dentro es awaitable.",
+    "short": "async def vs def",
+    "topic": "endpoints-async-vs-sync"
+  },
+  {
+    "id": "threadpool",
+    "type": "concept",
+    "track": "python",
+    "name": "threadpool",
+    "aliases": [],
+    "topic": "endpoints-async-vs-sync",
+    "topicName": "Endpoints async vs sync"
+  },
+  {
+    "id": "base-de-datos",
+    "type": "topic",
+    "track": "python",
+    "name": "Base de datos: SQLAlchemy o SQLModel, sesiones y migraciones",
+    "aliases": [
+      "Database: SQLAlchemy or SQLModel, sessions and migrations"
+    ],
+    "summary": "Un ORM mapea clases a tablas.",
+    "short": "BD, sesiones y Alembic",
+    "topic": "base-de-datos"
+  },
+  {
+    "id": "orm",
+    "type": "concept",
+    "track": "python",
+    "name": "ORM",
+    "aliases": [],
+    "topic": "base-de-datos",
+    "topicName": "Base de datos: SQLAlchemy o SQLModel, sesiones y migraciones"
+  },
+  {
+    "id": "sqlalchemy",
+    "type": "concept",
+    "track": "python",
+    "name": "SQLAlchemy",
+    "aliases": [],
+    "topic": "base-de-datos",
+    "topicName": "Base de datos: SQLAlchemy o SQLModel, sesiones y migraciones"
+  },
+  {
+    "id": "sqlmodel",
+    "type": "concept",
+    "track": "python",
+    "name": "SQLModel",
+    "aliases": [],
+    "topic": "base-de-datos",
+    "topicName": "Base de datos: SQLAlchemy o SQLModel, sesiones y migraciones"
+  },
+  {
+    "id": "session-orm",
+    "type": "concept",
+    "track": "python",
+    "name": "Session",
+    "aliases": [
+      "sesión de base de datos",
+      "database session"
+    ],
+    "topic": "base-de-datos",
+    "topicName": "Base de datos: SQLAlchemy o SQLModel, sesiones y migraciones"
+  },
+  {
+    "id": "alembic",
+    "type": "concept",
+    "track": "python",
+    "name": "Alembic",
+    "aliases": [
+      "migraciones",
+      "migrations"
+    ],
+    "topic": "base-de-datos",
+    "topicName": "Base de datos: SQLAlchemy o SQLModel, sesiones y migraciones"
+  },
+  {
+    "id": "autenticacion-en-fastapi",
+    "type": "topic",
+    "track": "python",
+    "name": "Autenticación en FastAPI: OAuth2, JWT y hashing de contraseñas",
+    "aliases": [
+      "Authentication in FastAPI: OAuth2, JWT and password hashing"
+    ],
+    "summary": "Autenticación: quién eres.",
+    "short": "Auth: OAuth2 y hashing",
+    "topic": "autenticacion-en-fastapi"
+  },
+  {
+    "id": "hashing-de-contrasenas",
+    "type": "concept",
+    "track": "python",
+    "name": "hashing de contraseñas",
+    "aliases": [
+      "password hashing",
+      "Argon2",
+      "pwdlib",
+      "hash"
+    ],
+    "topic": "autenticacion-en-fastapi",
+    "topicName": "Autenticación en FastAPI: OAuth2, JWT y hashing de contraseñas"
+  },
+  {
+    "id": "oauth2-password-flow",
+    "type": "concept",
+    "track": "python",
+    "name": "flujo de contraseña de OAuth2",
+    "aliases": [
+      "OAuth2 password flow",
+      "OAuth2PasswordBearer"
+    ],
+    "topic": "autenticacion-en-fastapi",
+    "topicName": "Autenticación en FastAPI: OAuth2, JWT y hashing de contraseñas"
+  },
+  {
+    "id": "middleware-cors-background",
+    "type": "topic",
+    "track": "python",
+    "name": "Middleware, CORS y tareas en segundo plano",
+    "aliases": [
+      "Middleware, CORS and background tasks"
+    ],
+    "summary": "Un middleware envuelve cada petición y respuesta (logs, tiempos, cabeceras).",
+    "short": "Middleware, CORS, background",
+    "topic": "middleware-cors-background"
+  },
+  {
+    "id": "middleware",
+    "type": "concept",
+    "track": "python",
+    "name": "middleware",
+    "aliases": [],
+    "topic": "middleware-cors-background",
+    "topicName": "Middleware, CORS y tareas en segundo plano"
+  },
+  {
+    "id": "cors-middleware",
+    "type": "concept",
+    "track": "python",
+    "name": "CORSMiddleware",
+    "aliases": [],
+    "topic": "middleware-cors-background",
+    "topicName": "Middleware, CORS y tareas en segundo plano"
+  },
+  {
+    "id": "background-tasks",
+    "type": "concept",
+    "track": "python",
+    "name": "BackgroundTasks",
+    "aliases": [
+      "tareas en segundo plano",
+      "background tasks"
+    ],
+    "topic": "middleware-cors-background",
+    "topicName": "Middleware, CORS y tareas en segundo plano"
+  },
+  {
+    "id": "estructura-del-proyecto",
+    "type": "topic",
+    "track": "python",
+    "name": "Estructura de un proyecto real",
+    "aliases": [
+      "Structure of a real project"
+    ],
+    "summary": "Separa por responsabilidad: routers, servicios, repositorios, schemas, models y configuración con pydantic-settings.",
+    "short": "Estructura del proyecto",
+    "topic": "estructura-del-proyecto"
+  },
+  {
+    "id": "api-router",
+    "type": "concept",
+    "track": "python",
+    "name": "APIRouter",
+    "aliases": [],
+    "topic": "estructura-del-proyecto",
+    "topicName": "Estructura de un proyecto real"
+  },
+  {
+    "id": "capas",
+    "type": "concept",
+    "track": "python",
+    "name": "capas (router, servicio, repositorio)",
+    "aliases": [
+      "layers (router, service, repository)"
+    ],
+    "topic": "estructura-del-proyecto",
+    "topicName": "Estructura de un proyecto real"
+  },
+  {
+    "id": "settings",
+    "type": "concept",
+    "track": "python",
+    "name": "Settings",
+    "aliases": [],
+    "topic": "estructura-del-proyecto",
+    "topicName": "Estructura de un proyecto real"
+  },
+  {
+    "id": "pytest-y-testclient",
+    "type": "topic",
+    "track": "python",
+    "name": "Testing con pytest y TestClient",
+    "aliases": [
+      "Testing with pytest and TestClient"
+    ],
+    "summary": "pytest descubre funciones test_* en archivos test_*.py, usa assert normal y prepara contexto con fixtures inyectadas por nombre.",
+    "short": "pytest y TestClient",
+    "topic": "pytest-y-testclient"
+  },
+  {
+    "id": "pytest",
+    "type": "concept",
+    "track": "python",
+    "name": "pytest",
+    "aliases": [],
+    "topic": "pytest-y-testclient",
+    "topicName": "Testing con pytest y TestClient"
+  },
+  {
+    "id": "fixture",
+    "type": "concept",
+    "track": "python",
+    "name": "fixture",
+    "aliases": [],
+    "topic": "pytest-y-testclient",
+    "topicName": "Testing con pytest y TestClient"
+  },
+  {
+    "id": "testclient",
+    "type": "concept",
+    "track": "python",
+    "name": "TestClient",
+    "aliases": [],
+    "topic": "pytest-y-testclient",
+    "topicName": "Testing con pytest y TestClient"
+  },
+  {
+    "id": "openapi-y-despliegue",
+    "type": "topic",
+    "track": "python",
+    "name": "OpenAPI automático y despliegue con Uvicorn y Docker",
+    "aliases": [
+      "Automatic OpenAPI and deployment with Uvicorn and Docker"
+    ],
+    "summary": "FastAPI genera un esquema OpenAPI a partir de rutas, type hints y modelos, y lo sirve en /docs, /redoc y /openapi.json.",
+    "short": "OpenAPI, Uvicorn y Docker",
+    "topic": "openapi-y-despliegue"
+  },
+  {
+    "id": "openapi",
+    "type": "concept",
+    "track": "python",
+    "name": "OpenAPI",
+    "aliases": [],
+    "topic": "openapi-y-despliegue",
+    "topicName": "OpenAPI automático y despliegue con Uvicorn y Docker"
+  },
+  {
+    "id": "uvicorn",
+    "type": "concept",
+    "track": "python",
+    "name": "Uvicorn",
+    "aliases": [],
+    "topic": "openapi-y-despliegue",
+    "topicName": "OpenAPI automático y despliegue con Uvicorn y Docker"
+  },
+  {
+    "id": "docker",
+    "type": "concept",
+    "track": "python",
+    "name": "Docker",
+    "aliases": [],
+    "topic": "openapi-y-despliegue",
+    "topicName": "OpenAPI automático y despliegue con Uvicorn y Docker"
+  },
+  {
+    "id": "url-a-respuesta",
+    "type": "topic",
+    "track": "rest",
+    "name": "Qué pasa cuando escribes una URL y das Enter",
+    "aliases": [
+      "What happens when you type a URL and press Enter"
+    ],
+    "summary": "El navegador resuelve el dominio (DNS), abre una conexión (TCP), la cifra (TLS), envía la petición HTTP y recibe la respuesta.",
+    "topic": "url-a-respuesta"
+  },
+  {
+    "id": "dns",
+    "type": "concept",
+    "track": "rest",
+    "name": "DNS",
+    "aliases": [],
+    "topic": "url-a-respuesta",
+    "topicName": "Qué pasa cuando escribes una URL y das Enter"
+  },
+  {
+    "id": "tcp",
+    "type": "concept",
+    "track": "rest",
+    "name": "TCP",
+    "aliases": [],
+    "topic": "url-a-respuesta",
+    "topicName": "Qué pasa cuando escribes una URL y das Enter"
+  },
+  {
+    "id": "ttfb",
+    "type": "concept",
+    "track": "rest",
+    "name": "TTFB",
+    "aliases": [],
+    "topic": "url-a-respuesta",
+    "topicName": "Qué pasa cuando escribes una URL y das Enter"
+  },
+  {
+    "id": "anatomia-peticion-respuesta",
+    "type": "topic",
+    "track": "rest",
+    "name": "Anatomía de una petición y una respuesta",
+    "aliases": [
+      "Anatomy of a request and a response"
+    ],
+    "summary": "Un mensaje HTTP tiene línea inicial, headers, una línea en blanco y un body opcional.",
+    "topic": "anatomia-peticion-respuesta"
+  },
+  {
+    "id": "linea-inicial",
+    "type": "concept",
+    "track": "rest",
+    "name": "línea inicial",
+    "aliases": [
+      "start line"
+    ],
+    "topic": "anatomia-peticion-respuesta",
+    "topicName": "Anatomía de una petición y una respuesta"
+  },
+  {
+    "id": "body",
+    "type": "concept",
+    "track": "rest",
+    "name": "cuerpo (body)",
+    "aliases": [
+      "body"
+    ],
+    "topic": "anatomia-peticion-respuesta",
+    "topicName": "Anatomía de una petición y una respuesta"
+  },
+  {
+    "id": "anatomia-url",
+    "type": "topic",
+    "track": "rest",
+    "name": "Anatomía de una URL",
+    "aliases": [
+      "Anatomy of a URL"
+    ],
+    "summary": "Una URL identifica un recurso y dónde encontrarlo: esquema, host, puerto, ruta, query y fragmento.",
+    "topic": "anatomia-url"
+  },
+  {
+    "id": "query-string",
+    "type": "concept",
+    "track": "rest",
+    "name": "query string",
+    "aliases": [],
+    "topic": "anatomia-url",
+    "topicName": "Anatomía de una URL"
+  },
+  {
+    "id": "parametro-de-ruta",
+    "type": "concept",
+    "track": "rest",
+    "name": "parámetro de ruta",
+    "aliases": [
+      "path parameter"
+    ],
+    "topic": "anatomia-url",
+    "topicName": "Anatomía de una URL"
+  },
+  {
+    "id": "fragmento",
+    "type": "concept",
+    "track": "rest",
+    "name": "fragmento",
+    "aliases": [
+      "fragment"
+    ],
+    "topic": "anatomia-url",
+    "topicName": "Anatomía de una URL"
+  },
+  {
+    "id": "metodos-http",
+    "type": "topic",
+    "track": "rest",
+    "name": "Métodos HTTP y PUT vs. PATCH",
+    "aliases": [
+      "HTTP methods and PUT vs. PATCH"
+    ],
+    "summary": "El método indica la intención de la petición sobre el recurso: leer, crear, reemplazar, modificar, eliminar, pedir headers o consultar.",
+    "topic": "metodos-http"
+  },
+  {
+    "id": "put-vs-patch",
+    "type": "concept",
+    "track": "rest",
+    "name": "PUT vs. PATCH",
+    "aliases": [],
+    "topic": "metodos-http",
+    "topicName": "Métodos HTTP y PUT vs. PATCH"
+  },
+  {
+    "id": "get-vs-post",
+    "type": "concept",
+    "track": "rest",
+    "name": "GET vs. POST",
+    "aliases": [],
+    "topic": "metodos-http",
+    "topicName": "Métodos HTTP y PUT vs. PATCH"
+  },
+  {
+    "id": "metodos-seguros-idempotentes",
+    "type": "topic",
+    "track": "rest",
+    "name": "Métodos seguros e idempotentes",
+    "aliases": [
+      "Safe and idempotent methods"
+    ],
+    "summary": "Un método es seguro si no modifica el estado del servidor (GET, HEAD, OPTIONS).",
+    "topic": "metodos-seguros-idempotentes"
+  },
+  {
+    "id": "idempotencia",
+    "type": "concept",
+    "track": "rest",
+    "name": "idempotencia",
+    "aliases": [
+      "idempotency"
+    ],
+    "topic": "metodos-seguros-idempotentes",
+    "topicName": "Métodos seguros e idempotentes"
+  },
+  {
+    "id": "metodo-seguro",
+    "type": "concept",
+    "track": "rest",
+    "name": "método seguro",
+    "aliases": [
+      "safe method"
+    ],
+    "topic": "metodos-seguros-idempotentes",
+    "topicName": "Métodos seguros e idempotentes"
+  },
+  {
+    "id": "codigos-de-estado",
+    "type": "topic",
+    "track": "rest",
+    "name": "Códigos de estado y sus confusiones clásicas",
+    "aliases": [
+      "Status codes and their classic confusions"
+    ],
+    "summary": "Número de tres dígitos que resume el resultado.",
+    "topic": "codigos-de-estado"
+  },
+  {
+    "id": "401-vs-403",
+    "type": "concept",
+    "track": "rest",
+    "name": "401 vs. 403",
+    "aliases": [],
+    "topic": "codigos-de-estado",
+    "topicName": "Códigos de estado y sus confusiones clásicas"
+  },
+  {
+    "id": "4xx-vs-5xx",
+    "type": "concept",
+    "track": "rest",
+    "name": "4xx vs. 5xx",
+    "aliases": [],
+    "topic": "codigos-de-estado",
+    "topicName": "Códigos de estado y sus confusiones clásicas"
+  },
+  {
+    "id": "cabeceras",
+    "type": "topic",
+    "track": "rest",
+    "name": "Cabeceras esenciales y negociación de contenido",
+    "aliases": [
+      "Essential headers and content negotiation"
+    ],
+    "summary": "Los headers son metadatos del mensaje.",
+    "topic": "cabeceras"
+  },
+  {
+    "id": "content-type",
+    "type": "concept",
+    "track": "rest",
+    "name": "Content-Type",
+    "aliases": [],
+    "topic": "cabeceras",
+    "topicName": "Cabeceras esenciales y negociación de contenido"
+  },
+  {
+    "id": "negociacion-de-contenido",
+    "type": "concept",
+    "track": "rest",
+    "name": "negociación de contenido",
+    "aliases": [
+      "content negotiation"
+    ],
+    "topic": "cabeceras",
+    "topicName": "Cabeceras esenciales y negociación de contenido"
+  },
+  {
+    "id": "http-sin-estado",
+    "type": "topic",
+    "track": "rest",
+    "name": "HTTP no guarda estado: cookies, sesiones y tokens",
+    "aliases": [
+      "HTTP keeps no state: cookies, sessions and tokens"
+    ],
+    "summary": "HTTP es stateless: cada petición es independiente y el servidor no recuerda la anterior.",
+    "topic": "http-sin-estado"
+  },
+  {
+    "id": "stateless",
+    "type": "concept",
+    "track": "rest",
+    "name": "sin estado (stateless)",
+    "aliases": [
+      "stateless"
+    ],
+    "topic": "http-sin-estado",
+    "topicName": "HTTP no guarda estado: cookies, sesiones y tokens"
+  },
+  {
+    "id": "cookie",
+    "type": "concept",
+    "track": "rest",
+    "name": "cookie",
+    "aliases": [],
+    "topic": "http-sin-estado",
+    "topicName": "HTTP no guarda estado: cookies, sesiones y tokens"
+  },
+  {
+    "id": "sesion",
+    "type": "concept",
+    "track": "rest",
+    "name": "sesión",
+    "aliases": [
+      "session"
+    ],
+    "topic": "http-sin-estado",
+    "topicName": "HTTP no guarda estado: cookies, sesiones y tokens"
+  },
+  {
+    "id": "autenticacion-autorizacion",
+    "type": "topic",
+    "track": "rest",
+    "name": "Autenticación vs. autorización, JWT y OAuth2",
+    "aliases": [
+      "Authentication vs. authorization, JWT and OAuth2"
+    ],
+    "summary": "Autenticación responde «¿quién eres?» (401 si falla).",
+    "topic": "autenticacion-autorizacion"
+  },
+  {
+    "id": "jwt",
+    "type": "concept",
+    "track": "rest",
+    "name": "JWT",
+    "aliases": [
+      "JSON Web Token"
+    ],
+    "topic": "autenticacion-autorizacion",
+    "topicName": "Autenticación vs. autorización, JWT y OAuth2"
+  },
+  {
+    "id": "oauth2",
+    "type": "concept",
+    "track": "rest",
+    "name": "OAuth2",
+    "aliases": [],
+    "topic": "autenticacion-autorizacion",
+    "topicName": "Autenticación vs. autorización, JWT y OAuth2"
+  },
+  {
+    "id": "refresh-token",
+    "type": "concept",
+    "track": "rest",
+    "name": "refresh token",
+    "aliases": [],
+    "topic": "autenticacion-autorizacion",
+    "topicName": "Autenticación vs. autorización, JWT y OAuth2"
+  },
+  {
+    "id": "cors",
+    "type": "topic",
+    "track": "rest",
+    "name": "CORS y el preflight con OPTIONS",
+    "aliases": [
+      "CORS and the OPTIONS preflight"
+    ],
+    "summary": "CORS es un mecanismo del navegador que deja a JavaScript de un origen leer respuestas de otro solo si el servidor lo autoriza.",
+    "topic": "cors"
+  },
+  {
+    "id": "cors-concepto",
+    "type": "concept",
+    "track": "rest",
+    "name": "CORS",
+    "aliases": [],
+    "topic": "cors",
+    "topicName": "CORS y el preflight con OPTIONS"
+  },
+  {
+    "id": "preflight",
+    "type": "concept",
+    "track": "rest",
+    "name": "preflight",
+    "aliases": [],
+    "topic": "cors",
+    "topicName": "CORS y el preflight con OPTIONS"
+  },
+  {
+    "id": "origen",
+    "type": "concept",
+    "track": "rest",
+    "name": "origen",
+    "aliases": [
+      "origin"
+    ],
+    "topic": "cors",
+    "topicName": "CORS y el preflight con OPTIONS"
+  },
+  {
+    "id": "cache-http",
+    "type": "topic",
+    "track": "rest",
+    "name": "Caché HTTP: Cache-Control, ETag y 304",
+    "aliases": [
+      "HTTP caching: Cache-Control, ETag and 304"
+    ],
+    "summary": "El servidor indica con Cache-Control si una respuesta se puede guardar, quién la puede guardar y por cuánto tiempo.",
+    "topic": "cache-http"
+  },
+  {
+    "id": "cache-control",
+    "type": "concept",
+    "track": "rest",
+    "name": "Cache-Control",
+    "aliases": [],
+    "topic": "cache-http",
+    "topicName": "Caché HTTP: Cache-Control, ETag y 304"
+  },
+  {
+    "id": "etag",
+    "type": "concept",
+    "track": "rest",
+    "name": "ETag",
+    "aliases": [],
+    "topic": "cache-http",
+    "topicName": "Caché HTTP: Cache-Control, ETag y 304"
+  },
+  {
+    "id": "304",
+    "type": "concept",
+    "track": "rest",
+    "name": "304 Not Modified",
+    "aliases": [],
+    "topic": "cache-http",
+    "topicName": "Caché HTTP: Cache-Control, ETag y 304"
+  },
+  {
+    "id": "https-tls",
+    "type": "topic",
+    "track": "rest",
+    "name": "HTTPS y TLS",
+    "aliases": [
+      "HTTPS and TLS"
+    ],
+    "summary": "HTTPS es HTTP dentro de un canal TLS.",
+    "topic": "https-tls"
+  },
+  {
+    "id": "tls",
+    "type": "concept",
+    "track": "rest",
+    "name": "TLS",
+    "aliases": [
+      "HTTPS",
+      "SSL"
+    ],
+    "topic": "https-tls",
+    "topicName": "HTTPS y TLS"
+  },
+  {
+    "id": "certificado",
+    "type": "concept",
+    "track": "rest",
+    "name": "certificado",
+    "aliases": [
+      "certificate"
+    ],
+    "topic": "https-tls",
+    "topicName": "HTTPS y TLS"
+  },
+  {
+    "id": "versiones-http",
+    "type": "topic",
+    "track": "rest",
+    "name": "HTTP/1.1 vs. HTTP/2 vs. HTTP/3",
+    "aliases": [],
+    "summary": "HTTP/1.1 es texto, con conexiones persistentes pero una petición a la vez por conexión.",
+    "topic": "versiones-http"
+  },
+  {
+    "id": "http2",
+    "type": "concept",
+    "track": "rest",
+    "name": "HTTP/2",
+    "aliases": [],
+    "topic": "versiones-http",
+    "topicName": "HTTP/1.1 vs. HTTP/2 vs. HTTP/3"
+  },
+  {
+    "id": "http3",
+    "type": "concept",
+    "track": "rest",
+    "name": "HTTP/3",
+    "aliases": [],
+    "topic": "versiones-http",
+    "topicName": "HTTP/1.1 vs. HTTP/2 vs. HTTP/3"
+  },
+  {
+    "id": "multiplexacion",
+    "type": "concept",
+    "track": "rest",
+    "name": "multiplexación",
+    "aliases": [
+      "multiplexing"
+    ],
+    "topic": "versiones-http",
+    "topicName": "HTTP/1.1 vs. HTTP/2 vs. HTTP/3"
+  },
+  {
+    "id": "rest-richardson",
+    "type": "topic",
+    "track": "rest",
+    "name": "REST: restricciones y modelo de Richardson",
+    "aliases": [
+      "REST: constraints and the Richardson model"
+    ],
+    "summary": "REST es un estilo de arquitectura (Roy Fielding, 2000), no un protocolo ni un estándar.",
+    "topic": "rest-richardson"
+  },
+  {
+    "id": "restricciones-rest",
+    "type": "concept",
+    "track": "rest",
+    "name": "restricciones REST",
+    "aliases": [
+      "REST constraints"
+    ],
+    "topic": "rest-richardson",
+    "topicName": "REST: restricciones y modelo de Richardson"
+  },
+  {
+    "id": "modelo-de-richardson",
+    "type": "concept",
+    "track": "rest",
+    "name": "modelo de Richardson",
+    "aliases": [
+      "Richardson maturity model"
+    ],
+    "topic": "rest-richardson",
+    "topicName": "REST: restricciones y modelo de Richardson"
+  },
+  {
+    "id": "hateoas",
+    "type": "concept",
+    "track": "rest",
+    "name": "HATEOAS",
+    "aliases": [],
+    "topic": "rest-richardson",
+    "topicName": "REST: restricciones y modelo de Richardson"
+  },
+  {
+    "id": "diseno-api-rest",
+    "type": "topic",
+    "track": "rest",
+    "name": "Diseño de una API REST",
+    "aliases": [
+      "Designing a REST API"
+    ],
+    "summary": "Diseñar una API REST es modelar el dominio como recursos en plural, con rutas predecibles, filtros, paginación y versionado.",
+    "topic": "diseno-api-rest"
+  },
+  {
+    "id": "paginacion",
+    "type": "concept",
+    "track": "rest",
+    "name": "paginación",
+    "aliases": [
+      "pagination"
+    ],
+    "topic": "diseno-api-rest",
+    "topicName": "Diseño de una API REST"
+  },
+  {
+    "id": "paginacion-por-cursor",
+    "type": "concept",
+    "track": "rest",
+    "name": "paginación por cursor",
+    "aliases": [
+      "cursor pagination",
+      "cursor",
+      "offset"
+    ],
+    "topic": "diseno-api-rest",
+    "topicName": "Diseño de una API REST"
+  },
+  {
+    "id": "versionado-de-api",
+    "type": "concept",
+    "track": "rest",
+    "name": "versionado de API",
+    "aliases": [
+      "API versioning"
+    ],
+    "topic": "diseno-api-rest",
+    "topicName": "Diseño de una API REST"
+  },
+  {
+    "id": "errores-problem-details",
+    "type": "topic",
+    "track": "rest",
+    "name": "Diseño de respuestas y errores (Problem Details)",
+    "aliases": [
+      "Designing responses and errors (Problem Details)"
+    ],
+    "summary": "Una buena API responde siempre con la misma forma: éxitos consistentes y errores con el código correcto y un cuerpo estructurado.",
+    "topic": "errores-problem-details"
+  },
+  {
+    "id": "problem-details",
+    "type": "concept",
+    "track": "rest",
+    "name": "Problem Details",
+    "aliases": [],
+    "topic": "errores-problem-details",
+    "topicName": "Diseño de respuestas y errores (Problem Details)"
+  },
+  {
+    "id": "idempotencia-en-la-practica",
+    "type": "topic",
+    "track": "rest",
+    "name": "Idempotencia en la práctica: claves y pagos duplicados",
+    "aliases": [
+      "Idempotency in practice: keys and duplicate payments"
+    ],
+    "summary": "Para operaciones no idempotentes, el cliente genera una clave de idempotencia única y la envía en un header.",
+    "topic": "idempotencia-en-la-practica"
+  },
+  {
+    "id": "clave-de-idempotencia",
+    "type": "concept",
+    "track": "rest",
+    "name": "clave de idempotencia",
+    "aliases": [
+      "idempotency key",
+      "Idempotency-Key"
+    ],
+    "topic": "idempotencia-en-la-practica",
+    "topicName": "Idempotencia en la práctica: claves y pagos duplicados"
+  },
+  {
+    "id": "reintentos",
+    "type": "concept",
+    "track": "rest",
+    "name": "reintentos",
+    "aliases": [
+      "retries"
+    ],
+    "topic": "idempotencia-en-la-practica",
+    "topicName": "Idempotencia en la práctica: claves y pagos duplicados"
+  },
+  {
+    "id": "rate-limiting",
+    "type": "topic",
+    "track": "rest",
+    "name": "Rate limiting, 429 y Retry-After",
+    "aliases": [
+      "Rate limiting, 429 and Retry-After"
+    ],
+    "summary": "El rate limiting limita cuántas peticiones puede hacer un cliente en un período.",
+    "topic": "rate-limiting"
+  },
+  {
+    "id": "token-bucket-concepto",
+    "type": "concept",
+    "track": "rest",
+    "name": "token bucket",
+    "aliases": [],
+    "topic": "rate-limiting",
+    "topicName": "Rate limiting, 429 y Retry-After"
+  },
+  {
+    "id": "429",
+    "type": "concept",
+    "track": "rest",
+    "name": "429 Too Many Requests",
+    "aliases": [
+      "Too Many Requests"
+    ],
+    "topic": "rate-limiting",
+    "topicName": "Rate limiting, 429 y Retry-After"
+  },
+  {
+    "id": "retry-after",
+    "type": "concept",
+    "track": "rest",
+    "name": "Retry-After",
+    "aliases": [],
+    "topic": "rate-limiting",
+    "topicName": "Rate limiting, 429 y Retry-After"
+  },
+  {
+    "id": "rest-vs-alternativas",
+    "type": "topic",
+    "track": "rest",
+    "name": "REST vs. GraphQL, gRPC, WebSockets, SSE y webhooks",
+    "aliases": [
+      "REST vs. GraphQL, gRPC, WebSockets, SSE and webhooks"
+    ],
+    "summary": "REST es el estándar para APIs públicas de recursos.",
+    "topic": "rest-vs-alternativas"
+  },
+  {
+    "id": "graphql",
+    "type": "concept",
+    "track": "rest",
+    "name": "GraphQL",
+    "aliases": [],
+    "topic": "rest-vs-alternativas",
+    "topicName": "REST vs. GraphQL, gRPC, WebSockets, SSE y webhooks"
+  },
+  {
+    "id": "grpc",
+    "type": "concept",
+    "track": "rest",
+    "name": "gRPC",
+    "aliases": [],
+    "topic": "rest-vs-alternativas",
+    "topicName": "REST vs. GraphQL, gRPC, WebSockets, SSE y webhooks"
+  },
+  {
+    "id": "websockets",
+    "type": "concept",
+    "track": "rest",
+    "name": "WebSockets",
+    "aliases": [],
+    "topic": "rest-vs-alternativas",
+    "topicName": "REST vs. GraphQL, gRPC, WebSockets, SSE y webhooks"
+  },
+  {
+    "id": "sse",
+    "type": "concept",
+    "track": "rest",
+    "name": "SSE",
+    "aliases": [
+      "Server-Sent Events"
+    ],
+    "topic": "rest-vs-alternativas",
+    "topicName": "REST vs. GraphQL, gRPC, WebSockets, SSE y webhooks"
+  },
+  {
+    "id": "webhooks",
+    "type": "concept",
+    "track": "rest",
+    "name": "webhooks",
+    "aliases": [],
+    "topic": "rest-vs-alternativas",
+    "topicName": "REST vs. GraphQL, gRPC, WebSockets, SSE y webhooks"
+  },
+  {
+    "id": "seguridad-api",
+    "type": "topic",
+    "track": "rest",
+    "name": "Seguridad básica de una API",
+    "aliases": [
+      "Basic API security"
+    ],
+    "summary": "Las bases son HTTPS obligatorio, validar la entrada, autenticar y autorizar en cada endpoint, limitar peticiones y cuidar el token.",
+    "topic": "seguridad-api"
+  },
+  {
+    "id": "almacenamiento-del-token",
+    "type": "concept",
+    "track": "rest",
+    "name": "dónde guardar el token",
+    "aliases": [
+      "token storage"
+    ],
+    "topic": "seguridad-api",
+    "topicName": "Seguridad básica de una API"
+  },
+  {
+    "id": "xss",
+    "type": "concept",
+    "track": "rest",
+    "name": "XSS",
+    "aliases": [],
+    "topic": "seguridad-api",
+    "topicName": "Seguridad básica de una API"
+  },
+  {
+    "id": "csrf",
+    "type": "concept",
+    "track": "rest",
+    "name": "CSRF",
+    "aliases": [],
+    "topic": "seguridad-api",
+    "topicName": "Seguridad básica de una API"
+  }
+]

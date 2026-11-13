@@ -1,0 +1,72 @@
+{
+  "id": "metodos-http",
+  "track": "rest",
+  "order": 4,
+  "freq": "always",
+  "title": "Métodos HTTP y PUT vs. PATCH",
+  "summary": "El método indica la intención de la petición sobre el recurso: leer, crear, reemplazar, modificar, eliminar, pedir headers o consultar.",
+  "sections": {
+    "definition": "<p>El método indica la intención de la petición sobre el recurso: leer (GET), crear o procesar (POST), reemplazar (PUT), modificar parcialmente (PATCH), eliminar (DELETE), pedir solo los headers (HEAD) o consultar qué se permite (OPTIONS).</p>\n",
+    "analogy": "<p>Una ficha de cliente en un archivador: <strong>GET</strong> es leerla, <strong>POST</strong> es entregar una ficha nueva para que el archivo le asigne número, <strong>PUT</strong> es cambiar la ficha completa por otra, <strong>PATCH</strong> es corregir solo el teléfono con corrector, <strong>DELETE</strong> es sacarla, <strong>HEAD</strong> es preguntar si existe y cuándo se modificó sin sacarla, y <strong>OPTIONS</strong> es preguntar qué te dejan hacer con ella.</p>\n",
+    "problem": "<p>Los métodos le dicen a toda la infraestructura qué puede hacer con la petición: los cachés solo guardan GET, los clientes reintentan automáticamente los idempotentes, y los navegadores hacen preflight según el método. Usar POST para todo te hace perder caché, reintentos seguros y claridad.</p>\n",
+    "code:wire": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#5F6388\"># Estado actual de /v1/clientes/7</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">{</span><span style=\"color:#FCD34D\">\"id\"</span><span style=\"color:#CFD3EA\">:7,</span><span style=\"color:#FCD34D\">\"nombre\"</span><span style=\"color:#CFD3EA\">:</span><span style=\"color:#FCD34D\">\"Ana Ruiz\"</span><span style=\"color:#CFD3EA\">,</span><span style=\"color:#FCD34D\">\"email\"</span><span style=\"color:#CFD3EA\">:</span><span style=\"color:#FCD34D\">\"ana@mail.co\"</span><span style=\"color:#CFD3EA\">,</span><span style=\"color:#FCD34D\">\"telefono\"</span><span style=\"color:#CFD3EA\">:</span><span style=\"color:#FCD34D\">\"3001112233\"</span><span style=\"color:#CFD3EA\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">PUT /v1/clientes/7 HTTP/1.1</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">Content-Type: application/json</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">{</span><span style=\"color:#FCD34D\">\"nombre\"</span><span style=\"color:#CFD3EA\">:</span><span style=\"color:#FCD34D\">\"Ana Ruiz\"</span><span style=\"color:#CFD3EA\">,</span><span style=\"color:#FCD34D\">\"email\"</span><span style=\"color:#CFD3EA\">:</span><span style=\"color:#FCD34D\">\"ana@nuevo.co\"</span><span style=\"color:#CFD3EA\">}</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\"># → el teléfono se pierde: PUT reemplaza la representación completa</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">PATCH /v1/clientes/7 HTTP/1.1</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">Content-Type: application/merge-patch+json</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">{</span><span style=\"color:#FCD34D\">\"email\"</span><span style=\"color:#CFD3EA\">:</span><span style=\"color:#FCD34D\">\"ana@nuevo.co\"</span><span style=\"color:#CFD3EA\">}</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\"># → solo cambia el email; el teléfono queda igual</span></span></code></pre>",
+    "code:server": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClienteIn(BaseModel):            </span><span style=\"color:#5F6388\"># PUT: todos los campos obligatorios</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    email: str</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    telefono: str</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClientePatch(BaseModel):         </span><span style=\"color:#5F6388\"># PATCH: todos opcionales</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#7DD3FC\"> None</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    email: str </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#7DD3FC\"> None</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    telefono: str </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#7DD3FC\"> None</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.put(</span><span style=\"color:#FCD34D\">\"/v1/clientes/{id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> reemplazar(id: int, data: ClienteIn): ...</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.patch(</span><span style=\"color:#FCD34D\">\"/v1/clientes/{id}\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> actualizar(id: int, data: ClientePatch):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    cambios </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> data.model_dump(exclude_unset</span><span style=\"color:#7DD3FC\">=True</span><span style=\"color:#CFD3EA\">)   </span><span style=\"color:#5F6388\"># solo lo que llegó</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    ...</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">POST</span><span style=\"color:#CFD3EA\"> /v1/clientes/7/eliminar</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">GET</span><span style=\"color:#CFD3EA\">  /v1/clientes/7/borrar        ← un crawler o un prefetch lo ejecuta</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">POST</span><span style=\"color:#CFD3EA\"> /v1/actualizarCliente</span></span></code></pre>",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">DELETE</span><span style=\"color:#CFD3EA\"> /v1/clientes/7</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">PATCH</span><span style=\"color:#CFD3EA\">  /v1/clientes/7</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">PUT</span><span style=\"color:#CFD3EA\">    /v1/clientes/7</span></span></code></pre>",
+    "bridge:typescript": "<p>La petición <code>OPTIONS</code> que ves en Network antes de tu <code>PUT</code> no la hiciste tú: es el preflight de CORS que lanza el navegador (ver <a href=\"/es/rest/cors\" data-node=\"cors\">CORS y el preflight con OPTIONS</a>). Y cuando usas <code>fetch</code> con <code>method: \"PUT\"</code> para editar un formulario a medias, estás borrando en el servidor los campos que no enviaste, si el backend implementa PUT correctamente.</p>\n",
+    "interview": "<p>GET obtiene un recurso sin modificarlo; POST crea un recurso en una colección o dispara un procesamiento; PUT reemplaza por completo la representación del recurso en esa URI, así que los campos que no envíes se pierden; PATCH aplica una modificación parcial; DELETE elimina; HEAD es como GET pero sin body, útil para revisar headers o existencia; y OPTIONS describe qué métodos admite el recurso, y es el que usa el navegador en el preflight de CORS. La diferencia clave entre PUT y PATCH es reemplazo total frente a cambio parcial, y que PUT es idempotente por definición mientras que PATCH no necesariamente.</p>\n",
+    "myths": "<ul>\n<li>Usar PUT y PATCH como sinónimos. PUT reemplaza el recurso completo; PATCH aplica cambios parciales.</li>\n<li>Creer que PUT solo actualiza. Con PUT el cliente también puede crear un recurso en una URI que él elige (<code>PUT /archivos/foto.png</code>).</li>\n<li>Pensar que DELETE debe devolver el recurso borrado. Lo común es 204 sin body.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "¿Qué método o respuesta corresponde?",
+      "items": [
+        {
+          "q": "Quieres cambiar solo la dirección de envío de un pedido existente.",
+          "options": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH"
+          ],
+          "answer": 3,
+          "why": "Es una modificación parcial de un recurso existente. Con PUT tendrías que enviar el pedido completo."
+        },
+        {
+          "q": "El cliente hace clic en «Confirmar compra» y se crea un pedido nuevo con id generado por el servidor.",
+          "options": [
+            "POST",
+            "PUT",
+            "PATCH",
+            "GET"
+          ],
+          "answer": 0,
+          "why": "Crear en una colección donde el servidor asigna el id es el caso clásico de POST a /v1/pedidos."
+        },
+        {
+          "q": "Un health check solo quiere saber si /v1/productos/42 existe y cuándo cambió, sin descargar el body.",
+          "options": [
+            "GET",
+            "HEAD",
+            "OPTIONS",
+            "POST"
+          ],
+          "answer": 1,
+          "why": "HEAD devuelve los mismos headers que GET (Content-Length, ETag, Last-Modified) sin body."
+        },
+        {
+          "q": "Un formulario de administración envía todos los campos de un producto para sobrescribirlo.",
+          "options": [
+            "PATCH",
+            "POST",
+            "PUT",
+            "DELETE"
+          ],
+          "answer": 2,
+          "why": "Se reemplaza la representación completa en una URI conocida: PUT."
+        }
+      ]
+    }
+  ]
+}

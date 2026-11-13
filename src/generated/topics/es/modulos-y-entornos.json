@@ -1,0 +1,50 @@
+{
+  "id": "modulos-y-entornos",
+  "track": "python",
+  "order": 7,
+  "freq": "often",
+  "title": "Módulos, paquetes, entornos virtuales y dependencias",
+  "short": "Módulos, venv y uv",
+  "summary": "Un módulo es un archivo .py; un paquete es una carpeta de módulos, normalmente con __init__.py.",
+  "sections": {
+    "definition": "<p>Un <strong>módulo</strong> es un archivo <code>.py</code>; un <strong>paquete</strong> es una carpeta de módulos (normalmente con <code>__init__.py</code>). Un <strong>entorno virtual</strong> aísla el intérprete y las librerías de cada proyecto. La documentación actual de FastAPI usa <strong>uv</strong> por defecto, con <code>pyproject.toml</code> y <code>uv.lock</code>.</p>\n",
+    "analogy": "<p>El entorno virtual es la despensa propia de cada proyecto: no sacas ingredientes del mercado común ni le cambias la receta al vecino.</p>\n",
+    "problem": "<p>Sin entorno virtual, dos proyectos que necesitan versiones distintas de una librería se rompen entre sí, y lo que instalaste en el Python del sistema puede romper herramientas del Mac.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#5F6388\"># Terminal (recomendado: uv)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">uv init tienda</span><span style=\"color:#7DD3FC\">-</span><span style=\"color:#CFD3EA\">api &#x26;&#x26; cd tienda</span><span style=\"color:#7DD3FC\">-</span><span style=\"color:#CFD3EA\">api</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">uv add </span><span style=\"color:#FCD34D\">\"fastapi[standard]\"</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">uv run fastapi dev app</span><span style=\"color:#7DD3FC\">/</span><span style=\"color:#CFD3EA\">main.py</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># Alternativa clásica con venv + pip</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">python3 </span><span style=\"color:#7DD3FC\">-</span><span style=\"color:#CFD3EA\">m venv .venv</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">source .venv</span><span style=\"color:#7DD3FC\">/</span><span style=\"color:#CFD3EA\">bin</span><span style=\"color:#7DD3FC\">/</span><span style=\"color:#CFD3EA\">activate</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">pip install </span><span style=\"color:#FCD34D\">\"fastapi[standard]\"</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># Estructura e imports</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># app/</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">#   __init__.py</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">#   main.py</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">#   productos/</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">#     __init__.py</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">#     router.py</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> app.productos.router </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> router </span><span style=\"color:#7DD3FC\">as</span><span style=\"color:#CFD3EA\"> productos_router</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">if</span><span style=\"color:#CFD3EA\"> __name__ </span><span style=\"color:#7DD3FC\">==</span><span style=\"color:#FCD34D\"> \"__main__\"</span><span style=\"color:#CFD3EA\">:     </span><span style=\"color:#5F6388\"># solo si ejecutas el archivo directamente</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    print(</span><span style=\"color:#FCD34D\">\"modo script\"</span><span style=\"color:#CFD3EA\">)</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">sudo pip install fastapi</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> utilidades </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#7DD3FC\"> *</span></span></code></pre><p>Instalación global y un import con asterisco que llena el espacio de nombres sin saber qué trae.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">uv add </span><span style=\"color:#FCD34D\">\"fastapi[standard]\"</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> app.utilidades </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> calcular_iva</span></span></code></pre><p>Dependencia registrada en pyproject.toml y bloqueada en uv.lock; import explícito.</p>\n",
+    "bridge:typescript": "<p><code>pyproject.toml</code> ≈ <code>package.json</code>; <code>uv.lock</code> ≈ <code>package-lock.json</code>; <code>.venv</code> ≈ <code>node_modules</code>, pero además contiene el intérprete; PyPI ≈ registro de npm; <code>uv run</code> ≈ <code>npx</code>/<code>npm run</code>. Diferencia clave: Node busca <code>node_modules</code> solo; Python usa el entorno que esté activo, o el que <code>uv run</code> active por ti.</p>\n",
+    "interview": "<p>Cada archivo .py es un módulo y una carpeta de módulos es un paquete. Aíslo cada proyecto en un entorno virtual para que sus dependencias no choquen con otros proyectos ni con el sistema. Hoy uso uv: declara dependencias en pyproject.toml y fija versiones exactas en uv.lock, igual que package.json y el lockfile en Node. El bloque if name igual a main permite que un módulo sea importable y ejecutable a la vez.</p>\n",
+    "myths": "<ul>\n<li>Instalar sin activar el venv y luego no encontrar el paquete.</li>\n<li>Llamar a tu archivo <code>fastapi.py</code> o <code>json.py</code>: tapa la librería real al importar.</li>\n<li>Imports circulares entre módulos (A importa B y B importa A).</li>\n<li>Commitear la carpeta <code>.venv</code> al repo.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "Pregunta rápida",
+      "items": [
+        {
+          "q": "¿Qué archivo cumple el papel de <code>package-lock.json</code> con uv?",
+          "options": [
+            "pyproject.toml",
+            "requirements.txt",
+            "uv.lock",
+            ".python-version"
+          ],
+          "answer": 2,
+          "why": "<code>uv.lock</code> fija las versiones exactas de todo el árbol de dependencias."
+        },
+        {
+          "q": "¿Cuándo corre el código dentro de <code>if __name__ == \"__main__\":</code>?",
+          "options": [
+            "Siempre",
+            "Cuando el archivo se ejecuta directamente, no cuando se importa",
+            "Solo en producción",
+            "Cuando se importa por primera vez"
+          ],
+          "answer": 1,
+          "why": "Al importar, <code>__name__</code> es el nombre del módulo; al ejecutarlo directo vale <code>\"__main__\"</code>."
+        }
+      ]
+    }
+  ]
+}

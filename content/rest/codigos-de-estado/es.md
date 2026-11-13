@@ -68,6 +68,22 @@ exercises:
           - "204"
         answer: 2
         why: "202 Accepted: se aceptó, pero aún no se completó. Se suele devolver una URL para consultar el estado."
+      - q: Un cliente autenticado pide `GET /pedidos/1042`, pero ese pedido es de otro cliente.
+        options:
+          - "401"
+          - "403"
+          - "404"
+          - "422"
+        answer: 1
+        why: "Está autenticado, pero no autorizado: 403. Algunas APIs responden 404 a propósito para no revelar que el pedido existe; si lo dices en la entrevista, suma puntos."
+      - q: "`POST /clientes` con un email que ya está registrado."
+        options:
+          - "400"
+          - "409"
+          - "422"
+          - "500"
+        answer: 1
+        why: "La petición es válida, pero entra en conflicto con el estado actual: 409 Conflict."
 ---
 
 ## definition

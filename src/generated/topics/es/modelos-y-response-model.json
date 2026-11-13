@@ -1,0 +1,56 @@
+{
+  "id": "modelos-y-response-model",
+  "track": "python",
+  "order": 12,
+  "freq": "always",
+  "title": "Modelos de entrada y salida, validación y response_model",
+  "short": "Modelos y response_model",
+  "summary": "Separa los esquemas: lo que entra, lo que sale y lo que se guarda.",
+  "sections": {
+    "definition": "<p>Separa los esquemas: lo que <strong>entra</strong> (<code>ClienteCrear</code>), lo que <strong>sale</strong> (<code>ClientePublico</code>) y lo que se <strong>guarda</strong>. El tipo de retorno del endpoint, o <code>response_model</code>, valida y <strong>filtra</strong> la respuesta: solo salen los campos del modelo de salida.</p>\n",
+    "analogy": "<p>La carta que ve el cliente no muestra el costo de los ingredientes ni el proveedor, aunque la cocina los conozca.</p>\n",
+    "problem": "<p>Con un solo modelo para todo terminas devolviendo el hash de la contraseña o permitiendo que el cliente envíe campos que no debería, como <code>es_admin</code>.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> pydantic </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> BaseModel, ConfigDict, EmailStr, Field</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClienteBase(BaseModel):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> Field(min_length</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">2)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    email: EmailStr</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClienteCrear(ClienteBase):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    password: str </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> Field(min_length</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">8)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClientePublico(ClienteBase):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    model_config </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> ConfigDict(from_attributes</span><span style=\"color:#7DD3FC\">=True</span><span style=\"color:#CFD3EA\">)   </span><span style=\"color:#5F6388\"># para leer objetos ORM</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    id: int</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/clientes\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">201)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear_cliente(datos: ClienteCrear, session: SessionDep) -> ClientePublico:</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    cliente </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> guardar_cliente(session, datos)   </span><span style=\"color:#5F6388\"># tiene hashed_password</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> cliente                              </span><span style=\"color:#5F6388\"># sale solo id, nombre, email</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># Si devuelves un tipo distinto al anotado, usa response_model</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/clientes/{cliente_id}\"</span><span style=\"color:#CFD3EA\">, response_model</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">ClientePublico)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> obtener_cliente(cliente_id: int, session: SessionDep):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> session.get(Cliente, cliente_id)</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/clientes\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear(datos: ClienteCrear) -> ClienteCrear:</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    guardar(datos)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> datos            </span><span style=\"color:#5F6388\"># devuelve el password</span></span></code></pre><p>El modelo de entrada se usa como salida.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/clientes\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">201)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear(datos: ClienteCrear) -> ClientePublico:</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> guardar(datos)   </span><span style=\"color:#5F6388\"># FastAPI filtra</span></span></code></pre><p>Entrada y salida separadas; la herencia evita repetir campos.</p>\n",
+    "bridge:typescript": "<p>Es la idea de los DTO: tener un tipo <code>CreateClienteDto</code> para lo que entra y otro <code>ClienteResponse</code> para lo que sale. La diferencia es que aquí el modelo de salida no es solo un tipo: se valida y filtra en ejecución. Pydantic frente a una interfaz de TS: la interfaz desaparece al compilar; el modelo actúa.</p>\n",
+    "interview": "<p>Defino modelos distintos para entrada y salida, normalmente con una clase base compartida. La entrada valida lo que el cliente puede enviar y la salida controla lo que expongo: si anoto el retorno o uso response_model, FastAPI filtra los campos, así nunca se filtra un hash de contraseña. Si el body no cumple, el cliente recibe 422 con el detalle; si mi respuesta no cumple, es un 500 porque es un error del servidor.</p>\n",
+    "myths": "<ul>\n<li>Usar el mismo modelo para entrada, salida y tabla.</li>\n<li>Devolver un objeto ORM sin <code>from_attributes=True</code>.</li>\n<li>Si tu respuesta no cumple el modelo de salida, el error es un <strong>500</strong> (bug tuyo), no un 422.</li>\n<li>Por defecto los campos extra se ignoran; con <code>model_config = ConfigDict(extra=\"forbid\")</code> los rechazas.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "¿Qué código de estado devuelve?",
+      "items": [
+        {
+          "q": "El handler devuelve un dict sin el campo <code>id</code>, que es obligatorio en <code>ClientePublico</code>.",
+          "options": [
+            "200 sin id",
+            "422",
+            "500",
+            "204"
+          ],
+          "answer": 2,
+          "why": "Falla la validación de la respuesta (ResponseValidationError). Es un error del servidor: 500."
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "prompt": "Pregunta rápida",
+      "items": [
+        {
+          "q": "¿Qué hace FastAPI con los campos que no están en el modelo de salida?",
+          "options": [
+            "Los devuelve igual",
+            "Los filtra",
+            "Lanza 422",
+            "Los convierte a null"
+          ],
+          "answer": 1,
+          "why": "El modelo de respuesta funciona como filtro: solo sale lo declarado."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "id": "estructura-del-proyecto",
+  "track": "python",
+  "order": 19,
+  "freq": "often",
+  "title": "Structure of a real project",
+  "short": "Project structure",
+  "summary": "Split by responsibility: routers, services, repositories, schemas, models and configuration with pydantic-settings.",
+  "sections": {
+    "definition": "<p>Split by responsibility: <strong>routers</strong> (HTTP), <strong>services</strong> (business rules), <strong>repositories</strong> (data access), <strong>schemas</strong> (Pydantic), <strong>models</strong> (tables) and <strong>configuration</strong> with pydantic-settings. <code>APIRouter</code> modularizes the routes and <code>lifespan</code> handles startup and shutdown (the <code>on_event</code> events are deprecated).</p>\n",
+    "analogy": "<p>In a restaurant, the waiter (router) takes the order, the chef (service) decides how to prepare it and the storekeeper (repository) brings the ingredients. The waiter doesn't cook and the chef doesn't wait tables.</p>\n",
+    "problem": "<p>With everything in <code>main.py</code>, business logic ends up mixed with HTTP and SQL: it cannot be tested without starting the API nor reused from a script or a worker.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span>tienda-api/</span></span>\n<span class=\"line\"><span>├── pyproject.toml</span></span>\n<span class=\"line\"><span>├── uv.lock</span></span>\n<span class=\"line\"><span>├── .env                    # nunca al repo</span></span>\n<span class=\"line\"><span>├── alembic.ini</span></span>\n<span class=\"line\"><span>├── migrations/</span></span>\n<span class=\"line\"><span>├── app/</span></span>\n<span class=\"line\"><span>│   ├── main.py             # crea FastAPI, lifespan, incluye routers</span></span>\n<span class=\"line\"><span>│   ├── core/</span></span>\n<span class=\"line\"><span>│   │   ├── config.py       # Settings</span></span>\n<span class=\"line\"><span>│   │   └── security.py     # hash y JWT</span></span>\n<span class=\"line\"><span>│   ├── db.py               # engine y get_session</span></span>\n<span class=\"line\"><span>│   ├── deps.py             # SessionDep, ClienteActual</span></span>\n<span class=\"line\"><span>│   ├── pedidos/</span></span>\n<span class=\"line\"><span>│   │   ├── router.py</span></span>\n<span class=\"line\"><span>│   │   ├── schemas.py</span></span>\n<span class=\"line\"><span>│   │   ├── models.py</span></span>\n<span class=\"line\"><span>│   │   ├── service.py</span></span>\n<span class=\"line\"><span>│   │   └── repository.py</span></span>\n<span class=\"line\"><span>│   └── productos/ ...</span></span>\n<span class=\"line\"><span>└── tests/</span></span></code></pre><pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#5F6388\"># app/core/config.py</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> pydantic_settings </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> BaseSettings, SettingsConfigDict</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> Settings(BaseSettings):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    model_config </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> SettingsConfigDict(env_file</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\".env\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    database_url: str</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    secret_key: str</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    token_minutos: int </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> 30</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    cors_origins: list[str] </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> [</span><span style=\"color:#FCD34D\">\"http://localhost:4200\"</span><span style=\"color:#CFD3EA\">]</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">settings </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> Settings()</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># app/pedidos/router.py</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">router </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> APIRouter(prefix</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"/pedidos\"</span><span style=\"color:#CFD3EA\">, tags</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">[</span><span style=\"color:#FCD34D\">\"pedidos\"</span><span style=\"color:#CFD3EA\">])</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@router.post(</span><span style=\"color:#FCD34D\">\"\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">201)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear(datos: PedidoCrear, cliente: ClienteActual, session: SessionDep) -> PedidoPublico:</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> PedidoService(session).crear(datos, cliente)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># app/main.py</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@asynccontextmanager</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">async</span><span style=\"color:#7DD3FC\"> def</span><span style=\"color:#CFD3EA\"> lifespan(app: FastAPI):</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">    # arranque: conexiones, cargar modelos de IA, etc.</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    yield</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">    # apagado: liberar recursos</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">app </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> FastAPI(title</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"Tienda API\"</span><span style=\"color:#CFD3EA\">, lifespan</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">lifespan)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">app.include_router(pedidos.router)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">app.include_router(productos.router)</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/pedidos\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear(datos: dict):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    con </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> psycopg.connect(</span><span style=\"color:#FCD34D\">\"postgres://admin:1234@...\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    total </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> sum(i[</span><span style=\"color:#FCD34D\">\"precio\"</span><span style=\"color:#CFD3EA\">] </span><span style=\"color:#7DD3FC\">*</span><span style=\"color:#CFD3EA\"> i[</span><span style=\"color:#FCD34D\">\"cantidad\"</span><span style=\"color:#CFD3EA\">] </span><span style=\"color:#7DD3FC\">for</span><span style=\"color:#CFD3EA\"> i </span><span style=\"color:#7DD3FC\">in</span><span style=\"color:#CFD3EA\"> datos[</span><span style=\"color:#FCD34D\">\"items\"</span><span style=\"color:#CFD3EA\">])</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    if</span><span style=\"color:#CFD3EA\"> total </span><span style=\"color:#7DD3FC\">></span><span style=\"color:#CFD3EA\"> 1_000_000: ...</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    con.execute(</span><span style=\"color:#7DD3FC\">f</span><span style=\"color:#FCD34D\">\"INSERT INTO pedido ...\"</span><span style=\"color:#CFD3EA\">)</span></span></code></pre><p>Credentials in the code, no validation, rules and SQL in the handler.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@router.post(</span><span style=\"color:#FCD34D\">\"\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">201)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear(datos: PedidoCrear, servicio: PedidoServiceDep) -> PedidoPublico:</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> servicio.crear(datos)</span></span></code></pre><p>The router only translates HTTP; the service holds the rule and is tested on its own.</p>\n",
+    "bridge:typescript": "<p>It is the organization by <em>features</em> you already use on the frontend: each folder with its router (like the feature's routes), its services and its models. <code>Settings</code> ≈ a per-environment configuration file or <code>import.meta.env</code>, but it is read from environment variables at runtime, not at build time.</p>\n",
+    "interview": "<p>I organize by features, and within each one I separate router, schemas, models, service and, if needed, repository. The router only handles HTTP; the service has the business rules and knows nothing about HTTP; the repository encapsulates the queries. Configuration comes from environment variables with pydantic-settings, common dependencies live in a deps module, and I use lifespan for startup and shutdown. I adjust the number of layers to the size of the project.</p>\n",
+    "myths": "<ul>\n<li>Overengineering: a repository for a three-table CRUD may be overkill. Start simple.</li>\n<li>Committing the <code>.env</code> with secrets.</li>\n<li>Using <code>@app.on_event(\"startup\")</code>: it is deprecated, use <code>lifespan</code>.</li>\n<li>Circular imports between modules of different features.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "classify",
+      "prompt": "Which layer does each thing go in?",
+      "categories": [
+        "router",
+        "service",
+        "repository",
+        "schemas",
+        "config"
+      ],
+      "items": [
+        {
+          "text": "Validate there is stock before creating the order",
+          "answer": 1,
+          "why": "Business rule."
+        },
+        {
+          "text": "Define prefix /pedidos and status_code 201",
+          "answer": 0,
+          "why": "HTTP detail."
+        },
+        {
+          "text": "Run a SELECT with filters and pagination",
+          "answer": 2,
+          "why": "Data access."
+        },
+        {
+          "text": "Read DATABASE_URL from the environment",
+          "answer": 4,
+          "why": "pydantic-settings."
+        },
+        {
+          "text": "Declare which fields the POST accepts",
+          "answer": 3,
+          "why": "Pydantic input model."
+        }
+      ]
+    }
+  ]
+}

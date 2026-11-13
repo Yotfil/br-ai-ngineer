@@ -156,6 +156,16 @@
   border-color: color-mix(in srgb, var(--track) 40%, transparent);
   background: color-mix(in srgb, var(--track) 7%, transparent);
 }
+/* Ejemplo principal: bloques de código consecutivos (decisión 2 de pista-python). */
+.example pre + pre {
+  margin-top: 10px;
+}
+/* Nota bajo el código del ejemplo riesgoso y del correcto (decisión 3). */
+.noted p {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
 .pair {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -3,8 +3,10 @@ import sanitizeHtml from 'sanitize-html'
 import { createHighlighter, type Highlighter, type ThemeRegistration } from 'shiki'
 import type { SectionKey } from '../../src/content/model.ts'
 
+/** Lenguajes que carga Shiki. */
 export const CODE_LANGS = ['python', 'http', 'json', 'bash', 'typescript'] as const
-export type CodeLang = (typeof CODE_LANGS)[number]
+/** `text`: tipografía y fondo de código, sin resaltado (Shiki lo trata como texto plano). */
+export type CodeLang = (typeof CODE_LANGS)[number] | 'text'
 
 /** Paleta de bloques de código de mockups/ui-v2.html (`pre`, `.c`, `.k`, `.s`). */
 const cerebroTheme: ThemeRegistration = {
@@ -27,19 +29,34 @@ export function getHighlighter(): Promise<Highlighter> {
   return highlighter
 }
 
-const FENCE_ALIASES: Record<string, CodeLang> = { py: 'python', python: 'python', http: 'http', json: 'json', bash: 'bash', sh: 'bash', ts: 'typescript', typescript: 'typescript' }
+/** Lenguajes de valla admitidos y su lenguaje de resaltado. Cualquier otro es un error de validación (sections.ts). */
+export const FENCE_ALIASES: Record<string, CodeLang> = {
+  py: 'python',
+  python: 'python',
+  http: 'http',
+  json: 'json',
+  bash: 'bash',
+  sh: 'bash',
+  ts: 'typescript',
+  typescript: 'typescript',
+  text: 'text',
+  txt: 'text',
+}
 
 /**
- * Regla de design.md decisión 2: `code:server` es python; en `code:wire`, `bad` y `good` el bloque es
- * python si contiene `def `, `@app.` o `import `, y http en caso contrario. En el resto se respeta el
- * lenguaje de la valla (por defecto, sin resaltado de lenguaje: se trata como texto http).
+ * Regla de lenguaje (decisiones 2 y 11 de pista-python): si la valla declara un lenguaje, ese lenguaje manda
+ * (un lenguaje no admitido no llega aquí: la validación lo rechaza).
+ * Si no lo declara, se mantiene la regla anterior: `code:server` es python; en `code:wire`, `bad` y `good`
+ * el bloque es python si contiene `def `, `@app.` o `import `, y http en caso contrario; en el resto, http.
  */
 export function codeLanguage(section: SectionKey | null, code: string, fence: string | undefined): CodeLang {
+  const declared = FENCE_ALIASES[(fence ?? '').toLowerCase()]
+  if (declared) return declared
   if (section === 'code:server') return 'python'
   if (section === 'code:wire' || section === 'bad' || section === 'good') {
     return /def |@app\.|import /.test(code) ? 'python' : 'http'
   }
-  return FENCE_ALIASES[(fence ?? '').toLowerCase()] ?? 'http'
+  return 'http'
 }
 
 const SANITIZE: sanitizeHtml.IOptions = {
@@ -78,6 +95,12 @@ export async function renderMarkdown(md: string, section: SectionKey | null, res
   })
   const html = sanitize(await marked.parse(replaceMentions(md, resolve)))
   return html.replace(/<pre data-code="(\d+)"><\/pre>/g, (_, i: string) => blocks[Number(i)])
+}
+
+/** Resalta un bloque de código suelto (p. ej. el `code` de un ítem de opción múltiple). */
+export async function highlightCode(code: string, lang: CodeLang): Promise<string> {
+  const hl = await getHighlighter()
+  return hl.codeToHtml(code.replace(/\s+$/, ''), { lang, theme: 'cerebro' })
 }
 
 /** Markdown inline (enunciados y opciones de ejercicios) a HTML saneado. */

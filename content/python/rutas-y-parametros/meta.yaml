@@ -1,0 +1,12 @@
+id: rutas-y-parametros
+track: python
+order: 11
+freq: always
+group: fastapi
+concepts:
+  - path-operation
+related:
+  - parametro-de-ruta
+  - query-string
+  - body
+  - type-hints

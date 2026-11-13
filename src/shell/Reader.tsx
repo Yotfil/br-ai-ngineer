@@ -72,6 +72,12 @@ export default function Reader({ locale, topicId, track, tab, onTab, mode, onMod
     </>
   ) : active === 'code' ? (
     <>
+      {s['code:example'] && (
+        <>
+          <h3>{t('section.code:example')}</h3>
+          <div className={styles.example} data-section="code:example" dangerouslySetInnerHTML={html(s['code:example'])} />
+        </>
+      )}
       {s['code:wire'] && (
         <>
           <h3>{t('section.code:wire')}</h3>
@@ -88,18 +94,18 @@ export default function Reader({ locale, topicId, track, tab, onTab, mode, onMod
         <div className={styles.pair}>
           <div>
             <span className={`${styles.lbl} ${styles.bad}`}>{t('section.bad')}</span>
-            <div dangerouslySetInnerHTML={html(s.bad)} />
+            <div className={styles.noted} data-section="bad" dangerouslySetInnerHTML={html(s.bad)} />
           </div>
           <div>
             <span className={`${styles.lbl} ${styles.good}`}>{t('section.good')}</span>
-            <div dangerouslySetInnerHTML={html(s.good)} />
+            <div className={styles.noted} data-section="good" dangerouslySetInnerHTML={html(s.good)} />
           </div>
         </div>
       )}
       {s['bridge:typescript'] && (
         <>
           <h3>{t('section.bridge:typescript')}</h3>
-          <div className={styles.box} dangerouslySetInnerHTML={html(s['bridge:typescript'])} />
+          <div className={styles.box} data-section="bridge:typescript" dangerouslySetInnerHTML={html(s['bridge:typescript'])} />
         </>
       )}
     </>

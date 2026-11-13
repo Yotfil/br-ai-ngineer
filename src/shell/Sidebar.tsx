@@ -1,5 +1,7 @@
+import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { GraphNode, Locale, TrackInfo } from '../content/model.ts'
+import { sectionsOf } from './groups.ts'
 import styles from './Sidebar.module.css'
 
 interface Props {
@@ -8,7 +10,10 @@ interface Props {
   locale: Locale
   tracks: readonly TrackInfo[]
   topicsOf: (trackId: string) => readonly GraphNode[]
+  /** Título completo de cada tema (ayuda al pasar el cursor). */
   labels: Readonly<Record<string, string>>
+  /** Nombre de cada fila: el título corto si existe, si no el completo. */
+  listLabels: Readonly<Record<string, string>>
   open: ReadonlySet<string>
   collapsed: boolean
   currentTopic: string | null
@@ -17,7 +22,7 @@ interface Props {
   onHover: (id: string | null) => void
 }
 
-export default function Sidebar({ inactive = false, locale, tracks, topicsOf, labels, open, collapsed, currentTopic, onTrack, onTopic, onHover }: Props) {
+export default function Sidebar({ inactive = false, locale, tracks, topicsOf, labels, listLabels, open, collapsed, currentTopic, onTrack, onTopic, onHover }: Props) {
   const { t } = useTranslation()
   return (
     <nav className={`${styles.side} glass ${collapsed ? styles.collapsed : ''}`} aria-label={t('side.tracks')} aria-hidden={inactive || undefined} inert={inactive || undefined} onMouseLeave={() => onHover(null)}>
@@ -50,19 +55,33 @@ export default function Sidebar({ inactive = false, locale, tracks, topicsOf, la
             {!tr.empty && (
               <div className={`${styles.subs} ${isOpen ? styles.subsOpen : ''}`} aria-hidden={!isOpen}>
                 <div className={styles.subsIn}>
-                  {topics.map((n) => (
-                    <button
-                      key={n.id}
-                      className={`${styles.sub} ${n.id === currentTopic ? styles.cur : ''}`}
-                      aria-current={n.id === currentTopic ? 'page' : undefined}
-                      tabIndex={isOpen ? 0 : -1}
-                      onClick={() => onTopic(n.id)}
-                      onMouseEnter={() => onHover(n.id)}
-                      onFocus={() => onHover(n.id)}
-                      onBlur={() => onHover(null)}
-                    >
-                      {labels[n.id] ?? n.id}
-                    </button>
+                  {sectionsOf(tr, topics, locale).map((sec) => (
+                    <Fragment key={sec.heading?.id ?? '-'}>
+                      {sec.heading && !collapsed && (
+                        <p className={styles.group} data-group={sec.heading.id}>
+                          {sec.heading.name}
+                        </p>
+                      )}
+                      {sec.topics.map((n) => {
+                        const full = labels[n.id] ?? n.id
+                        const shown = listLabels[n.id] ?? full
+                        return (
+                          <button
+                            key={n.id}
+                            className={`${styles.sub} ${n.id === currentTopic ? styles.cur : ''}`}
+                            aria-current={n.id === currentTopic ? 'page' : undefined}
+                            tabIndex={isOpen ? 0 : -1}
+                            title={shown !== full ? full : undefined}
+                            onClick={() => onTopic(n.id)}
+                            onMouseEnter={() => onHover(n.id)}
+                            onFocus={() => onHover(n.id)}
+                            onBlur={() => onHover(null)}
+                          >
+                            {shown}
+                          </button>
+                        )
+                      })}
+                    </Fragment>
                   ))}
                 </div>
               </div>

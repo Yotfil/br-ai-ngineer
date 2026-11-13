@@ -1,0 +1,11 @@
+id: errores-y-httpexception
+track: python
+order: 14
+freq: always
+group: fastapi
+concepts:
+  - httpexception
+  - exception-handler
+related:
+  - codigos-de-estado
+  - problem-details

@@ -68,9 +68,12 @@
 .empty {
   opacity: 0.45;
 }
-/* Decisión 19: la hoja no es de cristal; fondo casi opaco en cualquier modo del lector. */
+/*
+ * La hoja no es de cristal (decisión 19 de esqueleto-y-pista-rest) y es 100 % opaca en cualquier modo del lector
+ * (decisión 12 de pista-python): mismo color base que --glass-strong, sin tocar ese token.
+ */
 .sheet {
-  background: var(--glass-strong);
+  background: rgb(9, 10, 20);
   border: 1px solid var(--edge);
   border-radius: var(--r);
   box-shadow: var(--glass-shadow);
@@ -89,6 +92,15 @@
   letter-spacing: 0.2em;
   color: var(--c);
   text-transform: uppercase;
+}
+/* Subtítulo de grupo, en el estilo del rótulo "PISTAS" del sidebar; no es interactivo. */
+.group {
+  margin: 10px 10px 4px;
+  font: 500 10px var(--mono);
+  letter-spacing: 0.2em;
+  color: var(--faint);
+  text-transform: uppercase;
+  user-select: none;
 }
 .sub {
   display: block;

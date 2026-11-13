@@ -1,0 +1,13 @@
+id: funciones-y-closures
+track: python
+order: 4
+freq: always
+group: lenguaje
+concepts:
+  - args-kwargs
+  - closure
+  - lambda
+  - default-mutable
+related:
+  - decoradores
+  - mutabilidad

@@ -63,6 +63,8 @@ export function validateContent(content: RawContent): IdIndex {
 
   const exists = (id: string) => topics.has(id) || conceptHome.has(id)
 
+  validateGroups(content, problems)
+
   for (const t of content.topics) {
     const id = t.meta.id
     // Relaciones explícitas.
@@ -96,6 +98,11 @@ export function validateContent(content: RawContent): IdIndex {
     for (const [locale, loc] of rest) {
       const a = first[1]!
       const b = loc!
+      // Título corto: si un idioma lo tiene, el otro también.
+      if ((a.front.short === undefined) !== (b.front.short === undefined)) {
+        const missing = a.front.short === undefined ? first[0] : locale
+        problems.push(`tema "${id}": falta el título corto (short) en "${missing}"`)
+      }
       for (const key of SECTION_KEYS) {
         const inA = a.sections[key] !== undefined
         const inB = b.sections[key] !== undefined
@@ -113,6 +120,19 @@ export function validateContent(content: RawContent): IdIndex {
             problems.push(`tema "${id}": el grupo de ejercicios ${gi + 1} difiere entre "${first[0]}" y "${locale}"`)
             return
           }
+          if (ga.type === 'classify' && gb.type === 'classify') {
+            if (ga.categories.length !== gb.categories.length) {
+              problems.push(`tema "${id}": el grupo de ejercicios ${gi + 1} tiene distinto número de categorías entre "${first[0]}" y "${locale}"`)
+              return
+            }
+            ga.items.forEach((ia, ii) => {
+              const ib = gb.items[ii]
+              if (ga.categories.indexOf(ia.category) !== gb.categories.indexOf(ib.category)) {
+                problems.push(`tema "${id}": el ejercicio ${ii + 1} del grupo ${gi + 1} difiere entre "${first[0]}" y "${locale}"`)
+              }
+            })
+            return
+          }
           ga.items.forEach((ia, ii) => {
             const ib = gb.items[ii]
             const same =
@@ -128,4 +148,51 @@ export function validateContent(content: RawContent): IdIndex {
 
   if (problems.length) throw new ContentError(problems)
   return { tracks, topics, conceptHome }
+}
+
+/**
+ * Grupos de temas (design.md de pista-python, decisión 5): grupo declarado por su pista, obligatorio en pistas
+ * con grupos y prohibido en las que no; temas de un grupo consecutivos según `order`, y grupos en el orden de `tracks.yaml`.
+ */
+function validateGroups(content: RawContent, problems: string[]): void {
+  const trackById = new Map(content.tracks.map((t) => [t.id, t]))
+  const byTrack = new Map<string, RawTopic[]>()
+  for (const t of content.topics) {
+    const list = byTrack.get(t.meta.track) ?? []
+    list.push(t)
+    byTrack.set(t.meta.track, list)
+  }
+  for (const [trackId, list] of byTrack) {
+    const track = trackById.get(trackId)
+    if (!track) continue
+    const groups = track.groups?.map((g) => g.id) ?? []
+    let ok = true
+    for (const t of list) {
+      const g = t.meta.group
+      if (!groups.length) {
+        if (g !== undefined) {
+          problems.push(`tema "${t.meta.id}": indica el grupo "${g}" pero la pista "${trackId}" no declara grupos`)
+          ok = false
+        }
+      } else if (g === undefined) {
+        problems.push(`tema "${t.meta.id}": no indica su grupo y la pista "${trackId}" declara grupos`)
+        ok = false
+      } else if (!groups.includes(g)) {
+        problems.push(`tema "${t.meta.id}": el grupo "${g}" no está declarado en la pista "${trackId}"`)
+        ok = false
+      }
+    }
+    if (!groups.length || !ok) continue
+    const sorted = [...list].sort((a, b) => a.meta.order - b.meta.order || a.meta.id.localeCompare(b.meta.id))
+    // Secuencia de grupos en el orden de la pista, sin repeticiones consecutivas.
+    const runs: string[] = []
+    for (const t of sorted) if (runs[runs.length - 1] !== t.meta.group) runs.push(t.meta.group!)
+    const split = new Set(runs.filter((g, i) => runs.indexOf(g) !== i))
+    for (const g of split) problems.push(`grupo "${g}" de la pista "${trackId}": sus temas no son consecutivos en el orden de la pista`)
+    if (split.size) continue
+    const declared = groups.filter((g) => runs.includes(g))
+    if (runs.join('|') !== declared.join('|')) {
+      problems.push(`pista "${trackId}": los grupos no siguen el orden declarado en tracks.yaml (${declared.join(', ')}); el orden de los temas da ${runs.join(', ')}`)
+    }
+  }
 }

@@ -47,6 +47,7 @@
     "notFound": "Topic not found."
   },
   "section": {
+    "code:example": "Example: the store API",
     "analogy": "Analogy",
     "problem": "What problem it solves",
     "code:wire": "How it travels over the wire",

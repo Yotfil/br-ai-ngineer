@@ -10,6 +10,22 @@ export const TRACKS_YAML = YAML.stringify([
   { id: 'sql', abbr: 'SQ', color: '#fbbf24', order: 2, name: { es: 'SQL', en: 'SQL' } },
 ])
 
+/** Pista con grupos para las pruebas de pista-python. */
+export const GROUPED_TRACKS_YAML = YAML.stringify([
+  { id: 'rest', abbr: 'RE', color: '#22d3ee', order: 1, name: { es: 'HTTP y REST', en: 'HTTP & REST' } },
+  {
+    id: 'python',
+    abbr: 'PY',
+    color: '#4ade80',
+    order: 2,
+    name: { es: 'Python y FastAPI', en: 'Python & FastAPI' },
+    groups: [
+      { id: 'lenguaje', name: { es: 'Python', en: 'Python' } },
+      { id: 'fastapi', name: { es: 'FastAPI', en: 'FastAPI' } },
+    ],
+  },
+])
+
 export interface TopicFixture {
   meta: Record<string, unknown>
   es?: string
@@ -44,6 +60,10 @@ export function topic(
     exercises?: unknown[]
     enExercises?: unknown[]
     noEn?: boolean
+    group?: string
+    short?: string
+    /** Título corto en inglés; por defecto, el mismo `short`. `null` = sin título corto en inglés. */
+    enShort?: string | null
   } = {},
 ): [string, TopicFixture] {
   const concepts = opts.concepts ?? {}
@@ -55,9 +75,12 @@ export function topic(
     concepts: Object.keys(concepts),
     related: opts.related ?? [],
     ...(opts.demo ? { demo: opts.demo } : {}),
+    ...(opts.group ? { group: opts.group } : {}),
   }
+  const shortOf = (locale: 'es' | 'en') => (locale === 'es' ? opts.short : opts.enShort === undefined ? opts.short : (opts.enShort ?? undefined))
   const front = (locale: 'es' | 'en') => ({
     title: `${id} ${locale}`,
+    ...(shortOf(locale) !== undefined ? { short: shortOf(locale) } : {}),
     summary: `Resumen de ${id}.`,
     concepts: Object.fromEntries(Object.entries(concepts).map(([cid, name]) => [cid, { name: `${name} ${locale}`, aliases: [] }])),
     ...((locale === 'en' ? (opts.enExercises ?? opts.exercises) : opts.exercises) ? { exercises: locale === 'en' ? (opts.enExercises ?? opts.exercises) : opts.exercises } : {}),

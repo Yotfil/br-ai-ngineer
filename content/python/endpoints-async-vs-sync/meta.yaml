@@ -1,0 +1,10 @@
+id: endpoints-async-vs-sync
+track: python
+order: 15
+freq: often
+group: fastapi
+concepts:
+  - threadpool
+related:
+  - async-await
+  - event-loop

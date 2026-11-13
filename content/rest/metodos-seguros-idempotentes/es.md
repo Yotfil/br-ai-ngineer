@@ -30,6 +30,30 @@ exercises:
           - Solo el cacheo
         answer: 1
         why: GET debe ser seguro. Si genera un archivo cada vez, además deja de ser idempotente. Debería ser POST /v1/reportes.
+  - type: classify
+    prompt: ¿Qué método HTTP corresponde?
+    categories:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+    items:
+      - text: Crear un pedido nuevo
+        category: POST
+        why: Crea un recurso y no es idempotente.
+      - text: Listar los productos de la categoría café
+        category: GET
+        why: Lectura con query param.
+      - text: Reemplazar todos los datos del cliente 7
+        category: PUT
+        why: Reemplazo completo e idempotente.
+      - text: Cambiar solo el estado del pedido a «enviado»
+        category: PATCH
+        why: Modificación parcial.
+      - text: Eliminar el producto 3
+        category: DELETE
+        why: Eliminar es idempotente.
 ---
 
 ## definition

@@ -22,10 +22,13 @@ interface Props {
   path: string
   graph: GraphData
   docs: Record<Locale, SearchDoc[]>
+  /** Título completo de cada nodo. */
   labels: Record<string, string>
+  /** Título corto de los temas que lo tienen (sidebar, hoja de temas y cerebro); el resto, igual que `labels`. */
+  listLabels: Record<string, string>
 }
 
-export default function Shell({ locale, path, graph, docs, labels }: Props) {
+export default function Shell({ locale, path, graph, docs, labels, listLabels }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -175,7 +178,7 @@ export default function Shell({ locale, path, graph, docs, labels }: Props) {
       <div className="aurora a3" />
       <Brain
         graph={graph}
-        labels={labels}
+        labels={listLabels}
         ariaLabel={t('brain.label')}
         focus={focus}
         motion={motion}
@@ -208,6 +211,7 @@ export default function Shell({ locale, path, graph, docs, labels }: Props) {
         tracks={graph.tracks}
         topicsOf={topicsOf}
         labels={labels}
+        listLabels={listLabels}
         open={openTracks}
         collapsed={prefs.sidebarCollapsed}
         currentTopic={topicId}
@@ -244,7 +248,7 @@ export default function Shell({ locale, path, graph, docs, labels }: Props) {
         locale={locale}
         tracks={graph.tracks}
         topicsOf={topicsOf}
-        labels={labels}
+        labels={listLabels}
         currentTrack={topic?.track ?? null}
         currentTopic={topicId}
         onSelect={(id) => {

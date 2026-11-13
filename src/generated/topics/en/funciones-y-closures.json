@@ -1,0 +1,52 @@
+{
+  "id": "funciones-y-closures",
+  "track": "python",
+  "order": 4,
+  "freq": "always",
+  "title": "Functions: *args, **kwargs, defaults, lambdas and closures",
+  "short": "Functions and closures",
+  "summary": "Python accepts positional, keyword and default-valued parameters.",
+  "sections": {
+    "definition": "<p>Python accepts positional, keyword and default-valued parameters. <code>*args</code> collects extra positional arguments into a tuple and <code>**kwargs</code> collects extra keyword arguments into a dict. <strong>Lambdas</strong> are single-expression functions and <strong>closures</strong> are functions that remember variables from the scope where they were created.</p>\n",
+    "analogy": "<p><code>*args</code> is a bag that fits as many products as you want; <code>**kwargs</code> is the “notes” box on the form: optional named fields.</p>\n",
+    "problem": "<p>The default value is evaluated <strong>only once</strong>, when the function is defined. If it's mutable (list, dict), all calls share the same object.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear_pedido(cliente_id: int, </span><span style=\"color:#7DD3FC\">*</span><span style=\"color:#CFD3EA\">productos: str, urgente: bool </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#7DD3FC\"> False</span><span style=\"color:#CFD3EA\">, </span><span style=\"color:#7DD3FC\">**</span><span style=\"color:#CFD3EA\">extra):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> {</span><span style=\"color:#FCD34D\">\"cliente\"</span><span style=\"color:#CFD3EA\">: cliente_id, </span><span style=\"color:#FCD34D\">\"items\"</span><span style=\"color:#CFD3EA\">: productos, </span><span style=\"color:#FCD34D\">\"urgente\"</span><span style=\"color:#CFD3EA\">: urgente, </span><span style=\"color:#7DD3FC\">**</span><span style=\"color:#CFD3EA\">extra}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">crear_pedido(7, </span><span style=\"color:#FCD34D\">\"cafe\"</span><span style=\"color:#CFD3EA\">, </span><span style=\"color:#FCD34D\">\"taza\"</span><span style=\"color:#CFD3EA\">, urgente</span><span style=\"color:#7DD3FC\">=True</span><span style=\"color:#CFD3EA\">, nota</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#FCD34D\">\"sin azúcar\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># {'cliente': 7, 'items': ('cafe', 'taza'), 'urgente': True, 'nota': 'sin azúcar'}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">ordenados </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> sorted(productos, key</span><span style=\"color:#7DD3FC\">=lambda</span><span style=\"color:#CFD3EA\"> p: p.precio)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> contador_pedidos():</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    total </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> 0</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    def</span><span style=\"color:#CFD3EA\"> siguiente():</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">        nonlocal</span><span style=\"color:#CFD3EA\"> total       </span><span style=\"color:#5F6388\"># sin esto: UnboundLocalError</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">        total </span><span style=\"color:#7DD3FC\">+=</span><span style=\"color:#CFD3EA\"> 1</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">        return</span><span style=\"color:#CFD3EA\"> total</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> siguiente</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> agregar_item(item, carrito</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">[]):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    carrito.append(item)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> carrito</span></span></code></pre><p>Every call without a cart reuses the same list and drags along the previous items.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> agregar_item(item, carrito: list </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#CFD3EA\">):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    if</span><span style=\"color:#CFD3EA\"> carrito </span><span style=\"color:#7DD3FC\">is</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#CFD3EA\">:</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">        carrito </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> []</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    carrito.append(item)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> carrito</span></span></code></pre><p>A new list is created on every call.</p>\n",
+    "bridge:typescript": "<p><code>*args</code> ≈ rest <code>...args</code>; <code>**kwargs</code> ≈ options object; <code>f(*lista)</code> and <code>f(**dic)</code> ≈ spread. Closures work like in JS, but to <em>reassign</em> an outer variable you need <code>nonlocal</code>. In JS defaults are evaluated on every call; in Python they aren't.</p>\n",
+    "interview": "<p>args collects extra positional arguments as a tuple and kwargs the keyword ones as a dictionary; they're used for flexible functions or to forward arguments, as decorators do. A classic bug is putting a list as a default value: it's evaluated only once when the function is defined and shared between calls, so the correct pattern is to use None and create the list inside.</p>\n",
+    "myths": "<ul>\n<li>Mutable default: Python's most famous interview bug.</li>\n<li>Forgetting <code>nonlocal</code> when reassigning inside a closure.</li>\n<li>Lambdas only allow one expression, no statements or annotations.</li>\n<li>Closures in a loop capture the variable, not the value (like <code>var</code> in JS).</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "What does this code print?",
+      "items": [
+        {
+          "q": "What does it print?",
+          "code": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> f(x, lista</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">[]):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    lista.append(x)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> lista</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">f(1)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">print(f(2))</span></span></code></pre>",
+          "options": [
+            "[2]",
+            "[1, 2]",
+            "[1]",
+            "Error"
+          ],
+          "answer": 1,
+          "why": "The default list was created once and keeps the 1 from the previous call."
+        },
+        {
+          "q": "What does it print?",
+          "code": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> g(</span><span style=\"color:#7DD3FC\">*</span><span style=\"color:#CFD3EA\">a, </span><span style=\"color:#7DD3FC\">**</span><span style=\"color:#CFD3EA\">k):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    print(a, k)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">g(1, 2, x</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">3)</span></span></code></pre>",
+          "options": [
+            "[1, 2] {'x': 3}",
+            "(1, 2) {'x': 3}",
+            "(1, 2, 3) {}",
+            "1 2 x=3"
+          ],
+          "answer": 1,
+          "why": "<code>*a</code> is a tuple and <code>**k</code> a dict."
+        }
+      ]
+    }
+  ]
+}

@@ -24,3 +24,13 @@ export function labelsFor(data: GraphData, docs: SearchDoc[], locale: Locale): R
   for (const d of docs) out[d.id] = d.name
   return out
 }
+
+/**
+ * Nombre de cada nodo en las listas de temas (sidebar, hoja de temas) y en el cerebro: el título corto
+ * del tema cuando existe y, si no, el mismo nombre de `labelsFor` (decisión 4 de pista-python).
+ */
+export function listLabelsFor(labels: Readonly<Record<string, string>>, docs: SearchDoc[]): Record<string, string> {
+  const out: Record<string, string> = { ...labels }
+  for (const d of docs) if (d.type === 'topic' && d.short) out[d.id] = d.short
+  return out
+}

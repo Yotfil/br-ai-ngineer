@@ -1,0 +1,56 @@
+{
+  "id": "modelos-y-response-model",
+  "track": "python",
+  "order": 12,
+  "freq": "always",
+  "title": "Input and output models, validation and response_model",
+  "short": "Models and response_model",
+  "summary": "Separate the schemas: what comes in, what goes out and what gets stored.",
+  "sections": {
+    "definition": "<p>Separate the schemas: what <strong>comes in</strong> (<code>ClienteCrear</code>), what <strong>goes out</strong> (<code>ClientePublico</code>) and what gets <strong>stored</strong>. The endpoint's return type, or <code>response_model</code>, validates and <strong>filters</strong> the response: only the fields of the output model go out.</p>\n",
+    "analogy": "<p>The menu the customer sees doesn't show the cost of the ingredients or the supplier, even though the kitchen knows them.</p>\n",
+    "problem": "<p>With a single model for everything you end up returning the password hash or letting the client send fields it shouldn't, like <code>es_admin</code>.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">from</span><span style=\"color:#CFD3EA\"> pydantic </span><span style=\"color:#7DD3FC\">import</span><span style=\"color:#CFD3EA\"> BaseModel, ConfigDict, EmailStr, Field</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClienteBase(BaseModel):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    nombre: str </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> Field(min_length</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">2)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    email: EmailStr</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClienteCrear(ClienteBase):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    password: str </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> Field(min_length</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">8)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">class</span><span style=\"color:#CFD3EA\"> ClientePublico(ClienteBase):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    model_config </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> ConfigDict(from_attributes</span><span style=\"color:#7DD3FC\">=True</span><span style=\"color:#CFD3EA\">)   </span><span style=\"color:#5F6388\"># para leer objetos ORM</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    id: int</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/clientes\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">201)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear_cliente(datos: ClienteCrear, session: SessionDep) -> ClientePublico:</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    cliente </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> guardar_cliente(session, datos)   </span><span style=\"color:#5F6388\"># tiene hashed_password</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> cliente                              </span><span style=\"color:#5F6388\"># sale solo id, nombre, email</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#5F6388\"># Si devuelves un tipo distinto al anotado, usa response_model</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.get(</span><span style=\"color:#FCD34D\">\"/clientes/{cliente_id}\"</span><span style=\"color:#CFD3EA\">, response_model</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">ClientePublico)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> obtener_cliente(cliente_id: int, session: SessionDep):</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> session.get(Cliente, cliente_id)</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/clientes\"</span><span style=\"color:#CFD3EA\">)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear(datos: ClienteCrear) -> ClienteCrear:</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    guardar(datos)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> datos            </span><span style=\"color:#5F6388\"># devuelve el password</span></span></code></pre><p>The input model is used as the output.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">@app.post(</span><span style=\"color:#FCD34D\">\"/clientes\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">201)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> crear(datos: ClienteCrear) -> ClientePublico:</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> guardar(datos)   </span><span style=\"color:#5F6388\"># FastAPI filtra</span></span></code></pre><p>Separate input and output; inheritance avoids repeating fields.</p>\n",
+    "bridge:typescript": "<p>It's the idea of DTOs: having a <code>CreateClienteDto</code> type for what comes in and a <code>ClienteResponse</code> for what goes out. The difference is that here the output model isn't just a type: it's validated and filtered at runtime. Pydantic versus a TS interface: the interface disappears at compile time; the model acts.</p>\n",
+    "interview": "<p>I define different models for input and output, usually with a shared base class. The input validates what the client can send and the output controls what I expose: if I annotate the return type or use response_model, FastAPI filters the fields, so a password hash never leaks. If the body doesn't comply, the client gets a 422 with the details; if my response doesn't comply, it's a 500 because it's a server error.</p>\n",
+    "myths": "<ul>\n<li>Using the same model for input, output and the table.</li>\n<li>Returning an ORM object without <code>from_attributes=True</code>.</li>\n<li>If your response doesn't match the output model, the error is a <strong>500</strong> (your bug), not a 422.</li>\n<li>By default extra fields are ignored; with <code>model_config = ConfigDict(extra=\"forbid\")</code> you reject them.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "Which status code does it return?",
+      "items": [
+        {
+          "q": "The handler returns a dict without the <code>id</code> field, which is required in <code>ClientePublico</code>.",
+          "options": [
+            "200 without id",
+            "422",
+            "500",
+            "204"
+          ],
+          "answer": 2,
+          "why": "Response validation fails (ResponseValidationError). It's a server error: 500."
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "prompt": "Quick question",
+      "items": [
+        {
+          "q": "What does FastAPI do with fields that aren't in the output model?",
+          "options": [
+            "Returns them anyway",
+            "Filters them out",
+            "Raises 422",
+            "Converts them to null"
+          ],
+          "answer": 1,
+          "why": "The response model works as a filter: only what's declared goes out."
+        }
+      ]
+    }
+  ]
+}

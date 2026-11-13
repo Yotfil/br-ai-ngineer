@@ -1,0 +1,12 @@
+id: middleware-cors-background
+track: python
+order: 18
+freq: often
+group: fastapi
+concepts:
+  - middleware
+  - cors-middleware
+  - background-tasks
+related:
+  - cors-concepto
+  - preflight

@@ -1,5 +1,7 @@
 import { BRIDGE_TECHS, CODE_KINDS, REQUIRED_SECTIONS, SECTION_KEYS, type SectionKey } from '../../src/content/model.ts'
 
+import { FENCE_ALIASES } from './markdown.ts'
+
 const HEADING = /^##\s+(\S.*?)\s*$/
 
 /**
@@ -19,7 +21,14 @@ export function splitSections(body: string, file: string, problems: string[]): P
   }
 
   for (const line of body.split(/\r?\n/)) {
-    if (/^\s*(```|~~~)/.test(line)) inFence = !inFence
+    const fence = /^\s*(```|~~~)\s*(\S*)/.exec(line)
+    if (fence) {
+      // Decisión 11 de pista-python: una valla con un lenguaje no admitido es un error, en cualquier sección.
+      if (!inFence && fence[2] && !Object.hasOwn(FENCE_ALIASES, fence[2].toLowerCase())) {
+        problems.push(`${file}: el bloque de código declara el lenguaje "${fence[2]}", que no está admitido (${Object.keys(FENCE_ALIASES).join(', ')})`)
+      }
+      inFence = !inFence
+    }
     const m = !inFence && HEADING.exec(line)
     if (m) {
       flush()
@@ -53,9 +62,34 @@ export function splitSections(body: string, file: string, problems: string[]): P
   for (const key of REQUIRED_SECTIONS) {
     if (out[key] === undefined) problems.push(`${file}: falta la sección obligatoria "${key}"`)
   }
+  if (out['code:example']) checkExample(out['code:example'], file, problems)
   if ((out.bad === undefined) !== (out.good === undefined)) {
     const missing = out.bad === undefined ? 'bad' : 'good'
     problems.push(`${file}: falta la sección "${missing}" ("bad" y "good" van juntas)`)
   }
   return out
+}
+
+/**
+ * `code:example` (decisión 2 de pista-python): uno o más bloques de código consecutivos, cada uno con su
+ * lenguaje declarado en la valla.
+ */
+function checkExample(md: string, file: string, problems: string[]): void {
+  let inFence = false
+  let blocks = 0
+  let stray = false
+  for (const line of md.split(/\r?\n/)) {
+    const fence = /^\s*(```|~~~)\s*(\S*)/.exec(line)
+    if (fence) {
+      if (!inFence) {
+        blocks++
+        if (!fence[2]) problems.push(`${file}: el bloque ${blocks} de "code:example" no declara lenguaje`)
+      }
+      inFence = !inFence
+      continue
+    }
+    if (!inFence && line.trim()) stray = true
+  }
+  if (!blocks) problems.push(`${file}: la sección "code:example" no tiene bloques de código`)
+  if (stray) problems.push(`${file}: la sección "code:example" solo admite bloques de código`)
 }

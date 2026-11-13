@@ -1,0 +1,12 @@
+id: concurrencia
+track: python
+order: 8
+freq: always
+group: lenguaje
+concepts:
+  - async-await
+  - event-loop
+  - gil
+  - hilos-vs-procesos
+related:
+  - endpoints-async-vs-sync

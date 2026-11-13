@@ -1,0 +1,11 @@
+id: dataclasses-y-pydantic
+track: python
+order: 9
+freq: always
+group: lenguaje
+concepts:
+  - dataclass
+  - pydantic
+related:
+  - modelos-y-response-model
+  - type-hints

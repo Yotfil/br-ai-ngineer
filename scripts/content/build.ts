@@ -10,7 +10,7 @@ import {
   type TopicContent,
 } from '../../src/content/model.ts'
 import { buildGraph } from './graph.ts'
-import { renderInline, renderMarkdown, type MentionResolver } from './markdown.ts'
+import { highlightCode, renderInline, renderMarkdown, type MentionResolver } from './markdown.ts'
 import { readContent } from './reader.ts'
 import { validateContent, type IdIndex } from './validate.ts'
 
@@ -62,6 +62,7 @@ export async function buildContent(contentDir: string): Promise<BuildOutput> {
           .map((o) => t.locales[o]?.front.title)
           .filter((x): x is string => !!x && x.trim().toLowerCase() !== loc.front.title.trim().toLowerCase()),
         summary: loc.front.summary,
+        ...(loc.front.short !== undefined ? { short: loc.front.short } : {}),
         topic: meta.id,
       })
       for (const c of meta.concepts) {
@@ -90,12 +91,19 @@ export async function buildContent(contentDir: string): Promise<BuildOutput> {
           for (const it of g.items) {
             items.push({
               q: await renderInline(it.q, resolve),
+              ...(it.code !== undefined ? { code: await highlightCode(it.code, 'python') } : {}),
               options: await Promise.all(it.options.map((o) => renderInline(o, resolve))),
               answer: it.answer,
               why: await renderInline(it.why, resolve),
             })
           }
           exercises.push({ type: 'choice', prompt, items })
+        } else if (g.type === 'classify') {
+          const items = []
+          for (const it of g.items) {
+            items.push({ text: await renderInline(it.text, resolve), answer: g.categories.indexOf(it.category), why: await renderInline(it.why, resolve) })
+          }
+          exercises.push({ type: 'classify', prompt, categories: await Promise.all(g.categories.map((c) => renderInline(c, resolve))), items })
         } else {
           const items = []
           for (const it of g.items) {
@@ -111,6 +119,7 @@ export async function buildContent(contentDir: string): Promise<BuildOutput> {
         freq: meta.freq,
         ...(meta.demo ? { demo: meta.demo } : {}),
         title: loc.front.title,
+        ...(loc.front.short !== undefined ? { short: loc.front.short } : {}),
         summary: loc.front.summary,
         sections,
         exercises,

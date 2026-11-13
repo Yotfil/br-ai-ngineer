@@ -1,0 +1,89 @@
+{
+  "id": "metodos-seguros-idempotentes",
+  "track": "rest",
+  "order": 5,
+  "freq": "always",
+  "demo": "idempotency-retry",
+  "title": "Métodos seguros e idempotentes",
+  "summary": "Un método es seguro si no modifica el estado del servidor (GET, HEAD, OPTIONS).",
+  "sections": {
+    "definition": "<p>Un método es <strong>seguro</strong> si no modifica el estado del servidor (GET, HEAD, OPTIONS). Es <strong>idempotente</strong> si enviarlo una vez o diez veces deja el servidor en el mismo estado (los seguros, más PUT y DELETE). POST y PATCH no garantizan ninguna de las dos cosas.</p>\n",
+    "analogy": "<p>El botón del ascensor es <strong>idempotente</strong>: oprimirlo cinco veces no llama cinco ascensores. Un dispensador de dulces con monedas <strong>no lo es</strong>: cada moneda saca otro dulce. Mirar el tablero de pisos es <strong>seguro</strong>: no cambia nada.</p>\n",
+    "problem": "<p>Es la base de los reintentos. Los clientes HTTP, los balanceadores y las colas reintentan automáticamente cuando hay timeouts. Si el método es idempotente, reintentar no causa daño; si no lo es (POST), el reintento puede duplicar pedidos o cobros, y hay que protegerlo con claves de idempotencia (ver <a href=\"/es/rest/idempotencia-en-la-practica\" data-node=\"idempotencia-en-la-practica\">Idempotencia en la práctica: claves y pagos duplicados</a>).</p>\n",
+    "code:wire": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#5F6388\"># La red se cae justo después de enviar. ¿Reintento?</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">DELETE</span><span style=\"color:#CFD3EA\"> /v1/pedidos/1093   → 204    reintento → 404 o 204   estado final: borrado   ✔ seguro reintentar</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">PUT</span><span style=\"color:#CFD3EA\"> /v1/clientes/7 {...}  → 200    reintento → 200        estado final: igual     ✔ seguro reintentar</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">POST</span><span style=\"color:#CFD3EA\"> /v1/pagos {\"monto\":76000}  → 201 (id 501)</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">     reintento → 201 (id 502)     ✘ ¡dos cobros!</span></span></code></pre>",
+    "code:server": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#5F6388\"># Idempotencia se refiere al EFECTO en el servidor, no a la respuesta.</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">@app.delete(</span><span style=\"color:#FCD34D\">\"/v1/pedidos/{id}\"</span><span style=\"color:#CFD3EA\">, status_code</span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\">204)</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> borrar(id: int):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    pedidos.pop(id, </span><span style=\"color:#7DD3FC\">None</span><span style=\"color:#CFD3EA\">)   </span><span style=\"color:#5F6388\"># si ya no existe, el estado final es el mismo</span></span>\n<span class=\"line\"><span style=\"color:#5F6388\">    # Algunos equipos devuelven 404 la segunda vez; sigue siendo idempotente.</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">GET</span><span style=\"color:#CFD3EA\"> /v1/carrito/agregar?producto=42   ← GET con efecto: el prefetch del navegador lo dispara</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">PUT</span><span style=\"color:#CFD3EA\"> /v1/cuentas/7/saldo  {\"sumar\": 5000}  ← PUT no idempotente: cada reintento suma</span></span></code></pre>",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">POST</span><span style=\"color:#CFD3EA\"> /v1/carrito/items  {\"producto_id\":42}</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">PUT</span><span style=\"color:#CFD3EA\">  /v1/cuentas/7/saldo  {\"saldo\": 125000}   ← valor absoluto: idempotente</span></span></code></pre>",
+    "bridge:typescript": "<p>Un bucle de reintento en una función propia que envuelve <code>fetch</code>, aplicado a todo, es peligroso justo por esto: reintentar un GET está bien, pero reintentar un POST de pago puede cobrar dos veces. Una función que envuelve <code>fetch</code> bien hecha solo reintenta métodos idempotentes o peticiones con clave de idempotencia.</p>\n",
+    "interview": "<p>Un método seguro es de solo lectura: no debe cambiar el estado del servidor, como GET, HEAD y OPTIONS. Idempotente significa que el efecto de N peticiones iguales es el mismo que el de una; lo son todos los seguros más PUT y DELETE. POST no lo es y PATCH no está garantizado. Importa porque en sistemas distribuidos hay timeouts y reintentos automáticos: un reintento de un método idempotente es inofensivo, pero uno de POST puede duplicar un pedido o un pago, por eso para esas operaciones se usan claves de idempotencia.</p>\n",
+    "myths": "<ul>\n<li>Creer que idempotente significa «devuelve siempre la misma respuesta». Un DELETE puede responder 204 y luego 404; lo que no cambia es el estado.</li>\n<li>Pensar que GET es seguro porque el framework lo garantiza. Es una promesa que tú cumples o rompes en tu código.</li>\n<li>Asumir que PATCH nunca es idempotente. Puede serlo (poner email = x), pero el estándar no lo garantiza (sumar 1 al stock).</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "¿Qué método o respuesta corresponde?",
+      "items": [
+        {
+          "q": "¿Cuál de estas operaciones es idempotente?",
+          "options": [
+            "POST /pedidos",
+            "PATCH /productos/42 {\"stock\": \"+1\"}",
+            "DELETE /pedidos/9",
+            "POST /pagos"
+          ],
+          "answer": 2,
+          "why": "Borrar el pedido 9 dos veces deja el mismo estado: el pedido no existe."
+        },
+        {
+          "q": "Un GET /v1/reportes/generar crea un archivo nuevo cada vez que se llama. ¿Qué principio rompe?",
+          "options": [
+            "Solo la idempotencia",
+            "La seguridad del método (y también la idempotencia)",
+            "Ninguno, es válido",
+            "Solo el cacheo"
+          ],
+          "answer": 1,
+          "why": "GET debe ser seguro. Si genera un archivo cada vez, además deja de ser idempotente. Debería ser POST /v1/reportes."
+        }
+      ]
+    },
+    {
+      "type": "classify",
+      "prompt": "¿Qué método HTTP corresponde?",
+      "categories": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
+      "items": [
+        {
+          "text": "Crear un pedido nuevo",
+          "answer": 1,
+          "why": "Crea un recurso y no es idempotente."
+        },
+        {
+          "text": "Listar los productos de la categoría café",
+          "answer": 0,
+          "why": "Lectura con query param."
+        },
+        {
+          "text": "Reemplazar todos los datos del cliente 7",
+          "answer": 2,
+          "why": "Reemplazo completo e idempotente."
+        },
+        {
+          "text": "Cambiar solo el estado del pedido a «enviado»",
+          "answer": 3,
+          "why": "Modificación parcial."
+        },
+        {
+          "text": "Eliminar el producto 3",
+          "answer": 4,
+          "why": "Eliminar es idempotente."
+        }
+      ]
+    }
+  ]
+}

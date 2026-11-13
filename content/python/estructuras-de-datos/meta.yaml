@@ -1,0 +1,12 @@
+id: estructuras-de-datos
+track: python
+order: 2
+freq: always
+group: lenguaje
+concepts:
+  - list
+  - tuple
+  - dict
+  - set
+related:
+  - identidad-copias-mutabilidad

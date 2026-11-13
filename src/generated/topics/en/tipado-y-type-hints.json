@@ -1,0 +1,52 @@
+{
+  "id": "tipado-y-type-hints",
+  "track": "python",
+  "order": 1,
+  "freq": "always",
+  "title": "Dynamic typing and type hints",
+  "short": "Typing and type hints",
+  "summary": "Python is dynamically and strongly typed: values have types, variables don't, and there are no implicit conversions.",
+  "sections": {
+    "definition": "<p>Python is <strong>dynamically and strongly typed</strong>: variables have no type, values do, and there are no implicit conversions (<code>\"1\" + 1</code> raises <code>TypeError</code>). <strong>Type hints</strong> are annotations the interpreter does not enforce; tools like mypy or pyright check them and, above all, FastAPI and Pydantic read them at runtime to validate.</p>\n",
+    "analogy": "<p>They are like the labels on moving boxes: the truck doesn't read them and carries the box anyway, but whoever unpacks (the IDE, mypy, FastAPI) does use them to know what to do with each one.</p>\n",
+    "problem": "<p>Without hints you lose autocompletion and, in FastAPI, automatic validation: FastAPI doesn't know that <code>id</code> must be an integer. The typical misuse is believing the hint protects you at runtime.</p>\n",
+    "code:example": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> total_pedido(precios: list[float], descuento: float </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> 0.0) -> float:</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> sum(precios) </span><span style=\"color:#7DD3FC\">*</span><span style=\"color:#CFD3EA\"> (1 </span><span style=\"color:#7DD3FC\">-</span><span style=\"color:#CFD3EA\"> descuento)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">total_pedido([12_000.0, 8_500.0])   </span><span style=\"color:#5F6388\"># 20500.0</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">total_pedido(</span><span style=\"color:#FCD34D\">\"abc\"</span><span style=\"color:#CFD3EA\">)                 </span><span style=\"color:#5F6388\"># Python no se queja hasta que sum() falla</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">cliente_id: int </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#7DD3FC\"> =</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#5F6388\">       # unión, como number | null en TS</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">contacto: dict[str, str] </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#CFD3EA\"> {</span><span style=\"color:#FCD34D\">\"email\"</span><span style=\"color:#CFD3EA\">: </span><span style=\"color:#FCD34D\">\"ana@mail.com\"</span><span style=\"color:#CFD3EA\">}</span></span></code></pre>",
+    "bad": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> buscar_producto(id, incluir_stock</span><span style=\"color:#7DD3FC\">=False</span><span style=\"color:#CFD3EA\">):</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    ...  </span><span style=\"color:#5F6388\"># ¿id es int o str? ¿qué devuelve?</span></span></code></pre><p>Nobody knows what it receives or what it returns; FastAPI would treat id as str.</p>\n",
+    "good": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> buscar_producto(id: int, incluir_stock: bool </span><span style=\"color:#7DD3FC\">=</span><span style=\"color:#7DD3FC\"> False</span><span style=\"color:#CFD3EA\">) -> Producto </span><span style=\"color:#7DD3FC\">|</span><span style=\"color:#7DD3FC\"> None</span><span style=\"color:#CFD3EA\">:</span></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">    ...</span></span></code></pre><p>The contract is clear, the IDE helps and FastAPI validates that id is an integer.</p>\n",
+    "bridge:typescript": "<p><strong>TypeScript:</strong> types are erased at compile time and the compiler blocks the build if they don't match. <strong>Python:</strong> there is no step that blocks (mypy is optional), but hints <em>do exist at runtime</em> (<code>func.__annotations__</code>). That's why FastAPI turns <code>producto_id: int</code> into validation and documentation, something that in TS requires Zod or class-validator. Also, TS is structural; Python classes are nominal (for structural typing there is <code>typing.Protocol</code>).</p>\n",
+    "interview": "<p>Python is dynamic but strong: values have types and are not converted on their own. Type hints are not enforced at runtime; a tool like mypy or pyright checks them. The difference from TypeScript is that in TS types disappear at compile time, while in Python they remain available at runtime, and that's why Pydantic and FastAPI use them to validate data and generate the API documentation.</p>\n",
+    "myths": "<ul>\n<li>Expecting <code>x: int = \"hola\"</code> to fail: Python accepts it silently.</li>\n<li>Thinking <code>\"1\" + 1</code> gives <code>\"11\"</code>: in Python it's a <code>TypeError</code>, you convert explicitly with <code>int()</code> or <code>str()</code>.</li>\n<li>Different truthiness: <code>[]</code>, <code>{}</code>, <code>\"\"</code> and <code>0</code> are falsy. In JS <code>[]</code> is truthy.</li>\n<li>There is only <code>None</code>: there are no separate <code>null</code> and <code>undefined</code>.</li>\n</ul>\n"
+  },
+  "exercises": [
+    {
+      "type": "choice",
+      "prompt": "What does this code print?",
+      "items": [
+        {
+          "q": "What does it print?",
+          "code": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#7DD3FC\">def</span><span style=\"color:#CFD3EA\"> doble(n: int) -> int:</span></span>\n<span class=\"line\"><span style=\"color:#7DD3FC\">    return</span><span style=\"color:#CFD3EA\"> n </span><span style=\"color:#7DD3FC\">*</span><span style=\"color:#CFD3EA\"> 2</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#CFD3EA\">print(doble(</span><span style=\"color:#FCD34D\">\"ha\"</span><span style=\"color:#CFD3EA\">))</span></span></code></pre>",
+          "options": [
+            "TypeError",
+            "haha",
+            "0",
+            "None"
+          ],
+          "answer": 1,
+          "why": "The hint is not enforced at runtime. <code>\"ha\" * 2</code> is a valid operation that repeats the string."
+        },
+        {
+          "q": "What does it print?",
+          "code": "<pre class=\"shiki cerebro\" style=\"background-color:#00000000;color:#cfd3ea\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#CFD3EA\">print(bool(</span><span style=\"color:#FCD34D\">\"\"</span><span style=\"color:#CFD3EA\">), bool(</span><span style=\"color:#FCD34D\">\"0\"</span><span style=\"color:#CFD3EA\">), bool([0]))</span></span></code></pre>",
+          "options": [
+            "False False False",
+            "False True True",
+            "True True True",
+            "False False True"
+          ],
+          "answer": 1,
+          "why": "Only the empty string is falsy. <code>\"0\"</code> is a string with one character and <code>[0]</code> is a list with one element: both truthy."
+        }
+      ]
+    }
+  ]
+}

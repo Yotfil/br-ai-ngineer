@@ -105,6 +105,21 @@
   opacity: 1;
   margin-bottom: 8px;
 }
+/* Subtítulo de grupo: mismo estilo que el rótulo "PISTAS" (decisión 5 de pista-python); no es interactivo. */
+.group {
+  margin: 8px 8px 4px;
+  font: 500 10px var(--mono);
+  letter-spacing: 0.2em;
+  color: var(--faint);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+.group:first-child {
+  margin-top: 4px;
+}
 .sub {
   display: block;
   width: 100%;
@@ -129,6 +144,7 @@
   background: color-mix(in srgb, var(--c) 16%, transparent);
 }
 .collapsed h6,
+.collapsed .group,
 .collapsed .trk b,
 .collapsed .trk i,
 .collapsed .trk svg,

@@ -9,6 +9,9 @@
   color: "#4ade80"
   order: 2
   name: { es: Python y FastAPI, en: Python & FastAPI }
+  groups:
+    - { id: lenguaje, name: { es: Python, en: Python } }
+    - { id: fastapi, name: { es: FastAPI, en: FastAPI } }
 - id: sql
   abbr: SQ
   color: "#fbbf24"

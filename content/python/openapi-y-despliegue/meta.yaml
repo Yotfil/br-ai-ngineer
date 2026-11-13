@@ -1,0 +1,11 @@
+id: openapi-y-despliegue
+track: python
+order: 21
+freq: often
+group: fastapi
+concepts:
+  - openapi
+  - uvicorn
+  - docker
+related:
+  - modelos-y-response-model

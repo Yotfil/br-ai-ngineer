@@ -1,0 +1,11 @@
+id: modelos-y-response-model
+track: python
+order: 12
+freq: always
+group: fastapi
+concepts:
+  - response-model
+  - modelos-de-entrada-y-salida
+related:
+  - pydantic
+  - codigos-de-estado

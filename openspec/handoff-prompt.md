@@ -1,43 +1,47 @@
-# Prompt de arranque — cierre de `esqueleto-y-pista-rest`
+# Prompt de arranque — retomar `pista-python` desde la tarea 3.5
 
-> Escrito por Fable 5.2 el 2026-11-13, tras definir los vacíos que Opus reportó en su segunda sesión. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer`.
+> Escrito por Fable 5.2 el 2026-11-13, tras resolver el vacío que detuvo la implementación. Pega el bloque de abajo como primer mensaje de una sesión nueva con **Opus 5.5**, abierta en `/Users/yotfil/Documents/Yotfil/TechForge/Learning/ai_engineer/ai-engineer-path`.
 
 ---
 
-Vas a terminar de implementar el cambio de OpenSpec `esqueleto-y-pista-rest`. Quedan 8 tareas; el resto está hecho y verificado. Las decisiones ya están tomadas y escritas: tu trabajo es aplicarlas tal cual. Respóndeme en español.
+Vas a terminar de implementar el cambio de OpenSpec `pista-python`. Hay 16 tareas hechas y quedan 9. El vacío que te detuvo está resuelto y las decisiones que tomaste fueron revisadas con el usuario. Respóndeme en español.
 
 **Reglas insaltables de este proyecto** (también están en la memoria del proyecto y en `design.md`):
 
 1. Implementas tú, Opus 5.5. Las specs las define Fable 5.2 en otra sesión.
 2. Si encuentras un vacío, una ambigüedad o una contradicción en los artefactos, **no decidas**. Detente, dime exactamente qué falta (archivo y requisito o tarea) y espera: lo resolveré en otra sesión con Fable 5.2. No rellenes el hueco con un supuesto razonable, por pequeño que parezca.
-3. No modifiques `proposal.md`, `design.md`, `content-map.md` ni los archivos de `specs/`. En `tasks.md` solo marcas casillas.
+3. No modifiques `proposal.md`, `design.md`, `content-map.md`, `rewrites.md` ni los archivos de `specs/`. En `tasks.md` solo marcas casillas.
 4. Si te digo que se retoma en otro contexto, actualiza la memoria del proyecto y sobrescribe este archivo (`openspec/handoff-prompt.md`) con un prompt de arranque nuevo; dime la ruta. Nunca lo pongas en un `CLAUDE.md`.
 
-**Antes de tocar código, lee:**
+**Antes de tocar código, vuelve a leer lo que cambió:**
 
-1. `openspec/changes/esqueleto-y-pista-rest/design.md`: el final de la decisión 14 (textos fijados de cuatro puentes) y las decisiones nuevas 16, 17, 18 y 19.
-2. `openspec/changes/esqueleto-y-pista-rest/specs/app-shell/spec.md`: requisitos "Enlaces a otros temas dentro del texto", "Ayuda de gestos del cerebro" y el escenario "Hoja de temas legible".
-3. `openspec/changes/esqueleto-y-pista-rest/specs/concept-search/spec.md`: escenario "Título de un tema en el otro idioma".
-4. `openspec/changes/esqueleto-y-pista-rest/specs/content-model/spec.md`: escenario "Enlace en el texto crea conexión".
-5. `openspec/changes/esqueleto-y-pista-rest/content-map.md`: sección "Alias", que cambió.
-6. `openspec/changes/esqueleto-y-pista-rest/tasks.md`: las tareas sin marcar.
+1. `openspec/changes/pista-python/content-map.md`: filas 6 y 8 de la tabla "Temas" (nombres corregidos), la nota de formato sobre el separador, la sección "Alias" (dos conceptos nuevos y la regla de los dos idiomas) y la sección nueva "Títulos cortos en inglés".
+2. `openspec/changes/pista-python/rewrites.md`: sección nueva "Resumen fijado".
+3. `openspec/changes/pista-python/design.md`: decisiones nuevas 11 y 12.
+4. `openspec/changes/pista-python/specs/app-shell/spec.md`: escenario "Categorías en fila" y el requisito modificado "Barra inferior de pistas en teléfono".
+5. `openspec/changes/pista-python/specs/content-model/spec.md`: escenario "Lenguaje no admitido".
+6. `openspec/changes/pista-python/tasks.md`: grupo 6 nuevo.
 
-**Tareas pendientes** (ejecuta `/opsx:apply esqueleto-y-pista-rest`):
+**Qué se decidió sobre lo que reportaste:**
 
-- **7.4** Puentes. Los temas 2, 6, 7 y 20 usan literalmente los textos de la decisión 14, en español e inglés. Al terminar no debe quedar ninguna marca `PENDIENTE` en `ai-engineer-path/scripts/migrate/rest-es.ts` ni en el contenido.
-- **9.1** Los enlaces `[[id]]` del texto se muestran como enlaces con el título del destino y abren su tema (decisión 16).
-- **9.2** Las dos referencias "(tema N)" del contenido pasan a enlaces: `(ver [[cors]])` y `(ver [[idempotencia-en-la-practica]])`, con `(see [[...]])` en inglés.
-- **9.3** El título de cada tema en el otro idioma se añade solo al índice de búsqueda (decisión 17). No se crea ningún campo nuevo en el contenido.
-- **9.4** Línea de ayuda de gestos, solo en escritorio y sin tema abierto (decisión 18). Los colores de las pistas no se incluyen.
-- **9.5** La hoja de temas de teléfono deja de ser de cristal y pasa a fondo casi opaco, sea cual sea el modo del lector (decisión 19). La barra inferior no cambia.
-- **9.6** `npm run typecheck`, `npm test` y `npm run build` en verde.
-- **5.8** Está implementada. Solo falta que yo compruebe a mano las transiciones con "Reducir movimiento" activo en macOS; no la marques tú, espérame.
+- **Vacío de la tarea 3.5:** `try-except` se llama "try/except/finally" y `async-await` se llama "async/await", iguales en español e inglés. Alias: `try except`, `try except finally` y `async await`. Se restablece el `related` hacia `async-await` de `endpoints-async-vs-sync`.
+- **Confirmado tal como lo hiciste:** alias adicionales en los dos idiomas; el texto `<coroutine object …>` escapado y literal; la ayuda al pasar el cursor solo cuando hay título corto distinto; `code:example` sin texto entre bloques; los 21 títulos cortos en inglés y el cambio de comillas.
+- **A corregir:**
+  - Resumen de `estructuras-de-datos`: usa el texto fijado en `rewrites.md`.
+  - Ejercicio de clasificación: las categorías van **en fila**, como botones compactos que pasan de línea. Opción múltiple y veredicto no cambian.
+  - Valla con lenguaje no admitido: ahora es un **error de validación**, no se trata como "sin lenguaje".
+- **Fuera del alcance original, añadido a este cambio:** la hoja de temas de teléfono pasa a ser 100 % opaca, sin tocar `--glass-strong`.
+
+**Orden de trabajo** (ejecuta `/opsx:apply pista-python`):
+
+1. Grupo 6 (6.1 a 6.4). La tarea 6.1 rellena los dos conceptos y el resumen, y vuelve a ejecutar `npx tsx scripts/migrate/migrate-python.ts`.
+2. Tareas 3.5 y 3.6, que quedaron bloqueadas.
+3. Grupo 5 (5.1 a 5.3), repitiéndolo completo con el contenido ya terminado.
 
 **Límites:**
 
-- No hagas commits ni push salvo que te lo pida.
-- No toques los cinco HTML originales ni la carpeta `mockups/`.
-- No añadas enlaces `[[id]]` al contenido más allá de los dos indicados.
-- Sigue fuera de este cambio: el contenido de las otras cuatro pistas, las 17 demos restantes de REST, el simulacro final, los modos Estudiar/Repasar/Simulacro, progreso, embeddings, IA, tema claro y el despliegue.
+- No hagas commits ni push salvo que te lo pida. `src/generated/` es salida de compilación; no la incluyas en commits.
+- No toques los archivos de `legacy/`.
+- Sigue fuera de este cambio: el tema 11 de la guía, las demos de Python, el simulacro final, el soporte para tablas, los conceptos N+1 e inyección de dependencias, los títulos cortos de REST y el contenido de SQL, POO y Git.
 
-**Al terminar o al detenerte**, dame un resumen con: tareas completadas, tareas pendientes, resultado de `npm run typecheck`, `npm test` y `npm run build`, y cualquier vacío que hayas encontrado.
+**Al terminar o al detenerte**, dame un resumen con: tareas completadas, tareas pendientes, resultado de `npm run typecheck`, `npm test` y `npm run build`, los conceptos de `content-map.md` que omitiste por no aparecer en el texto, y cualquier vacío que hayas encontrado.

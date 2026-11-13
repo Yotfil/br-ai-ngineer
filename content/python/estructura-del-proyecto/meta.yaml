@@ -1,0 +1,12 @@
+id: estructura-del-proyecto
+track: python
+order: 19
+freq: often
+group: fastapi
+concepts:
+  - api-router
+  - capas
+  - settings
+related:
+  - modulos-y-entornos
+  - depends

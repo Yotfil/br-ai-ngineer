@@ -225,7 +225,9 @@ describe('2.4 Markdown y Shiki', () => {
 
   it('elige el lenguaje con la regla de la decisión 2', () => {
     expect(codeLanguage('code:server', 'GET /', undefined)).toBe('python')
-    expect(codeLanguage('code:wire', 'GET / HTTP/1.1', 'python')).toBe('http')
+    // pista-python, decisión 2: la valla con lenguaje manda.
+    expect(codeLanguage('code:wire', 'GET / HTTP/1.1', 'python')).toBe('python')
+    expect(codeLanguage('code:wire', 'GET / HTTP/1.1', undefined)).toBe('http')
     expect(codeLanguage('bad', '@app.post("/x")\ndef f(): ...', undefined)).toBe('python')
     expect(codeLanguage('good', 'import os', undefined)).toBe('python')
     expect(codeLanguage('good', 'DELETE /v1/x', undefined)).toBe('http')

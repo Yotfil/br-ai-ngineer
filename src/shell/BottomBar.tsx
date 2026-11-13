@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { GraphNode, Locale, TrackInfo } from '../content/model.ts'
 import { centeredIndex, COPIES, ITEM, relocate, scaleFor, scrollFor, STEP, itemCenter, trackIndex } from './carousel.ts'
+import { sectionsOf } from './groups.ts'
 import styles from './BottomBar.module.css'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   locale: Locale
   tracks: readonly TrackInfo[]
   topicsOf: (trackId: string) => readonly GraphNode[]
+  /** Nombre de cada fila de la hoja: el título corto si existe, si no el completo. */
   labels: Readonly<Record<string, string>>
   /** Pista del tema abierto: el carrusel la centra. */
   currentTrack: string | null
@@ -138,17 +140,26 @@ export default function BottomBar({ inactive = false, locale, tracks, topicsOf, 
           {selectedTrack.empty ? (
             <p className={styles.soon}>{t('side.soon')}</p>
           ) : (
-            topics.map((tp) => (
-              <button
-                key={tp.id}
-                className={`${styles.sub} ${tp.id === currentTopic ? styles.cur : ''}`}
-                onClick={() => {
-                  setSheet(false)
-                  onTopic(tp.id)
-                }}
-              >
-                {labels[tp.id] ?? tp.id}
-              </button>
+            sectionsOf(selectedTrack, topics, locale).map((sec) => (
+              <Fragment key={sec.heading?.id ?? '-'}>
+                {sec.heading && (
+                  <p className={styles.group} data-group={sec.heading.id}>
+                    {sec.heading.name}
+                  </p>
+                )}
+                {sec.topics.map((tp) => (
+                  <button
+                    key={tp.id}
+                    className={`${styles.sub} ${tp.id === currentTopic ? styles.cur : ''}`}
+                    onClick={() => {
+                      setSheet(false)
+                      onTopic(tp.id)
+                    }}
+                  >
+                    {labels[tp.id] ?? tp.id}
+                  </button>
+                ))}
+              </Fragment>
             ))
           )}
         </div>

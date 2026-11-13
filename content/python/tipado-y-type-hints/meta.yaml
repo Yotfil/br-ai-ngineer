@@ -1,0 +1,10 @@
+id: tipado-y-type-hints
+track: python
+order: 1
+freq: always
+group: lenguaje
+concepts:
+  - tipado-dinamico
+  - type-hints
+related:
+  - dataclasses-y-pydantic

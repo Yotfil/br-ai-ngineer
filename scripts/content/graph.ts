@@ -44,6 +44,7 @@ export function buildGraph(content: RawContent, index: IdIndex): GraphData {
     color: t.color,
     order: t.order,
     name: t.name,
+    ...(t.groups ? { groups: t.groups.map((g) => ({ id: g.id, name: g.name })) } : {}),
     empty: !(topicsByTrack.get(t.id)?.length),
   }))
 
@@ -84,6 +85,7 @@ export function buildGraph(content: RawContent, index: IdIndex): GraphData {
         parent: tr.id,
         freq: t.meta.freq,
         order: t.meta.order,
+        ...(t.meta.group !== undefined ? { group: t.meta.group } : {}),
         x: hub.x + Math.cos(a) * 110,
         y: hub.y + Math.sin(a) * 110,
         z: hub.z + (rnd() - 0.5) * 180,
@@ -141,7 +143,7 @@ export function buildGraph(content: RawContent, index: IdIndex): GraphData {
   sim.tick(TICKS)
 
   const outNodes: GraphNode[] = nodes.map((n) => {
-    const { id, type, track, parent, freq, order, empty } = n
+    const { id, type, track, parent, freq, order, group, empty } = n
     return {
       id,
       type,
@@ -149,6 +151,7 @@ export function buildGraph(content: RawContent, index: IdIndex): GraphData {
       ...(parent !== undefined ? { parent } : {}),
       ...(freq !== undefined ? { freq } : {}),
       ...(order !== undefined ? { order } : {}),
+      ...(group !== undefined ? { group } : {}),
       ...(empty ? { empty } : {}),
       x: round(n.x ?? 0),
       y: round(n.y ?? 0),

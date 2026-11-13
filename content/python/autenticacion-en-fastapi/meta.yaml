@@ -1,0 +1,13 @@
+id: autenticacion-en-fastapi
+track: python
+order: 17
+freq: always
+group: fastapi
+concepts:
+  - hashing-de-contrasenas
+  - oauth2-password-flow
+related:
+  - jwt
+  - oauth2
+  - autenticacion-autorizacion
+  - depends
