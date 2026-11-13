@@ -8,7 +8,9 @@
 html,
 body,
 #root {
+  /* Altura visible real (rendimiento-movil, decisión 12); 100% para navegadores sin dvh. */
   height: 100%;
+  height: 100dvh;
   margin: 0;
 }
 body {
@@ -104,13 +106,7 @@ a {
   z-index: 1;
 }
 :root[data-reading] .scrim {
-  opacity: 0.7;
-}
-:root[data-reading][data-reader-mode='solid'] .scrim {
   opacity: 0.55;
-}
-:root[data-reading][data-reader-mode='pure'] .scrim {
-  opacity: 0;
 }
 
 /* ---------- Cristal ---------- */
@@ -121,6 +117,20 @@ a {
   border: 1px solid var(--edge);
   border-radius: var(--r);
   box-shadow: var(--glass-shadow);
+}
+
+/* Teléfono (rendimiento-movil, decisión 7): ningún desenfoque y auroras estáticas. `:root .glass` gana a las
+   reglas propias de cada panel (p. ej. los resultados de búsqueda); el lector sigue su modo Sólido. */
+@media (max-width: 760px) {
+  :root .glass {
+    background: var(--glass-phone) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  :root .aurora {
+    animation: none;
+    filter: none;
+  }
 }
 
 /* ---------- Bloques de código (Shiki) ---------- */

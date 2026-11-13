@@ -160,7 +160,7 @@ describe('5.11 barra inferior de pistas en teléfono', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
-  it('9.5 hoja de temas legible: fondo totalmente opaco y sin cristal en los tres modos del lector', () => {
+  it('9.5 hoja de temas legible: fondo totalmente opaco y sin cristal con cualquiera de los dos modos guardado', () => {
     const start = bottomBarCss.indexOf('.sheet {')
     const rule = bottomBarCss.slice(start, bottomBarCss.indexOf('}', start))
     // Decisión 12 de pista-python: 100 % opaca, con el color base de --glass-strong, que no cambia.
@@ -168,7 +168,7 @@ describe('5.11 barra inferior de pistas en teléfono', () => {
     expect(rule).not.toContain('var(--glass-strong)')
     expect(rule).not.toContain('backdrop-filter')
     expect(fs.readFileSync(`${process.cwd()}/src/styles/tokens.css`, 'utf8')).toContain('--glass-strong: rgba(9, 10, 20, 0.9);')
-    for (const mode of ['glass', 'pure', 'solid']) {
+    for (const mode of ['glass', 'solid']) {
       savePrefs({ ...DEFAULT_PREFS, readerMode: mode as ReaderMode })
       expect(loadPrefs().readerMode).toBe(mode)
       const { unmount } = renderPhone('/es')
@@ -181,12 +181,12 @@ describe('5.11 barra inferior de pistas en teléfono', () => {
     }
   })
 
-  it('hoja sobre un tema abierto: es opaca, sin cristal, y queda encima del lector en los tres modos', () => {
+  it('hoja sobre un tema abierto: es opaca, sin cristal, y queda encima del lector con cualquiera de los dos modos guardado', () => {
     const start = bottomBarCss.indexOf('.sheet {')
     const rule = bottomBarCss.slice(start, bottomBarCss.indexOf('}', start))
     expect(rule).toMatch(/background: rgb\(9, 10, 20\);/)
     expect(rule).not.toMatch(/rgba|opacity|backdrop-filter/)
-    for (const mode of ['glass', 'pure', 'solid']) {
+    for (const mode of ['glass', 'solid']) {
       savePrefs({ ...DEFAULT_PREFS, readerMode: mode as ReaderMode })
       const { unmount } = renderPhone('/es/rest/cors')
       expect(document.documentElement).toHaveAttribute('data-reading')
@@ -194,7 +194,9 @@ describe('5.11 barra inferior de pistas en teléfono', () => {
       const sheet = screen.getByRole('dialog', { name: 'Temas de HTTP y REST' })
       expect(sheet).toHaveClass('sheet')
       expect(sheet).not.toHaveClass('glass')
-      expect(document.documentElement).toHaveAttribute('data-reader-mode', mode)
+      // En teléfono el modo efectivo es Sólido (rendimiento-movil, decisión 2); lo guardado no cambia.
+      expect(document.documentElement).toHaveAttribute('data-reader-mode', 'solid')
+      expect(loadPrefs().readerMode).toBe(mode)
       unmount()
     }
   })

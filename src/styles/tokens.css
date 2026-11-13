@@ -8,11 +8,12 @@
   /* Receta de cristal */
   --glass: rgba(14, 15, 28, 0.52);
   --glass-strong: rgba(9, 10, 20, 0.9);
-  --glass-reader: rgba(11, 12, 24, 0.2);
-  --glass-reader-none: rgba(11, 12, 24, 0);
+  --glass-reader: rgba(9, 10, 20, 0.85);
   --glass-results: rgba(10, 11, 22, 0.92);
+  /* Teléfono: paneles casi opacos y sin desenfoque (rendimiento-movil, decisión 7). */
+  --glass-phone: rgba(9, 10, 20, 0.92);
   --glass-blur: blur(28px) saturate(1.5);
-  --glass-blur-reader: blur(36px) saturate(1.45);
+  --glass-blur-reader: blur(14px);
   --glass-shadow: 0 12px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.09);
   --edge: rgba(160, 140, 255, 0.2);
   --edge-soft: rgba(255, 255, 255, 0.07);
@@ -40,6 +41,12 @@
   --r: 18px;
   --gap: 14px;
   --top-h: 56px;
+
+  /* Zonas seguras de iOS (rendimiento-movil, decisión 12); 0 donde no las hay. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 
   /* Curvas */
   --ease-std: cubic-bezier(0.4, 0, 0.2, 1);

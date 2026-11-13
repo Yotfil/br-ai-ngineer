@@ -74,7 +74,7 @@ describe('3.4 preferencias', () => {
       throw new Error('bloqueado')
     })
     expect(loadPrefs()).toEqual(DEFAULT_PREFS)
-    expect(() => savePrefs({ ...DEFAULT_PREFS, readerMode: 'pure' })).not.toThrow()
+    expect(() => savePrefs({ ...DEFAULT_PREFS, readerMode: 'solid' })).not.toThrow()
     renderApp('/es')
     expect(screen.getByTestId('fake-brain')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Detener animaciones' }))
@@ -269,22 +269,18 @@ describe('5.5 relacionados', () => {
 })
 
 describe('5.6 modos del lector', () => {
-  it('Cristal por defecto; el modo elegido se conserva al recargar', async () => {
+  it('Cristal por defecto; alterna entre Cristal y Sólido; el modo elegido se conserva al recargar', async () => {
     const { unmount } = renderApp('/es/rest/cors')
     await screen.findByRole('heading', { level: 1, name: /\S/ })
     expect(document.documentElement).toHaveAttribute('data-reader-mode', 'glass')
     fireEvent.click(screen.getByRole('button', { name: /Modo de fondo del lector: ◻ Cristal/ }))
-    expect(screen.getByRole('button', { name: /Modo de fondo del lector: ○ Sin fondo/ })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /○ Sin fondo/ }))
+    expect(screen.getByRole('button', { name: /Modo de fondo del lector: ◼ Sólido/ })).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('data-reader-mode', 'solid')
-    fireEvent.click(screen.getByRole('button', { name: /◼ Sólido/ }))
-    expect(document.documentElement).toHaveAttribute('data-reader-mode', 'glass')
-    fireEvent.click(screen.getByRole('button', { name: /◻ Cristal/ }))
     unmount()
     renderApp('/es/rest/cors')
     await screen.findByRole('heading', { level: 1, name: /\S/ })
-    expect(screen.getByRole('button', { name: /○ Sin fondo/ })).toBeInTheDocument()
-    expect(document.documentElement).toHaveAttribute('data-reader-mode', 'pure')
+    expect(screen.getByRole('button', { name: /◼ Sólido/ })).toBeInTheDocument()
+    expect(document.documentElement).toHaveAttribute('data-reader-mode', 'solid')
   })
 })
 

@@ -9,11 +9,12 @@ interface Props {
   labels: Readonly<Record<string, string>>
   onOpen: (id: string) => void
   onHover: (id: string | null) => void
-  className?: string
+  /** Dentro del lector (tableta y teléfono): sección sin cristal, separada por una línea (rendimiento-movil, decisión 4). */
+  inline?: boolean
 }
 
 /** Conceptos del tema y temas relacionados, indicando la pista de cada uno. */
-export default function Related({ concepts, related, tracks, labels, onOpen, onHover, className = '' }: Props) {
+export default function Related({ concepts, related, tracks, labels, onOpen, onHover, inline = false }: Props) {
   const { t } = useTranslation()
   const row = (n: GraphNode) => {
     const tr = tracks.get(n.track)
@@ -35,7 +36,8 @@ export default function Related({ concepts, related, tracks, labels, onOpen, onH
     )
   }
   return (
-    <aside className={`${styles.rel} glass ${className}`} onMouseLeave={() => onHover(null)} aria-label={t('related.related')}>
+    <aside className={inline ? `${styles.rel} ${styles.inline}` : `${styles.rel} glass`}
+      data-inline={inline || undefined} onMouseLeave={() => onHover(null)} aria-label={t('related.related')}>
       {concepts.length > 0 && (
         <>
           <h6>{t('related.concepts')}</h6>

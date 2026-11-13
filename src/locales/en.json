@@ -41,7 +41,6 @@
     "mode": {
       "label": "Reader background mode",
       "glass": "◻ Glass",
-      "pure": "○ No background",
       "solid": "◼ Solid"
     },
     "notFound": "Topic not found."

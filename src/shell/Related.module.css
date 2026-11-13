@@ -56,12 +56,10 @@
   color: var(--faint);
   font-size: 13px;
 }
-@media (max-width: 1080px) {
-  .rel {
-    width: 100%;
-    max-width: 840px;
-    max-height: none;
-    align-self: center;
-    overflow: visible;
-  }
+.rel.inline {
+  width: auto;
+  max-height: none;
+  overflow: visible;
+  align-self: auto;
+  border-top: 1px solid var(--edge-soft);
 }

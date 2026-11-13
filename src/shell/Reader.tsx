@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Locale, Tab, TopicContent, TrackInfo } from '../content/model.ts'
 import { loadTopic } from '../data/content.ts'
@@ -7,7 +7,10 @@ import type { ReaderMode } from '../prefs/store.ts'
 import Exercises from './Exercises.tsx'
 import styles from './Reader.module.css'
 
-const MODES: ReaderMode[] = ['glass', 'pure', 'solid']
+const MODES: ReaderMode[] = ['glass', 'solid']
+
+/** Tramo de ancho (design.md de rendimiento-movil, decisiones 4 y 5): cada uno tiene su disposición del lector. */
+export type ReaderLayout = 'desktop' | 'tablet' | 'phone'
 
 export function tabsFor(c: Pick<TopicContent, 'exercises' | 'demo'>): Tab[] {
   const practice = c.exercises.length > 0 || hasDemo(c.demo)
@@ -20,6 +23,8 @@ interface Props {
   track: TrackInfo | undefined
   tab: Tab
   onTab: (t: Tab) => void
+  layout: ReaderLayout
+  /** Modo efectivo: en teléfono siempre `solid` (decisión 2). */
   mode: ReaderMode
   onMode: (m: ReaderMode) => void
   onClose: () => void
@@ -28,13 +33,13 @@ interface Props {
   onGo: (id: string) => void
   /** Clic en un enlace `[[id]]` del texto. */
   onLink: (id: string) => void
-  /** Se muestra al final del lector en tableta y teléfono. */
+  /** Relacionados dentro del lector, en tableta y teléfono: al final de la zona desplazable. */
   footer?: React.ReactNode
 }
 
 const html = (s: string | undefined) => ({ __html: s ?? '' })
 
-export default function Reader({ locale, topicId, track, tab, onTab, mode, onMode, onClose, prev, next, onGo, onLink, footer }: Props) {
+export default function Reader({ locale, topicId, track, tab, onTab, layout, mode, onMode, onClose, prev, next, onGo, onLink, footer }: Props) {
   const { t } = useTranslation()
   const [content, setContent] = useState<TopicContent | null>(null)
 
@@ -51,6 +56,33 @@ export default function Reader({ locale, topicId, track, tab, onTab, mode, onMod
   const tabs = c ? tabsFor(c) : (['understand', 'code', 'interview'] as Tab[])
   const active = tabs.includes(tab) ? tab : 'understand'
   const s = c?.sections ?? {}
+
+  // ---------- Posición de desplazamiento (decisiones 4 y 5) ----------
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const tabsAnchorRef = useRef<HTMLDivElement>(null)
+  /** Posición a aplicar tras el cambio de pestaña; `null` = no tocarla. */
+  const pendingTop = useRef<number | null>(null)
+  useLayoutEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+    pendingTop.current = null
+  }, [topicId])
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (el && pendingTop.current !== null) el.scrollTop = pendingTop.current
+    pendingTop.current = null
+  }, [active])
+  const selectTab = (k: Tab) => {
+    if (k !== active) {
+      const el = scrollRef.current
+      if (layout !== 'phone') pendingTop.current = 0
+      else {
+        // Teléfono: si las pestañas están fijas arriba, el contenido nuevo se muestra desde su inicio, justo debajo.
+        const anchor = tabsAnchorRef.current?.offsetTop ?? 0
+        pendingTop.current = el && el.scrollTop >= anchor - 1 ? anchor : null
+      }
+    }
+    onTab(k)
+  }
 
   const onBodyClick = (e: React.MouseEvent) => {
     const a = (e.target as HTMLElement).closest('a[data-node]')
@@ -123,54 +155,104 @@ export default function Reader({ locale, topicId, track, tab, onTab, mode, onMod
     </>
   )
 
+  const closeBtn = (
+    <button className={`icon-btn ${styles.close}`} onClick={onClose} aria-label={t('reader.close')}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" />
+      </svg>
+    </button>
+  )
+  const crumbs = (
+    <div className={styles.crumbs}>
+      <span className={`${styles.chip} ${styles.trackChip}`}>{track?.name[locale]}</span>
+      {c && <span className={styles.chip}>{t(`freq.${c.freq}`)}</span>}
+      {layout !== 'phone' && (
+        <button
+          className={`${styles.chip} ${styles.modeBtn}`}
+          onClick={() => onMode(MODES[(MODES.indexOf(mode) + 1) % MODES.length])}
+          aria-label={`${t('reader.mode.label')}: ${t(`reader.mode.${mode}`)}`}
+          data-mode={mode}
+        >
+          {t(`reader.mode.${mode}`)}
+        </button>
+      )}
+      {layout !== 'phone' && closeBtn}
+    </div>
+  )
+  const titleBlock = (
+    <>
+      <h1 id="reader-title">{c?.title ?? ' '}</h1>
+      <p className={styles.lead}>{c?.summary ?? ' '}</p>
+    </>
+  )
+  const tabList = (
+    <div className={styles.tabs} role="tablist">
+      {tabs.map((k) => (
+        <button key={k} role="tab" aria-selected={k === active} className={k === active ? styles.on : ''} onClick={() => selectTab(k)}>
+          {t(`reader.tabs.${k}`)}
+        </button>
+      ))}
+    </div>
+  )
+  const panel = (
+    <div key={`${topicId}:${active}:${locale}`} className={styles.rbody} role="tabpanel" onClick={onBodyClick}>
+      {body}
+    </div>
+  )
+  const nav = (
+    <div className={styles.rfoot}>
+      {prev && (
+        <button className={styles.btn} onClick={() => onGo(prev.id)} title={prev.name}>
+          {t('reader.prev')}
+        </button>
+      )}
+      {next && (
+        <button className={`${styles.btn} ${styles.go}`} onClick={() => onGo(next.id)} title={next.name}>
+          {t('reader.next')}
+        </button>
+      )}
+    </div>
+  )
+  const related = layout !== 'desktop' && footer ? <div className={styles.footer}>{footer}</div> : null
+
   return (
-    <article className={`${styles.reader} glass`} style={{ '--track': track?.color } as React.CSSProperties} aria-labelledby="reader-title">
-      <div className={styles.rhead}>
-        <div className={styles.crumbs}>
-          <span className={`${styles.chip} ${styles.trackChip}`}>{track?.name[locale]}</span>
-          {c && <span className={styles.chip}>{t(`freq.${c.freq}`)}</span>}
-          <button
-            className={`${styles.chip} ${styles.modeBtn}`}
-            onClick={() => onMode(MODES[(MODES.indexOf(mode) + 1) % MODES.length])}
-            aria-label={`${t('reader.mode.label')}: ${t(`reader.mode.${mode}`)}`}
-            data-mode={mode}
-          >
-            {t(`reader.mode.${mode}`)}
-          </button>
-          <button className="icon-btn" onClick={onClose} aria-label={t('reader.close')}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
-          </button>
-        </div>
-        <h1 id="reader-title">{c?.title ?? ' '}</h1>
-        <p className={styles.lead}>{c?.summary ?? ' '}</p>
-        <div className={styles.tabs} role="tablist">
-          {tabs.map((k) => (
-            <button key={k} role="tab" aria-selected={k === active} className={k === active ? styles.on : ''} onClick={() => onTab(k)}>
-              {t(`reader.tabs.${k}`)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className={styles.scroll}>
-        <div key={`${topicId}:${active}:${locale}`} className={styles.rbody} role="tabpanel" onClick={onBodyClick}>
-          {body}
-        </div>
-      </div>
-      <div className={styles.rfoot}>
-        {prev && (
-          <button className={styles.btn} onClick={() => onGo(prev.id)} title={prev.name}>
-            {t('reader.prev')}
-          </button>
-        )}
-        {next && (
-          <button className={`${styles.btn} ${styles.go}`} onClick={() => onGo(next.id)} title={next.name}>
-            {t('reader.next')}
-          </button>
-        )}
-      </div>
-      {footer && <div className={styles.footer}>{footer}</div>}
+    <article
+      className={`${styles.reader} ${styles[layout]} glass`}
+      style={{ '--track': track?.color } as React.CSSProperties}
+      aria-labelledby="reader-title"
+      data-layout={layout}
+    >
+      {layout === 'phone' ? (
+        // Teléfono (decisión 5): un único desplazamiento; pestañas adhesivas y cerrar anclado fuera de él.
+        <>
+          {closeBtn}
+          <div className={styles.scroll} ref={scrollRef} data-testid="reader-scroll">
+            <div className={styles.rhead}>
+              {crumbs}
+              {titleBlock}
+            </div>
+            <div ref={tabsAnchorRef} className={styles.tabsAnchor} aria-hidden="true" />
+            {tabList}
+            {panel}
+            {nav}
+            {related}
+          </div>
+        </>
+      ) : (
+        // Escritorio y tableta (decisión 4): cabecera y botones fijos; se desplaza el contenido (y en tableta, los relacionados).
+        <>
+          <div className={styles.rhead}>
+            {crumbs}
+            {titleBlock}
+            {tabList}
+          </div>
+          <div className={styles.scroll} ref={scrollRef} data-testid="reader-scroll">
+            {panel}
+            {related}
+          </div>
+          {nav}
+        </>
+      )}
     </article>
   )
 }

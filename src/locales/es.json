@@ -41,7 +41,6 @@
     "mode": {
       "label": "Modo de fondo del lector",
       "glass": "◻ Cristal",
-      "pure": "○ Sin fondo",
       "solid": "◼ Sólido"
     },
     "notFound": "No se encontró el tema."
