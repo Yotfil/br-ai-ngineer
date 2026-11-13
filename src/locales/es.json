@@ -43,7 +43,9 @@
       "glass": "◻ Cristal",
       "solid": "◼ Sólido"
     },
-    "notFound": "No se encontró el tema."
+    "notFound": "No se encontró el tema.",
+    "loadError": "No se pudo cargar el contenido. Comprueba tu conexión.",
+    "retry": "Reintentar"
   },
   "section": {
     "code:example": "Ejemplo: la API de la tienda",

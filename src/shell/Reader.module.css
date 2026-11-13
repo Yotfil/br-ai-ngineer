@@ -187,6 +187,16 @@
 .loading {
   color: var(--muted);
 }
+.loadError {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.loadError p {
+  margin: 0;
+  color: var(--muted);
+}
 .rfoot {
   display: flex;
   gap: 10px;

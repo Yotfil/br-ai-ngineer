@@ -25,6 +25,7 @@ Fuera de este cambio: nombre del producto, dominio propio, `release/*` y `hotfix
 ### Modified Capabilities
 
 - `app-shell`: el lector se recupera solo cuando hay una versión nueva publicada y, si un tema o una demo no cargan por otra causa, lo dice y ofrece reintentar.
+- `localization`: los textos de la interfaz tienen las mismas claves, no vacías y con los mismos marcadores, en ambos idiomas, y una prueba lo comprueba. Añadido el 2026-11-13: este cambio incorpora textos nuevos y esa comprobación no existía.
 
 ## Impact
 

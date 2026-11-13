@@ -1,8 +1,10 @@
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Component, lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Locale, Tab, TopicContent, TrackInfo } from '../content/model.ts'
 import { loadTopic } from '../data/content.ts'
-import { DEMOS, hasDemo } from '../demos/registry.ts'
+import { withNewVersionCheck } from '../data/newVersion.ts'
+import { DEMO_LOADERS, hasDemo } from '../demos/registry.ts'
+import type { DemoId } from '../demos/ids.ts'
 import type { ReaderMode } from '../prefs/store.ts'
 import Exercises from './Exercises.tsx'
 import styles from './Reader.module.css'
@@ -42,17 +44,29 @@ const html = (s: string | undefined) => ({ __html: s ?? '' })
 export default function Reader({ locale, topicId, track, tab, onTab, layout, mode, onMode, onClose, prev, next, onGo, onLink, footer }: Props) {
   const { t } = useTranslation()
   const [content, setContent] = useState<TopicContent | null>(null)
+  /** Reintentos pedidos con el botón del aviso de error (despliegue-automatico, decisión 3). */
+  const [attempt, setAttempt] = useState(0)
+  /** Carga que falló sin versión nueva: `idioma:tema:intento`. */
+  const [failedKey, setFailedKey] = useState<string | null>(null)
+  const loadKey = `${locale}:${topicId}:${attempt}`
 
   useEffect(() => {
     let alive = true
-    const p = loadTopic(locale, topicId)
-    p?.then((c) => alive && setContent(c))
+    const load = loadTopic(locale, topicId)
+    if (load) {
+      // Si falla y hay versión nueva, la página se recarga y la promesa no se resuelve: sigue «Cargando…».
+      withNewVersionCheck(() => load).then(
+        (c) => alive && setContent(c),
+        () => alive && setFailedKey(`${locale}:${topicId}:${attempt}`),
+      )
+    }
     return () => {
       alive = false
     }
-  }, [locale, topicId])
+  }, [locale, topicId, attempt])
 
   const c = content && content.id === topicId ? content : null
+  const failed = !c && failedKey === loadKey
   const tabs = c ? tabsFor(c) : (['understand', 'code', 'interview'] as Tab[])
   const active = tabs.includes(tab) ? tab : 'understand'
   const s = c?.sections ?? {}
@@ -92,7 +106,9 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
     }
   }
 
-  const body = !c ? (
+  const body = failed ? (
+    <LoadError onRetry={() => setAttempt((n) => n + 1)} />
+  ) : !c ? (
     <p className={styles.loading}>{t('reader.loading')}</p>
   ) : active === 'understand' ? (
     <>
@@ -257,15 +273,58 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
   )
 }
 
-function DemoBlock({ id }: { id: keyof typeof DEMOS }) {
+/** Aviso de error de carga con botón de reintentar (despliegue-automatico, decisión 3). */
+function LoadError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation()
-  const Demo = DEMOS[id]
+  return (
+    <div className={styles.loadError}>
+      <p role="alert">{t('reader.loadError')}</p>
+      <button type="button" className={styles.btn} onClick={onRetry}>
+        {t('reader.retry')}
+      </button>
+    </div>
+  )
+}
+
+/** Fallo al cargar el código de una demo (no un error de la demo ya cargada). */
+class DemoLoadFailure extends Error {}
+
+/** Recoge solo los fallos de carga de la demo; cualquier otro error sigue hacia arriba como antes. */
+class DemoLoadBoundary extends Component<{ onRetry: () => void; children: ReactNode }, { error: unknown }> {
+  state: { error: unknown } = { error: null }
+  static getDerivedStateFromError(error: unknown) {
+    return { error }
+  }
+  render() {
+    const { error } = this.state
+    if (error === null) return this.props.children
+    if (error instanceof DemoLoadFailure) return <LoadError onRetry={this.props.onRetry} />
+    throw error
+  }
+}
+
+function DemoBlock({ id }: { id: DemoId }) {
+  const { t } = useTranslation()
+  const [attempt, setAttempt] = useState(0)
+  // Un `lazy` nuevo por intento: el anterior conserva su fallo.
+  const Demo = useMemo(
+    () =>
+      lazy(() =>
+        withNewVersionCheck(DEMO_LOADERS[id]).catch((e: unknown) => {
+          throw new DemoLoadFailure(String(e))
+        }),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `attempt` fuerza un componente nuevo al reintentar
+    [id, attempt],
+  )
   return (
     <section className={styles.demo} aria-label={t('demo.label')}>
       <span className={styles.demoTag}>{t('demo.label')}</span>
-      <Suspense fallback={<p className={styles.loading}>{t('reader.loading')}</p>}>
-        <Demo />
-      </Suspense>
+      <DemoLoadBoundary key={attempt} onRetry={() => setAttempt((n) => n + 1)}>
+        <Suspense fallback={<p className={styles.loading}>{t('reader.loading')}</p>}>
+          <Demo />
+        </Suspense>
+      </DemoLoadBoundary>
     </section>
   )
 }
