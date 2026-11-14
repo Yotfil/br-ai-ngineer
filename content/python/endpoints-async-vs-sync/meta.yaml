@@ -1,6 +1,6 @@
 id: endpoints-async-vs-sync
 track: python
-order: 15
+order: 22
 freq: often
 group: fastapi
 concepts:

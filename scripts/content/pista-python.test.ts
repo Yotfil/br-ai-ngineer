@@ -262,14 +262,68 @@ describe('3.x pista Python y FastAPI en el contenido real', () => {
   const pyDir = path.join(contentDir, 'python')
   const build = () => buildContent(contentDir)
 
-  it('21 temas en el orden de la guía: 10 en "Python" y 11 en "FastAPI"', async () => {
+  // content-map.md sección 2: orden final de la pista (posición = orden) y tipo de cada entrada.
+  const FINAL_ORDER: [id: string, group: 'lenguaje' | 'fastapi', kind: 'tema' | 'nuevo' | 'proyecto'][] = [
+    ['tipado-y-type-hints', 'lenguaje', 'tema'],
+    ['estructuras-de-datos', 'lenguaje', 'tema'],
+    ['comprehensions', 'lenguaje', 'nuevo'],
+    ['generadores', 'lenguaje', 'nuevo'],
+    ['funciones-y-parametros', 'lenguaje', 'nuevo'],
+    ['closures-y-lambdas', 'lenguaje', 'nuevo'],
+    ['decoradores', 'lenguaje', 'tema'],
+    ['proyecto-total-del-pedido', 'lenguaje', 'proyecto'],
+    ['excepciones', 'lenguaje', 'nuevo'],
+    ['context-managers', 'lenguaje', 'nuevo'],
+    ['modulos-y-paquetes', 'lenguaje', 'nuevo'],
+    ['entornos-y-dependencias', 'lenguaje', 'nuevo'],
+    ['async-y-event-loop', 'lenguaje', 'nuevo'],
+    ['hilos-procesos-y-gil', 'lenguaje', 'nuevo'],
+    ['dataclasses-y-pydantic', 'lenguaje', 'tema'],
+    ['identidad-copias-mutabilidad', 'lenguaje', 'tema'],
+    ['proyecto-importar-catalogo', 'lenguaje', 'proyecto'],
+    ['rutas-y-parametros', 'fastapi', 'tema'],
+    ['modelos-y-response-model', 'fastapi', 'tema'],
+    ['inyeccion-con-depends', 'fastapi', 'tema'],
+    ['errores-y-httpexception', 'fastapi', 'tema'],
+    ['endpoints-async-vs-sync', 'fastapi', 'tema'],
+    ['proyecto-crear-pedido', 'fastapi', 'proyecto'],
+    ['orm-y-sesiones', 'fastapi', 'nuevo'],
+    ['migraciones-con-alembic', 'fastapi', 'nuevo'],
+    ['autenticacion-en-fastapi', 'fastapi', 'tema'],
+    ['middleware-y-cors', 'fastapi', 'nuevo'],
+    ['tareas-en-segundo-plano', 'fastapi', 'nuevo'],
+    ['proyecto-pedidos-con-login', 'fastapi', 'proyecto'],
+    ['estructura-del-proyecto', 'fastapi', 'tema'],
+    ['pytest-y-testclient', 'fastapi', 'tema'],
+    ['openapi-automatico', 'fastapi', 'nuevo'],
+    ['despliegue-uvicorn-docker', 'fastapi', 'nuevo'],
+    ['proyecto-api-completa', 'fastapi', 'proyecto'],
+  ]
+  // content-map.md sección 1: los temas que se parten y sus dos sustitutos. Mientras un tema no se ha
+  // partido ocupa el orden provisional del primero de ellos (sección 2, "Orden provisional").
+  const SPLITS: Record<string, [string, string]> = {
+    'comprehensions-y-generadores': ['comprehensions', 'generadores'],
+    'funciones-y-closures': ['funciones-y-parametros', 'closures-y-lambdas'],
+    'errores-y-context-managers': ['excepciones', 'context-managers'],
+    'modulos-y-entornos': ['modulos-y-paquetes', 'entornos-y-dependencias'],
+    concurrencia: ['async-y-event-loop', 'hilos-procesos-y-gil'],
+    'base-de-datos': ['orm-y-sesiones', 'migraciones-con-alembic'],
+    'middleware-cors-background': ['middleware-y-cors', 'tareas-en-segundo-plano'],
+    'openapi-y-despliegue': ['openapi-automatico', 'despliegue-uvicorn-docker'],
+  }
+  const PLACE = new Map(FINAL_ORDER.map(([id, group], i) => [id, { order: i + 1, group }]))
+  for (const [old, [first]] of Object.entries(SPLITS)) PLACE.set(old, PLACE.get(first)!)
+
+  it('orden relativo: cada entrada lleva el orden y el grupo de content-map.md, final o provisional', async () => {
     const { graph } = await build()
-    const topics = graph.nodes.filter((n) => n.track === 'python' && n.type === 'topic').sort((a, b) => a.order! - b.order!)
-    expect(topics).toHaveLength(21)
-    expect(topics.map((t) => t.order)).toEqual(Array.from({ length: 21 }, (_, i) => i + 1))
-    expect(topics.slice(0, 10).every((t) => t.group === 'lenguaje')).toBe(true)
-    expect(topics.slice(10).every((t) => t.group === 'fastapi')).toBe(true)
-    expect(topics[7].id).toBe('concurrencia')
+    const entries = graph.nodes.filter((n) => n.track === 'python' && n.type === 'topic').sort((a, b) => a.order! - b.order!)
+    const present = new Set(entries.map((n) => n.id))
+    expect(entries.map((n) => ({ id: n.id, order: n.order, group: n.group }))).toEqual(entries.map((n) => ({ id: n.id, ...PLACE.get(n.id) })))
+    for (const [id, , kind] of FINAL_ORDER) if (kind === 'tema') expect(present.has(id), id).toBe(true)
+    for (const [old, halves] of Object.entries(SPLITS)) {
+      // Un tema está entero o partido en sus dos mitades, nunca a medias ni a la vez.
+      expect([[true, false, false], [false, true, true]], old).toContainEqual([present.has(old), ...halves.map((h) => present.has(h))])
+    }
     expect(graph.tracks.find((t) => t.id === 'python')!.empty).toBe(false)
     expect(graph.tracks.filter((t) => t.empty).map((t) => t.id).sort()).toEqual(['git', 'oop', 'sql'])
   })

@@ -1,6 +1,6 @@
 id: autenticacion-en-fastapi
 track: python
-order: 17
+order: 26
 freq: always
 group: fastapi
 concepts:

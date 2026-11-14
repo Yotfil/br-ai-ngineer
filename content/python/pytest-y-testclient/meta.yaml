@@ -1,6 +1,6 @@
 id: pytest-y-testclient
 track: python
-order: 20
+order: 31
 freq: often
 group: fastapi
 concepts:

@@ -36,7 +36,7 @@ Pedida por el usuario el 2026-11-13. Vale para toda tarea que escriba o traduzca
 
 ## 3. Orden de la pista Python y FastAPI
 
-- [ ] 3.1 [opus] Dar a cada tema actual de Python su orden final o provisional de `content-map.md` sección 2 y adaptar la prueba de `pista-python.test.ts` que exige 21 órdenes consecutivos para que compruebe el orden relativo de los temas (design.md decisión 9); verificar que la lista de la pista en el sidebar conserva el mismo orden de temas que antes y que `npm test` y `npm run build` terminan en verde
+- [x] 3.1 [opus] Dar a cada tema actual de Python su orden final o provisional de `content-map.md` sección 2 y adaptar la prueba de `pista-python.test.ts` que exige 21 órdenes consecutivos para que compruebe el orden relativo de los temas (design.md decisión 9); verificar que la lista de la pista en el sidebar conserva el mismo orden de temas que antes y que `npm test` y `npm run build` terminan en verde
 
 ## 4. Piloto
 

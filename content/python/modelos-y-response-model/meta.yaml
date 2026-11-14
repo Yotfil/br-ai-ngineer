@@ -1,6 +1,6 @@
 id: modelos-y-response-model
 track: python
-order: 12
+order: 19
 freq: always
 group: fastapi
 concepts:
