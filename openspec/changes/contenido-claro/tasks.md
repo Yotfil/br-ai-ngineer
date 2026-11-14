@@ -2,41 +2,52 @@
 
 Cada grupo (`## N.`) es una sesión de Opus. Documentos vinculantes: `design.md`, `content-map.md` y `proyecto-tienda.md` de este cambio, y `openspec/guia-de-contenido.md`.
 
-"Reescribir un tema" significa siempre: escribir su `es.md` completo según la guía (reglas, tabla por sección y modelo de su tipo), con el proyecto de `proyecto-tienda.md`; ejecutar cada bloque de Python ejecutable y pegar la salida real (design.md decisión 11); y pasar la lista de comprobación de la guía. La tarea se verifica mostrando que las 12 preguntas de la lista son "sí" y la salida de los bloques ejecutados.
+## Regla sin excepciones: no se inventa información
 
-"Traducir un tema" significa: escribir su `en.md` como traducción del `es.md` ya terminado, con la misma estructura, los mismos bloques y pasos, los comentarios y los textos impresos en inglés y los nombres del código sin tocar (design.md decisiones 4 y 10). Se verifica con `npm run content` en verde para ese tema y revisando el diff.
+Pedida por el usuario el 2026-11-13. Vale para toda tarea que escriba o traduzca contenido, la haga Opus o un subagente; Opus la copia en cada encargo a Sonnet.
+
+1. **Bajo ninguna circunstancia se inventa información.** Ni un dato, ni el nombre de una función, un parámetro, una cabecera o un comando, ni un código de estado, ni un número de versión, ni la salida de un programa, ni un comportamiento "que seguramente es así".
+2. **Toda la información se confirma antes de escribirla.** El código ejecutable se ejecuta y se pega su salida real. Lo que no se puede ejecutar (FastAPI, SQLModel, Alembic, HTTP, Docker, uv) se comprueba en su fuente: la documentación oficial de la librería o la especificación (RFC, MDN).
+3. **Si hay cualquier duda, se busca en internet y se confirma** en una fuente oficial y actual, antes de escribir. Recordar algo no es confirmarlo: las librerías cambian de una versión a otra.
+4. **Lo que no se pueda confirmar no se escribe.** Se deja fuera, se anota en `decisiones.md` qué faltó y dónde se buscó, y es una pregunta para Fable 5.2.
+5. El texto que ya está en `content/` y los modelos de la guía tampoco se dan por buenos: si se conservan, se confirman igual. Un error encontrado en el contenido antiguo se corrige y se anota en `decisiones.md` con la fuente.
+6. Cada tarea de verificación de grupo deja en `decisiones.md`, por tema, las fuentes consultadas (dirección y fecha) para lo que no se pudo ejecutar.
+
+"Reescribir un tema" significa siempre: escribir su `es.md` completo según la guía (reglas, tabla por sección y modelo de su tipo), con el proyecto de `proyecto-tienda.md`; ejecutar cada bloque de Python ejecutable y pegar la salida real (design.md decisión 11); confirmar en su fuente todo lo que no se pueda ejecutar, según la regla anterior; y pasar la lista de comprobación de la guía. La tarea se verifica mostrando que las 13 preguntas de la lista son "sí", la salida de los bloques ejecutados y las fuentes consultadas.
+
+"Traducir un tema" significa: escribir su `en.md` como traducción del `es.md` ya terminado, con la misma estructura, los mismos bloques y pasos, los comentarios y los textos impresos en inglés y los nombres del código sin tocar (design.md decisiones 4 y 10). La traducción no añade, quita ni cambia información respecto al español. Se verifica con `npm run content` en verde para ese tema y revisando el diff.
 
 ## 1. Formato: pasos y paridad de código
 
-- [ ] 1.1 [opus] Comprobar que la rama es `feature/contenido-claro` y que `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` están en verde antes de tocar nada; verificar anotando el número de pruebas que pasan
-- [ ] 1.2 [opus] Admitir títulos de paso (`###`) y texto en `code:example`, `code:wire` y `code:server`, y rechazarlos en las demás secciones de un tema (design.md decisión 2); verificar con pruebas los escenarios "Ejemplo principal con pasos", "Conversación por la red con momentos" y "Título de paso en una sección que no lo admite" de specs/content-model, y los cinco escenarios de "Ejemplo principal opcional"
-- [ ] 1.3 [opus] Mostrar en el lector los títulos de paso como subtítulo encima de su contenido, con el mismo estilo en las tres secciones, y anotar en `decisiones.md` el aspecto elegido (design.md decisión 2); verificar con pruebas los escenarios "Tema con pasos" y "Texto entre bloques" de specs/app-shell usando un tema de prueba, y en el navegador a 390 px de ancho el escenario "Teléfono"
-- [ ] 1.4 [opus] Añadir la comprobación de paridad de código entre idiomas (design.md decisión 4); verificar con pruebas los cuatro escenarios de "Paridad de código entre idiomas" y que el contenido actual completo sigue compilando
-- [ ] 1.5 [opus] Cambiar el rótulo de `code:example` a "Paso a paso" y "Step by step" en `src/locales/es.json` y `en.json` (design.md decisión 5); verificar que la prueba de paridad de textos de interfaz sigue en verde
-- [ ] 1.6 [opus] Ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`; verificar que los cuatro terminan en verde y anotar el número de pruebas
+- [x] 1.1 [opus] Comprobar que la rama es `feature/contenido-claro` y que `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` están en verde antes de tocar nada; verificar anotando el número de pruebas que pasan
+- [x] 1.2 [opus] Admitir títulos de paso (`###`) y texto en `code:example`, `code:wire` y `code:server`, y rechazarlos en las demás secciones de un tema (design.md decisión 2); verificar con pruebas los escenarios "Ejemplo principal con pasos", "Conversación por la red con momentos" y "Título de paso en una sección que no lo admite" de specs/content-model, y los cinco escenarios de "Ejemplo principal opcional"
+- [x] 1.3 [opus] Mostrar en el lector los títulos de paso como subtítulo encima de su contenido, con el mismo estilo en las tres secciones, y anotar en `decisiones.md` el aspecto elegido (design.md decisión 2); verificar con pruebas los escenarios "Tema con pasos" y "Texto entre bloques" de specs/app-shell usando un tema de prueba, y en el navegador a 390 px de ancho el escenario "Teléfono"
+- [x] 1.4 [opus] Añadir la comprobación de paridad de código entre idiomas (design.md decisión 4); verificar con pruebas los cuatro escenarios de "Paridad de código entre idiomas" y que el contenido actual completo sigue compilando
+- [x] 1.5 [opus] Cambiar el rótulo de `code:example` a "Paso a paso" y "Step by step" en `src/locales/es.json` y `en.json` (design.md decisión 5); verificar que la prueba de paridad de textos de interfaz sigue en verde
+- [x] 1.6 [opus] Ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`; verificar que los cuatro terminan en verde y anotar el número de pruebas
 
 ## 2. Modelo: entradas de proyecto
 
-- [ ] 2.1 [opus] Admitir `kind: project` y `covers` en `meta.yaml`, con las secciones `context` y `walkthrough` y todas las reglas de design.md decisión 6 (qué puede y qué no puede declarar, temas reunidos válidos, cada uno enlazado en el recorrido en ambos idiomas); verificar con pruebas los nueve escenarios de "Entradas de proyecto" de specs/content-model, usando entradas de prueba
-- [ ] 2.2 [opus] Generar la salida de una entrada de proyecto (tema con `kind` y `covers`, sin `freq`), indexarla en el buscador como un tema y conectarla en el grafo con cada tema de `covers` (design.md decisión 6); verificar con pruebas el escenario "Aparece sin cambios de código" y los escenarios "Vecinos de una entrada de proyecto" y "Más conexiones entre pistas" de specs/concept-graph sobre datos de prueba
-- [ ] 2.3 [opus] Mostrar una entrada de proyecto en el lector: sin pestañas ni frecuencia, con `context`, `walkthrough` y la lista de temas reunidos, y con los rótulos de design.md decisión 6 en ambos idiomas; verificar con pruebas los seis escenarios de "Lectura de una entrada de proyecto" de specs/app-shell
-- [ ] 2.4 [opus] Mostrar las entradas de proyecto en el sidebar y en la hoja de temas del teléfono, sin marca de frecuencia, y en el panel de relacionados sus temas reunidos (design.md decisión 6); verificar con pruebas los tres escenarios de "Entradas de proyecto en las listas de temas"
-- [ ] 2.5 [opus] Ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`; verificar que los cuatro terminan en verde, anotar el número de pruebas y comprobar en el navegador que un tema existente se ve y se navega igual que antes
+- [x] 2.1 [opus] Admitir `kind: project` y `covers` en `meta.yaml`, con las secciones `context` y `walkthrough` y todas las reglas de design.md decisión 6 (qué puede y qué no puede declarar, temas reunidos válidos, cada uno enlazado en el recorrido en ambos idiomas); verificar con pruebas los nueve escenarios de "Entradas de proyecto" de specs/content-model, usando entradas de prueba
+- [x] 2.2 [opus] Generar la salida de una entrada de proyecto (tema con `kind` y `covers`, sin `freq`), indexarla en el buscador como un tema y conectarla en el grafo con cada tema de `covers` (design.md decisión 6); verificar con pruebas el escenario "Aparece sin cambios de código" y los escenarios "Vecinos de una entrada de proyecto" y "Más conexiones entre pistas" de specs/concept-graph sobre datos de prueba
+- [x] 2.3 [opus] Mostrar una entrada de proyecto en el lector: sin pestañas ni frecuencia, con `context`, `walkthrough` y la lista de temas reunidos, y con los rótulos de design.md decisión 6 en ambos idiomas; verificar con pruebas los seis escenarios de "Lectura de una entrada de proyecto" de specs/app-shell
+- [x] 2.4 [opus] Mostrar las entradas de proyecto en el sidebar y en la hoja de temas del teléfono, sin marca de frecuencia, y en el panel de relacionados sus temas reunidos (design.md decisión 6); verificar con pruebas los tres escenarios de "Entradas de proyecto en las listas de temas"
+- [x] 2.5 [opus] Ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`; verificar que los cuatro terminan en verde, anotar el número de pruebas y comprobar en el navegador que un tema existente se ve y se navega igual que antes
 
 ## 3. Orden de la pista Python y FastAPI
 
-- [ ] 3.1 [opus] Dar a cada tema actual de Python su orden final o provisional de `content-map.md` sección 2 y adaptar la prueba de `pista-python.test.ts` que exige 21 órdenes consecutivos para que compruebe el orden relativo de los temas (design.md decisión 9); verificar que la lista de la pista en el sidebar conserva el mismo orden de temas que antes y que `npm test` y `npm run build` terminan en verde
+- [x] 3.1 [opus] Dar a cada tema actual de Python su orden final o provisional de `content-map.md` sección 2 y adaptar la prueba de `pista-python.test.ts` que exige 21 órdenes consecutivos para que compruebe el orden relativo de los temas (design.md decisión 9); verificar que la lista de la pista en el sidebar conserva el mismo orden de temas que antes y que `npm test` y `npm run build` terminan en verde
 
 ## 4. Piloto
 
-- [ ] 4.1 [opus] Reescribir `decoradores` partiendo del Modelo 1 de la guía y traducirlo; es el primer tema y fija el patrón de reescritura y de traducción
-- [ ] 4.2 [opus] Partir `funciones-y-closures` en `funciones-y-parametros` y `closures-y-lambdas` según `content-map.md` sección 1 (conceptos, títulos, ejercicios, relaciones, órdenes 5 y 6) y reescribir ambos, `closures-y-lambdas` partiendo del Modelo 2; es la primera partición y fija su patrón; verificar además que la carpeta antigua ya no existe y que ningún `related` ni enlace `[[...]]` apunta a ella
-- [ ] 4.3 [opus] Reescribir `cache-http` partiendo del Modelo 3 de la guía
-- [ ] 4.4 [opus] Reescribir `codigos-de-estado` con el Modelo 3 como referencia
-- [ ] 4.5 [opus] Reescribir `inyeccion-con-depends` partiendo del Modelo 4 de la guía
-- [ ] 4.6 [opus] Escribir la entrada `proyecto-crear-pedido` en español y traducirla, con el alcance, los archivos y los `covers` de `content-map.md` sección 3 y el formato de design.md decisión 6; es la primera entrada de proyecto y fija su patrón; verificar los escenarios "Entrada de proyecto válida" de specs/content-model y "Abrir una entrada de proyecto" de specs/app-shell con el contenido real
-- [ ] 4.7 [sonnet: como 4.1] Traducir `funciones-y-parametros`, `closures-y-lambdas`, `cache-http`, `codigos-de-estado` e `inyeccion-con-depends`; un subagente por tema, en paralelo
-- [ ] 4.8 [opus] Verificación del grupo (design.md decisión 11): ejecutar el código de los ejercicios "¿Qué imprime?" de las piezas del piloto y comprobar su respuesta; dejar en `decisiones.md` una línea por pieza; ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` y anotar el resultado
+- [x] 4.1 [opus] Reescribir `decoradores` partiendo del Modelo 1 de la guía y traducirlo; es el primer tema y fija el patrón de reescritura y de traducción
+- [x] 4.2 [opus] Partir `funciones-y-closures` en `funciones-y-parametros` y `closures-y-lambdas` según `content-map.md` sección 1 (conceptos, títulos, ejercicios, relaciones, órdenes 5 y 6) y reescribir ambos, `closures-y-lambdas` partiendo del Modelo 2; es la primera partición y fija su patrón; verificar además que la carpeta antigua ya no existe y que ningún `related` ni enlace `[[...]]` apunta a ella
+- [x] 4.3 [opus] Reescribir `cache-http` partiendo del Modelo 3 de la guía
+- [x] 4.4 [opus] Reescribir `codigos-de-estado` con el Modelo 3 como referencia
+- [x] 4.5 [opus] Reescribir `inyeccion-con-depends` partiendo del Modelo 4 de la guía
+- [x] 4.6 [opus] Escribir la entrada `proyecto-crear-pedido` en español y traducirla, con el alcance, los archivos y los `covers` de `content-map.md` sección 3 y el formato de design.md decisión 6; es la primera entrada de proyecto y fija su patrón; verificar los escenarios "Entrada de proyecto válida" de specs/content-model y "Abrir una entrada de proyecto" de specs/app-shell con el contenido real
+- [x] 4.7 [sonnet: como 4.1] Traducir `funciones-y-parametros`, `closures-y-lambdas`, `cache-http`, `codigos-de-estado` e `inyeccion-con-depends`; un subagente por tema, en paralelo
+- [x] 4.8 [opus] Verificación del grupo (design.md decisión 11): ejecutar el código de los ejercicios "¿Qué imprime?" de las piezas del piloto y comprobar su respuesta; dejar en `decisiones.md` una línea por pieza; ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` y anotar el resultado
 - [ ] 4.9 [opus] Parada del piloto (design.md decisión 12): pedir al usuario que publique la rama y lea las siete piezas en la vista previa; leerle el guion de 11 preguntas, una a una, y registrar sus respuestas en `decisiones.md`; verificar que las once coinciden con lo esperado. Si alguna no coincide, anotar el detalle que dé el usuario, dejarlo en el relevo como pregunta para Fable 5.2 y no empezar el grupo 5
 
 ## 5. Python: datos, comprehensions y primer proyecto

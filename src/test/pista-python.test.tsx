@@ -266,7 +266,7 @@ describe('2.4 ejemplo principal y notas en En código', () => {
     const panel = screen.getByRole('tabpanel')
     const order = [...panel.querySelectorAll('[data-section]')].map((e) => e.getAttribute('data-section'))
     expect(order).toEqual(['code:example', 'bad', 'good', 'bridge:typescript'])
-    expect(within(panel).getAllByRole('heading', { level: 3 })[0]).toHaveTextContent('Ejemplo: la API de la tienda')
+    expect(within(panel).getAllByRole('heading', { level: 3 })[0]).toHaveTextContent('Paso a paso')
     expect(panel.querySelector('[data-section="code:example"]')!.querySelectorAll('pre')).toHaveLength(2)
   })
 
@@ -287,7 +287,7 @@ describe('2.4 ejemplo principal y notas en En código', () => {
     await screen.findByRole('heading', { level: 1, name: /\S/ })
     fireEvent.click(screen.getByRole('tab', { name: 'En código' }))
     const panel = screen.getByRole('tabpanel')
-    expect(within(panel).queryByText('Ejemplo: la API de la tienda')).toBeNull()
+    expect(within(panel).queryByText('Paso a paso')).toBeNull()
     expect(panel.querySelector('[data-section="code:example"]')).toBeNull()
   })
 })

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { FREQS } from '../../src/content/model.ts'
+import { FREQS, KINDS } from '../../src/content/model.ts'
 
 /** Identificador estable: minúsculas, dígitos y guiones. */
 export const idSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'identificador inválido (minúsculas, dígitos y guiones)')
@@ -27,19 +27,45 @@ export const trackSchema = z
 
 export const tracksFileSchema = z.array(trackSchema).min(1)
 
+/** Campos de meta.yaml que una entrada de proyecto no puede declarar (design.md de contenido-claro, decisión 6). */
+const NOT_IN_PROJECT = ['freq', 'concepts', 'related', 'demo'] as const
+
 export const metaSchema = z
   .object({
     id: idSchema,
     track: idSchema,
     order: z.number().int(),
-    freq: z.enum(FREQS),
-    concepts: z.array(idSchema).default([]),
-    related: z.array(idSchema).default([]),
+    /** Obligatorio en un tema; prohibido en una entrada de proyecto. */
+    freq: z.enum(FREQS).optional(),
+    concepts: z.array(idSchema).optional(),
+    related: z.array(idSchema).optional(),
     demo: z.string().min(1).optional(),
     /** Id de un grupo de su pista: obligatorio si la pista declara grupos, prohibido si no. */
     group: idSchema.optional(),
+    /** `project`: entrada de proyecto. Sin `kind`, la entrada es un tema. */
+    kind: z.enum(KINDS).optional(),
+    /** Temas que reúne una entrada de proyecto: obligatorio en ella, con al menos dos; prohibido en un tema. */
+    covers: z.array(idSchema).optional(),
   })
   .strict()
+  .superRefine((m, ctx) => {
+    const issue = (field: string, message: string) => ctx.addIssue({ code: 'custom', path: [field], message })
+    if (m.kind === 'project') {
+      for (const f of NOT_IN_PROJECT) {
+        if (m[f] !== undefined) issue(f, `la entrada de proyecto "${m.id}" no puede declarar "${f}"`)
+      }
+      if (m.covers === undefined) issue('covers', `la entrada de proyecto "${m.id}" debe declarar los temas que reúne (covers)`)
+      else if (m.covers.length < 2) issue('covers', `la entrada de proyecto "${m.id}" debe reunir al menos 2 temas`)
+      else {
+        const repeated = new Set(m.covers.filter((c, i) => m.covers!.indexOf(c) !== i))
+        for (const c of repeated) issue('covers', `la entrada de proyecto "${m.id}" repite el tema "${c}"`)
+      }
+    } else {
+      if (m.freq === undefined) issue('freq', `el tema "${m.id}" debe declarar su frecuencia (freq)`)
+      if (m.covers !== undefined) issue('covers', `el tema "${m.id}" no es una entrada de proyecto (kind: project) y no puede declarar covers`)
+    }
+  })
+  .transform((m) => ({ ...m, concepts: m.concepts ?? [], related: m.related ?? [] }))
 
 const choiceItem = z
   .object({

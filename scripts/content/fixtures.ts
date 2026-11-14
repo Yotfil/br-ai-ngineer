@@ -96,6 +96,54 @@ export function topic(
   ]
 }
 
+/** Recorrido de prueba: una parte con título, código y nota por tema reunido; cada nota enlaza su tema. */
+export function walkthrough(covers: readonly string[], locale: 'es' | 'en' = 'es'): string {
+  const [part, note, comment] = locale === 'es' ? ['Parte', 'Se estudia en', 'paso'] : ['Part', 'Covered in', 'step']
+  return covers
+    .map((c, i) => `### ${part} ${i + 1}. ${c}\n\n\`\`\`python\n# app/pedidos/router.py\nx = ${i}  # ${comment} ${i + 1}\n\`\`\`\n\n${note} [[${c}]].`)
+    .join('\n\n')
+}
+
+/** Entrada de proyecto de prueba (design.md de contenido-claro, decisión 6). `meta` y `front` añaden o sustituyen campos. */
+export function project(
+  id: string,
+  opts: {
+    covers: string[]
+    track?: string
+    order?: number
+    group?: string
+    short?: string
+    meta?: Record<string, unknown>
+    front?: Record<string, unknown>
+    sections?: Record<string, string>
+    enSections?: Record<string, string>
+  },
+): [string, TopicFixture] {
+  const meta: Record<string, unknown> = {
+    id,
+    track: opts.track ?? 'python',
+    order: opts.order ?? 1,
+    ...(opts.group ? { group: opts.group } : {}),
+    kind: 'project',
+    covers: opts.covers,
+    ...opts.meta,
+  }
+  const front = (locale: 'es' | 'en') => ({
+    title: locale === 'es' ? `Proyecto: ${id}` : `Project: ${id}`,
+    ...(opts.short !== undefined ? { short: opts.short } : {}),
+    summary: `Resumen de ${id}.`,
+    ...opts.front,
+  })
+  const sections = (locale: 'es' | 'en') => ({
+    context: locale === 'es' ? 'Vamos a construir el endpoint que crea un pedido.' : "We're building the endpoint that creates an order.",
+    walkthrough: walkthrough(opts.covers, locale),
+  })
+  return [
+    `${meta.track as string}/${id}`,
+    { meta, es: md(front('es'), opts.sections ?? sections('es')), en: md(front('en'), opts.enSections ?? sections('en')) },
+  ]
+}
+
 export function makeContent(topics: Array<[string, TopicFixture]>, tracksYaml = TRACKS_YAML): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'content-'))
   fs.writeFileSync(path.join(root, 'tracks.yaml'), tracksYaml)

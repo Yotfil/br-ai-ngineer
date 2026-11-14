@@ -170,6 +170,10 @@ export default function Shell({ locale, path, graph, docs, labels, listLabels }:
   const neighbor = (i: number) => (i >= 0 && i < list.length ? { id: list[i].id, name: labels[list[i].id] ?? list[i].id } : null)
   const concepts = shownTopic ? (idx.conceptsOfTopic.get(shownTopic.id) ?? []) : []
   const related = shownTopic ? relatedOf(idx, shownTopic.id) : []
+  const topicLink = (id: string) => {
+    const n = idx.byId.get(id)
+    return n?.type === 'topic' ? { href: `/${locale}/${n.track}/${id}`, name: labels[id] ?? id } : null
+  }
   const relatedPanel = (inline: boolean) => (
     <Related concepts={concepts} related={related} tracks={trackById} labels={labels} onOpen={go} onHover={setHovered} inline={inline} />
   )
@@ -231,6 +235,7 @@ export default function Shell({ locale, path, graph, docs, labels, listLabels }:
             <Reader
               locale={locale}
               topicId={shownTopic.id}
+              kind={shownTopic.kind}
               track={trackById.get(shownTopic.track)}
               tab={tab}
               onTab={setTab}
@@ -242,6 +247,7 @@ export default function Shell({ locale, path, graph, docs, labels, listLabels }:
               next={neighbor(pos + 1)}
               onGo={go}
               onLink={go}
+              topicLink={topicLink}
               footer={isDesktop ? undefined : relatedPanel(true)}
             />
             {isDesktop && relatedPanel(false)}

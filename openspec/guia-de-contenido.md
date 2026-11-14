@@ -104,6 +104,18 @@ Esta función la llama el endpoint `POST /v1/pedidos` cada vez que un cliente cr
 
 Además, cada cierto número de temas hay una **entrada de proyecto**: una entrada propia en la lista de temas ("Proyecto: …") que muestra una funcionalidad completa de la tienda, parte por parte, y enlaza cada parte al tema donde se estudia. Su formato está en la sección [Entradas de proyecto](#entradas-de-proyecto).
 
+## Regla previa a todas: no se inventa información
+
+Pedida por el usuario el 2026-11-13: "bajo ninguna circunstancia debe inventar información, debe confirmar toda la información y, si no está seguro de alguna información, debe buscarla en internet y confirmar".
+
+El lector estudia con este contenido para una entrevista: un dato falso es peor que un tema sin escribir.
+
+- No se inventa nada: ni datos, ni nombres de funciones, parámetros, cabeceras o comandos, ni códigos de estado, ni versiones, ni la salida de un programa.
+- Todo se confirma antes de escribirlo. El código ejecutable se ejecuta. Lo demás se comprueba en la documentación oficial de la librería o en la especificación (RFC, MDN).
+- Ante cualquier duda, se busca en internet y se confirma en una fuente oficial y actual. Recordarlo no cuenta como confirmarlo.
+- Lo que no se pueda confirmar no se escribe: se anota y se le pregunta a Fable 5.2.
+- Esto incluye el contenido antiguo y los modelos de esta guía: si se reutilizan, se confirman igual.
+
 ## Cómo se escribe cada sección
 
 | Sección | Qué debe lograr | Extensión |
@@ -609,9 +621,10 @@ Antes de dar un tema por terminado, quien lo redacta comprueba cada punto. Si al
 9. ¿Cada malentendido dice qué se cree, qué pasa de verdad y por qué?
 10. ¿La respuesta de entrevista usa solo términos que el tema ya explicó?
 11. ¿Sigue siendo corto? Si una frase se puede quitar sin que se entienda menos, se quita.
-12. ¿El último paso muestra el concepto dentro de la tienda, con la ruta del archivo y quién lo llama? (O, si no tiene lugar natural en la tienda, ¿está anotado el motivo?)
+12. ¿Todo lo que afirma el tema está confirmado, ejecutándolo o en su fuente oficial, y nada se escribió de memoria o por suposición?
+13. ¿El último paso muestra el concepto dentro de la tienda, con la ruta del archivo y quién lo llama? (O, si no tiene lugar natural en la tienda, ¿está anotado el motivo?)
 
-Además, lo que el tema afirma tiene que ser correcto: quien redacta ejecuta cada bloque de Python ejecutable y pega la salida real, no la que supone.
+Quien redacta ejecuta cada bloque de Python ejecutable y pega la salida real, no la que supone, y anota las fuentes de lo que no pudo ejecutar.
 
 ## Decisiones tomadas
 

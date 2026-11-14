@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import matter from 'gray-matter'
 import YAML from 'yaml'
-import { LOCALES, type Locale, type SectionKey } from '../../src/content/model.ts'
+import { LOCALES, type BodySectionKey, type Locale } from '../../src/content/model.ts'
 import {
   ContentError,
   frontmatterSchema,
@@ -18,7 +18,7 @@ import { splitSections } from './sections.ts'
 export interface LocalizedTopic {
   file: string
   front: Frontmatter
-  sections: Partial<Record<SectionKey, string>>
+  sections: Partial<Record<BodySectionKey, string>>
 }
 
 export interface RawTopic {
@@ -85,8 +85,14 @@ export function readContent(root: string): RawContent {
           problems.push(`${rel}: frontmatter inválido: ${(e as Error).message}`)
           continue
         }
+        if (meta.kind === 'project') {
+          // Decisión 6 de contenido-claro: una entrada de proyecto lleva title, summary y short; ni concepts ni exercises.
+          for (const f of ['concepts', 'exercises']) {
+            if (Object.hasOwn(parsed.data, f)) problems.push(`${rel}: la entrada de proyecto "${meta.id}" no puede declarar "${f}"`)
+          }
+        }
         const front = parseWith(frontmatterSchema, parsed.data, rel, problems)
-        const sections = splitSections(parsed.content, rel, problems)
+        const sections = splitSections(parsed.content, rel, problems, meta.kind)
         if (front) locales[locale] = { file: rel, front, sections }
       }
       topics.push({ dir, meta, locales })

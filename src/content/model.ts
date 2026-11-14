@@ -33,6 +33,22 @@ export type SectionKey = (typeof SECTION_KEYS)[number]
 
 export const REQUIRED_SECTIONS: readonly SectionKey[] = ['definition', 'analogy', 'problem', 'interview', 'myths']
 
+/** Tipos de entrada distintos de un tema normal (`kind` en meta.yaml; design.md de contenido-claro, decisión 6). */
+export const KINDS = ['project'] as const
+export type Kind = (typeof KINDS)[number]
+
+/** Secciones de una entrada de proyecto, en el orden del lector; las dos son obligatorias (decisión 6 de contenido-claro). */
+export const PROJECT_SECTION_KEYS = ['context', 'walkthrough'] as const
+export type ProjectSectionKey = (typeof PROJECT_SECTION_KEYS)[number]
+
+/** Cualquier sección del cuerpo: de un tema o de una entrada de proyecto. */
+export type BodySectionKey = SectionKey | ProjectSectionKey
+
+/** Secciones que admite el cuerpo según el tipo de entrada. */
+export function sectionKeysOf(kind: Kind | undefined): readonly BodySectionKey[] {
+  return kind === 'project' ? PROJECT_SECTION_KEYS : SECTION_KEYS
+}
+
 export type Tab = 'understand' | 'code' | 'practice' | 'interview'
 
 /** Pestaña de cada sección. */
@@ -78,7 +94,12 @@ export interface GraphNode {
   track: string
   /** Tema hogar (conceptos) o pista (temas). */
   parent?: string
+  /** Frecuencia del tema (no la tiene una entrada de proyecto). */
   freq?: Freq
+  /** Solo en una entrada de proyecto. */
+  kind?: Kind
+  /** Temas que reúne una entrada de proyecto, en el orden declarado. */
+  covers?: string[]
   /** Orden del tema dentro de su pista. */
   order?: number
   /** Grupo del tema dentro de su pista (solo en pistas con grupos). */
@@ -147,18 +168,26 @@ export type ExerciseGroup =
   | { type: 'verdict'; prompt: string; items: VerdictItem[] }
   | { type: 'classify'; prompt: string; categories: string[]; items: ClassifyItem[] }
 
+/**
+ * Un tema, o una entrada de proyecto (`kind: 'project'`, decisión 6 de contenido-claro): esta lleva `covers`
+ * y las secciones `context` y `walkthrough`, y no lleva `freq`, demo, conceptos ni ejercicios.
+ */
 export interface TopicContent {
   id: string
   track: string
   order: number
-  freq: Freq
+  /** Siempre en un tema; nunca en una entrada de proyecto. */
+  freq?: Freq
+  kind?: Kind
+  /** Temas que reúne una entrada de proyecto, en el orden declarado. */
+  covers?: string[]
   demo?: string
   title: string
   /** Título corto, si el tema lo declara. */
   short?: string
   summary: string
   /** HTML ya saneado y resaltado, por clave de sección. */
-  sections: Partial<Record<SectionKey, string>>
+  sections: Partial<Record<BodySectionKey, string>>
   /** Campos de texto en HTML inline saneado. */
   exercises: ExerciseGroup[]
 }

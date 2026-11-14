@@ -1,0 +1,14 @@
+id: proyecto-crear-pedido
+track: python
+order: 23
+group: fastapi
+kind: project
+covers:
+  - rutas-y-parametros
+  - modelos-y-response-model
+  - inyeccion-con-depends
+  - errores-y-httpexception
+  - endpoints-async-vs-sync
+  - metodos-http
+  - codigos-de-estado
+  - errores-problem-details

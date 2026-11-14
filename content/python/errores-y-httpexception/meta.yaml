@@ -1,6 +1,6 @@
 id: errores-y-httpexception
 track: python
-order: 14
+order: 21
 freq: always
 group: fastapi
 concepts:

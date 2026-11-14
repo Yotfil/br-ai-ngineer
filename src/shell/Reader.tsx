@@ -1,6 +1,6 @@
 import { Component, lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Locale, Tab, TopicContent, TrackInfo } from '../content/model.ts'
+import type { Kind, Locale, Tab, TopicContent, TrackInfo } from '../content/model.ts'
 import { loadTopic } from '../data/content.ts'
 import { withNewVersionCheck } from '../data/newVersion.ts'
 import { DEMO_LOADERS, hasDemo } from '../demos/registry.ts'
@@ -22,6 +22,8 @@ export function tabsFor(c: Pick<TopicContent, 'exercises' | 'demo'>): Tab[] {
 interface Props {
   locale: Locale
   topicId: string
+  /** Tipo de la entrada según el grafo: decide la disposición antes de que cargue el contenido. */
+  kind?: Kind
   track: TrackInfo | undefined
   tab: Tab
   onTab: (t: Tab) => void
@@ -35,13 +37,15 @@ interface Props {
   onGo: (id: string) => void
   /** Clic en un enlace `[[id]]` del texto. */
   onLink: (id: string) => void
+  /** Dirección y título de un tema, para la lista de temas que reúne una entrada de proyecto. */
+  topicLink: (id: string) => { href: string; name: string } | null
   /** Relacionados dentro del lector, en tableta y teléfono: al final de la zona desplazable. */
   footer?: React.ReactNode
 }
 
 const html = (s: string | undefined) => ({ __html: s ?? '' })
 
-export default function Reader({ locale, topicId, track, tab, onTab, layout, mode, onMode, onClose, prev, next, onGo, onLink, footer }: Props) {
+export default function Reader({ locale, topicId, kind, track, tab, onTab, layout, mode, onMode, onClose, prev, next, onGo, onLink, topicLink, footer }: Props) {
   const { t } = useTranslation()
   const [content, setContent] = useState<TopicContent | null>(null)
   /** Reintentos pedidos con el botón del aviso de error (despliegue-automatico, decisión 3). */
@@ -67,6 +71,8 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
 
   const c = content && content.id === topicId ? content : null
   const failed = !c && failedKey === loadKey
+  /** Entrada de proyecto (decisión 6 de contenido-claro): una sola columna, sin pestañas ni frecuencia. */
+  const isProject = (c ? c.kind : kind) === 'project'
   const tabs = c ? tabsFor(c) : (['understand', 'code', 'interview'] as Tab[])
   const active = tabs.includes(tab) ? tab : 'understand'
   const s = c?.sections ?? {}
@@ -110,6 +116,28 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
     <LoadError onRetry={() => setAttempt((n) => n + 1)} />
   ) : !c ? (
     <p className={styles.loading}>{t('reader.loading')}</p>
+  ) : isProject ? (
+    <>
+      <h3>{t('section.context')}</h3>
+      <div className={styles.steps} data-section="context" dangerouslySetInnerHTML={html(s.context)} />
+      <h3>{t('section.walkthrough')}</h3>
+      <div className={styles.steps} data-section="walkthrough" dangerouslySetInnerHTML={html(s.walkthrough)} />
+      <h3>{t('reader.covers')}</h3>
+      <ul data-section="covers">
+        {(c.covers ?? []).map((id) => {
+          const link = topicLink(id)
+          return (
+            link && (
+              <li key={id}>
+                <a href={link.href} data-node={id}>
+                  {link.name}
+                </a>
+              </li>
+            )
+          )
+        })}
+      </ul>
+    </>
   ) : active === 'understand' ? (
     <>
       <div className={styles.def} dangerouslySetInnerHTML={html(s.definition)} />
@@ -123,19 +151,19 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
       {s['code:example'] && (
         <>
           <h3>{t('section.code:example')}</h3>
-          <div className={styles.example} data-section="code:example" dangerouslySetInnerHTML={html(s['code:example'])} />
+          <div className={styles.steps} data-section="code:example" dangerouslySetInnerHTML={html(s['code:example'])} />
         </>
       )}
       {s['code:wire'] && (
         <>
           <h3>{t('section.code:wire')}</h3>
-          <div dangerouslySetInnerHTML={html(s['code:wire'])} />
+          <div className={styles.steps} data-section="code:wire" dangerouslySetInnerHTML={html(s['code:wire'])} />
         </>
       )}
       {s['code:server'] && (
         <>
           <h3>{t('section.code:server')}</h3>
-          <div dangerouslySetInnerHTML={html(s['code:server'])} />
+          <div className={styles.steps} data-section="code:server" dangerouslySetInnerHTML={html(s['code:server'])} />
         </>
       )}
       {s.bad && s.good && (
@@ -181,7 +209,7 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
   const crumbs = (
     <div className={styles.crumbs}>
       <span className={`${styles.chip} ${styles.trackChip}`}>{track?.name[locale]}</span>
-      {c && <span className={styles.chip}>{t(`freq.${c.freq}`)}</span>}
+      {c?.freq && <span className={styles.chip}>{t(`freq.${c.freq}`)}</span>}
       {layout !== 'phone' && (
         <button
           className={`${styles.chip} ${styles.modeBtn}`}
@@ -211,7 +239,7 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
     </div>
   )
   const panel = (
-    <div key={`${topicId}:${active}:${locale}`} className={styles.rbody} role="tabpanel" onClick={onBodyClick}>
+    <div key={`${topicId}:${active}:${locale}`} className={styles.rbody} role={isProject ? undefined : 'tabpanel'} onClick={onBodyClick}>
       {body}
     </div>
   )
@@ -243,12 +271,12 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
         <>
           {closeBtn}
           <div className={styles.scroll} ref={scrollRef} data-testid="reader-scroll">
-            <div className={styles.rhead}>
+            <div className={`${styles.rhead} ${isProject ? styles.noTabs : ''}`}>
               {crumbs}
               {titleBlock}
             </div>
-            <div ref={tabsAnchorRef} className={styles.tabsAnchor} aria-hidden="true" />
-            {tabList}
+            {!isProject && <div ref={tabsAnchorRef} className={styles.tabsAnchor} aria-hidden="true" />}
+            {!isProject && tabList}
             {panel}
             {nav}
             {related}
@@ -257,10 +285,10 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
       ) : (
         // Escritorio y tableta (decisión 4): cabecera y botones fijos; se desplaza el contenido (y en tableta, los relacionados).
         <>
-          <div className={styles.rhead}>
+          <div className={`${styles.rhead} ${isProject ? styles.noTabs : ''}`}>
             {crumbs}
             {titleBlock}
-            {tabList}
+            {!isProject && tabList}
           </div>
           <div className={styles.scroll} ref={scrollRef} data-testid="reader-scroll">
             {panel}

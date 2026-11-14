@@ -177,9 +177,10 @@ Entre que se escribe el español de un tema y se traduce, la paridad de la decis
 
 Decidido por el usuario: Opus verifica; el usuario solo lee el piloto.
 
+- **No se inventa información** (pedido por el usuario el 2026-11-13; regla completa al inicio de `tasks.md`). Nada se escribe de memoria o por suposición: se ejecuta o se confirma en su fuente oficial, y ante cualquier duda se busca en internet. Lo que no se pueda confirmar no se escribe y va a Fable 5.2.
 - **Código ejecutable.** Todo bloque de Python que no dependa de un servidor, una base de datos o un paquete externo se ejecuta con el `python3` de la máquina, y la salida escrita en los comentarios es la salida real. Se ejecuta la versión española; la inglesa solo difiere en textos.
-- **Código no ejecutable** (FastAPI, SQLModel, HTTP): no se instala nada para ejecutarlo. Se revisa contra la documentación actual de la librería cuando haya duda sobre un nombre o una firma, y un comentario del bloque dice qué se da por hecho.
-- **Lista de comprobación.** Cada tema pasa las 12 preguntas de la guía antes de marcarse hecho. La tarea de verificación de cada grupo deja en `decisiones.md` una línea por tema: "lista pasada", y cualquier excepción con su motivo.
+- **Código no ejecutable** (FastAPI, SQLModel, HTTP): no se instala nada para ejecutarlo. Cada nombre, firma, parámetro, cabecera, código de estado y comando se confirma en la documentación oficial actual o en la especificación, y un comentario del bloque dice qué se da por hecho. Las fuentes consultadas se anotan en `decisiones.md`.
+- **Lista de comprobación.** Cada tema pasa las 13 preguntas de la guía antes de marcarse hecho. La tarea de verificación de cada grupo deja en `decisiones.md` una línea por tema: "lista pasada", y cualquier excepción con su motivo.
 - **Ejercicios.** Se ejecuta el código de cada ejercicio "¿Qué imprime?" de los temas del grupo y se comprueba que la respuesta marcada es la real. Una discrepancia no se corrige: se escala.
 - No se añaden pruebas automáticas que ejecuten el contenido.
 

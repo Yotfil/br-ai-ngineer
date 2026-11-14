@@ -1,0 +1,11 @@
+id: closures-y-lambdas
+track: python
+order: 6
+freq: always
+group: lenguaje
+concepts:
+  - closure
+  - lambda
+related:
+  - funciones-y-parametros
+  - decoradores
