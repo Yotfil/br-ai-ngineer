@@ -33,11 +33,12 @@ El paso 6 usa merge commit y no squash por una razón técnica: un squash de `de
 |---|---|---|
 | `v0.1.0` | `esqueleto-y-pista-rest` | `7a4cb0d` |
 | `v0.2.0` | `pista-python` | `664e2b7` |
-| `v0.2.1` | `rendimiento-movil` | — |
-| `v0.2.2` | `despliegue-automatico` | — |
+| `v0.2.1` | `rendimiento-movil` | `423d794` |
+| `v0.2.2` | `despliegue-automatico` | `bd3e7a2` |
+| `v0.2.3` | `contenido-claro` | — |
 | `v0.3.0` | pista SQL | — |
 
-Los dos primeros tags son retroactivos y aún no existen. La versión `v1.0.0` se reserva para el despliegue.
+Los dos primeros tags son retroactivos. La versión `v1.0.0` se reserva para el despliegue.
 
 Un cambio que corrige lo ya publicado y no figura en el plan numerado no consume número: lleva la versión del último cambio del plan con el tercer dígito incrementado (decidido con el usuario el 2026-11-13 para `rendimiento-movil`).
 

@@ -1,6 +1,6 @@
 id: inyeccion-con-depends
 track: python
-order: 13
+order: 20
 freq: always
 group: fastapi
 concepts:
