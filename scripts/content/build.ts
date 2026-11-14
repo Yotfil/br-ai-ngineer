@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   LOCALES,
-  SECTION_KEYS,
+  sectionKeysOf,
   type ExerciseGroup,
   type GraphData,
   type Locale,
@@ -79,7 +79,7 @@ export async function buildContent(contentDir: string): Promise<BuildOutput> {
       }
 
       const sections: TopicContent['sections'] = {}
-      for (const key of SECTION_KEYS) {
+      for (const key of sectionKeysOf(meta.kind)) {
         const md = loc.sections[key]
         if (md !== undefined) sections[key] = await renderMarkdown(md, key, resolve)
       }
@@ -116,7 +116,9 @@ export async function buildContent(contentDir: string): Promise<BuildOutput> {
         id: meta.id,
         track: meta.track,
         order: meta.order,
-        freq: meta.freq,
+        // Una entrada de proyecto (decisión 6 de contenido-claro) no lleva freq; lleva kind y covers.
+        ...(meta.freq !== undefined ? { freq: meta.freq } : {}),
+        ...(meta.kind !== undefined ? { kind: meta.kind, covers: meta.covers ?? [] } : {}),
         ...(meta.demo ? { demo: meta.demo } : {}),
         title: loc.front.title,
         ...(loc.front.short !== undefined ? { short: loc.front.short } : {}),

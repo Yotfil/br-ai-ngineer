@@ -38,10 +38,12 @@ export function homeTopic(idx: GraphIndex, id: string): GraphNode | null {
 /**
  * Relacionados de un tema: temas y conceptos ajenos conectados con el tema o con alguno de sus conceptos
  * (así, un tema que declara relacionado un concepto de otro tema conecta ambos temas).
+ * De una entrada de proyecto, solo los temas que reúne, en su orden y sin conceptos (decisión 6 de contenido-claro).
  */
 export function relatedOf(idx: GraphIndex, topicId: string): GraphNode[] {
   const topic = idx.byId.get(topicId)
   if (!topic) return []
+  if (topic.kind === 'project') return (topic.covers ?? []).flatMap((id) => idx.byId.get(id) ?? [])
   const own = new Set((idx.conceptsOfTopic.get(topicId) ?? []).map((c) => c.id))
   const out = new Map<string, GraphNode>()
   const consider = (id: string) => {

@@ -45,10 +45,13 @@
     },
     "notFound": "Topic not found.",
     "loadError": "Couldn't load the content. Check your connection.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "covers": "Topics this project brings together"
   },
   "section": {
     "code:example": "Step by step",
+    "context": "What we're building",
+    "walkthrough": "The code, part by part",
     "analogy": "Analogy",
     "problem": "What problem it solves",
     "code:wire": "How it travels over the wire",

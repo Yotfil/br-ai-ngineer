@@ -1,4 +1,4 @@
-import { LOCALES, SECTION_KEYS, type Locale, type SectionKey } from '../../src/content/model.ts'
+import { LOCALES, sectionKeysOf, type BodySectionKey, type Locale } from '../../src/content/model.ts'
 import { DEMO_IDS } from '../../src/demos/ids.ts'
 import { codeLanguage } from './markdown.ts'
 import type { RawContent, RawTopic } from './reader.ts'
@@ -22,8 +22,8 @@ export interface IdIndex {
 
 /**
  * Validaciones cruzadas de content-model y localization: concepto único, relaciones existentes
- * (metadatos y `[[id]]`), demos registradas y paridad de secciones, conceptos y ejercicios entre idiomas.
- * Lanza `ContentError` nombrando tema e identificador.
+ * (metadatos y `[[id]]`), demos registradas, temas reunidos por las entradas de proyecto y paridad de secciones,
+ * conceptos y ejercicios entre idiomas. Lanza `ContentError` nombrando tema e identificador.
  */
 export function validateContent(content: RawContent): IdIndex {
   const problems: string[] = []
@@ -69,6 +69,7 @@ export function validateContent(content: RawContent): IdIndex {
 
   for (const t of content.topics) {
     const id = t.meta.id
+    if (t.meta.kind === 'project') checkProject(t, topics, conceptHome, problems)
     // Relaciones explícitas.
     for (const r of t.meta.related) {
       if (r === id) problems.push(`tema "${id}": se declara relacionado consigo mismo`)
@@ -105,7 +106,7 @@ export function validateContent(content: RawContent): IdIndex {
         const missing = a.front.short === undefined ? first[0] : locale
         problems.push(`tema "${id}": falta el título corto (short) en "${missing}"`)
       }
-      for (const key of SECTION_KEYS) {
+      for (const key of sectionKeysOf(t.meta.kind)) {
         const inA = a.sections[key] !== undefined
         const inB = b.sections[key] !== undefined
         if (inA && !inB) problems.push(`tema "${id}": la sección "${key}" está en "${first[0]}" y falta en "${locale}"`)
@@ -158,7 +159,7 @@ export function validateContent(content: RawContent): IdIndex {
  * el mismo número de bloques de código, en el mismo orden y con el mismo lenguaje resuelto, y el mismo número de
  * títulos de paso. El texto del código (comentarios, mensajes) puede ser distinto.
  */
-function checkCodeParity(id: string, key: SectionKey, [la, mdA]: [Locale, string], [lb, mdB]: [Locale, string], problems: string[]): void {
+function checkCodeParity(id: string, key: BodySectionKey, [la, mdA]: [Locale, string], [lb, mdB]: [Locale, string], problems: string[]): void {
   const a = scanSection(mdA)
   const b = scanSection(mdB)
   if (a.blocks.length !== b.blocks.length) {
@@ -175,6 +176,30 @@ function checkCodeParity(id: string, key: SectionKey, [la, mdA]: [Locale, string
   }
   if (a.steps.length !== b.steps.length) {
     problems.push(`tema "${id}": la sección "${key}" tiene ${a.steps.length} títulos de paso en "${la}" y ${b.steps.length} en "${lb}"`)
+  }
+}
+
+/**
+ * Entrada de proyecto (design.md de contenido-claro, decisión 6): cada tema reunido existe, no es un concepto ni
+ * otra entrada de proyecto, y el recorrido (`walkthrough`) lo enlaza con `[[id]]` en cada idioma.
+ */
+function checkProject(t: RawTopic, topics: ReadonlyMap<string, RawTopic>, conceptHome: ReadonlyMap<string, string>, problems: string[]): void {
+  const id = t.meta.id
+  const covers = t.meta.covers ?? []
+  for (const c of covers) {
+    const target = topics.get(c)
+    if (c === id) problems.push(`entrada de proyecto "${id}": se reúne a sí misma en covers`)
+    else if (conceptHome.has(c)) problems.push(`entrada de proyecto "${id}": "${c}" es un concepto y covers solo admite temas`)
+    else if (!target) problems.push(`entrada de proyecto "${id}": el tema reunido "${c}" no existe`)
+    else if (target.meta.kind === 'project') problems.push(`entrada de proyecto "${id}": el tema reunido "${c}" es otra entrada de proyecto`)
+  }
+  for (const locale of LOCALES) {
+    const loc = t.locales[locale]
+    if (!loc) continue
+    const linked = new Set(mentionsIn(loc.sections.walkthrough ?? ''))
+    for (const c of covers) {
+      if (!linked.has(c)) problems.push(`entrada de proyecto "${id}" (${locale}): el recorrido (walkthrough) no enlaza el tema reunido "${c}"`)
+    }
   }
 }
 

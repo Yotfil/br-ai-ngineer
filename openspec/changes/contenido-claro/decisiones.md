@@ -40,3 +40,51 @@ Bitácora de Opus 5.5 (regla "Anotar y seguir"). Una entrada por decisión: tare
 - **Qué.** Archivos nuevos `scripts/content/contenido-claro.test.ts` (pasos y paridad) y `src/test/contenido-claro.test.tsx` (lector), como ya se hizo con un archivo por cambio en `pista-python` y `rendimiento-movil`. La prueba de `pista-python.test.ts` que exigía "solo bloques de código" se adaptó a la regla nueva (design.md decisión 14), y a su lado se añadió el escenario "Ejemplo principal sin código": así los cinco escenarios de "Ejemplo principal opcional" quedan juntos en el `describe('1.3 ejemplo principal opcional')` de ese archivo. Las pruebas que comprobaban el rótulo antiguo ("Ejemplo: la API de la tienda") pasan a comprobar "Paso a paso" / "Step by step".
 - **Por qué.** Mantener la trazabilidad por cambio sin duplicar los escenarios que ya estaban probados.
 - **Cómo deshacerlo.** Mover o borrar los archivos nuevos; restaurar la prueba adaptada desde Git.
+
+## Grupo 2. Modelo: entradas de proyecto
+
+**Comprobaciones.** Antes de tocar nada: `typecheck`, `test` (289 pruebas en 16 archivos), `lint` (0 errores, 14 avisos) y `build` en verde. 2.5, al cerrar el grupo: `typecheck`, `test` (327 pruebas en 16 archivos: 38 nuevas), `lint` (0 errores, los mismos 14 avisos) y `build` en verde. `npm run content` sobre el contenido real: 41 temas, 156 nodos, 215 enlaces, y los 85 archivos de `src/generated/` son idénticos byte a byte a los de antes del grupo (comparados con `diff -r` antes y después). En el navegador, a 1280 px: `decoradores`, `cache-http`, `metodos-http` y `rate-limiting` se ven con sus pestañas y su frecuencia; pestañas, anterior, siguiente, sidebar, un enlace del texto (`metodos-http` → `cors`) y un relacionado funcionan como antes, sin errores en la consola. Captura de un tema existente: `/Users/yotfil/.claude/projects/-Users-yotfil-Documents-Yotfil-TechForge-Learning-ai-engineer-ai-engineer-path/7e067968-eead-447c-8abc-db2a441f4465/tool-results/mcp-Claude_Browser-blob-1794628548151-9v1156.jpg`.
+
+**Comprobación visual de una entrada de proyecto.** Se creó solo en local `content/python/proyecto-prueba-local` (tres partes, `covers` con dos temas de Python y `codigos-de-estado`), se miró en el navegador y se borró; después se recompiló y la salida volvió a ser idéntica a la de antes. A 1280 px: sin pestañas ni frecuencia, contexto, partes y lista en una columna, relacionados con los tres temas. A 375 px: sin desplazamiento horizontal (`scrollWidth` 375) y los bloques se desplazan dentro de su recuadro. Capturas fuera del repositorio, en la misma carpeta que la anterior: `mcp-Claude_Browser-blob-1794628633860-rzsvmu.jpg` (escritorio), `mcp-Claude_Browser-blob-1794628643265-ip4sou.png` (final de la columna, con la lista) y `mcp-Claude_Browser-blob-1794628643265-mfykqx.jpg` (teléfono). Observación: con el servidor de desarrollo abierto, compilar el contenido a mano mientras su vigilante también lo compilaba dejó la app sin datos hasta reiniciar el servidor; no afecta a `build` ni a la vista previa publicada, y no se tocó.
+
+### 2.1 y 2.2 El modelo: `kind`, `covers` y `freq` opcional, también en el nodo del grafo
+
+- **Qué.** En `src/content/model.ts`: `KINDS = ['project']`, `PROJECT_SECTION_KEYS = ['context', 'walkthrough']`, el tipo `BodySectionKey` (secciones de un tema o de una entrada) y `sectionKeysOf(kind)`. `TopicContent` gana `kind` y `covers` y su `freq` pasa a opcional; una entrada lleva `exercises: []`. El nodo del grafo (`GraphNode`) de una entrada lleva también `kind` y `covers` (en el orden declarado) y no lleva `freq`.
+- **Por qué.** La decisión 6 fija que en la salida generada una entrada es un tema con `kind` y `covers` y sin `freq`; `graph.json` es parte de esa salida. La app necesita saber que un nodo es una entrada antes de cargar su contenido (para no pintar pestañas mientras carga) y conocer sus `covers` para el panel de relacionados. **Para que Fable lo revise:** toca el contrato entre la compilación y la app; lo clasifiqué como no crítico porque aplica la representación que ya fija la decisión 6 y es aditivo (el contenido real genera exactamente lo mismo).
+- **Cómo deshacerlo.** Quitar `kind` y `covers` de `GraphNode` y de `graph.ts`, y hacer que el lector y `relatedOf` lean `covers` del contenido cargado.
+
+### 2.1 Reglas de validación y mensajes
+
+- **Qué.** En `meta.yaml` (`scripts/content/schema.ts`): una entrada no puede declarar `freq`, `concepts`, `related` ni `demo`, aunque sea una lista vacía (se rechaza el campo); `covers` es obligatorio, con al menos 2 temas, y además **no puede repetir un tema**; un tema normal sigue necesitando `freq` y no puede declarar `covers`. En `es.md`/`en.md` (`reader.ts`): una entrada no puede declarar `concepts` ni `exercises`. En el cuerpo (`sections.ts`): una entrada exige `context` y `walkthrough` y ninguna otra; las dos admiten títulos de paso; cada bloque de `walkthrough` declara su lenguaje (anunciado al usuario al empezar el grupo); un tema con `## context` o `## walkthrough` recibe un mensaje propio ("solo se admite en una entrada de proyecto") en lugar de "sección desconocida". En la validación cruzada (`validate.ts`): cada tema de `covers` existe, no es un concepto, no es otra entrada **ni la propia**, y aparece enlazado con `[[id]]` en `walkthrough` (un enlace en `context` no cuenta) en cada idioma; la paridad de código recorre las secciones de la entrada. Mensajes, por ejemplo: `entrada de proyecto "<id>": el tema reunido "<x>" no existe`, `entrada de proyecto "<id>" (en): el recorrido (walkthrough) no enlaza el tema reunido "<x>"`, `<archivo>: la sección "analogy" es de un tema y no se admite en una entrada de proyecto`.
+- **No se comprueba al compilar** (son límites de redacción de la decisión 6, no reglas de compilación): de 3 a 6 partes, 25 líneas por bloque, `context` sin código, ni que haya al menos un bloque en `walkthrough`.
+- **Por qué.** Las reglas añadidas (`covers` sin repetidos ni la propia entrada, mensaje propio para `context` en un tema) solo rechazan casos sin sentido y hacen los mensajes más claros; ninguna afecta al contenido real.
+- **Cómo deshacerlo.** Quitar la comprobación correspondiente en `schema.ts`, `sections.ts` o `validate.ts`.
+
+### 2.2 Conexiones de una entrada en el cerebro
+
+- **Qué.** En `scripts/content/graph.ts`, las conexiones de tipo relación entre cada entrada y sus temas reunidos se crean antes que las de `related` y las menciones `[[id]]`. Así ese par siempre queda como "relación", aunque otro tema mencione antes la entrada.
+- **Por qué.** El grafo guarda una sola conexión por par; sin este orden, una mención previa ocuparía el par con el tipo "mención". En el contenido actual no hay entradas y el grafo sale idéntico.
+- **Cómo deshacerlo.** Mover ese bucle dentro del de `related`.
+
+### 2.2 y 2.4 Relacionados y vecinos de una entrada
+
+- **Qué.** `relatedOf` (`src/graph/relations.ts`) devuelve, para una entrada, exactamente sus temas de `covers` en su orden: sin conceptos y sin lo que el recorrido enlace aparte. Al pasar el cursor por su nodo en el cerebro se resaltan la entrada y esos temas.
+- **Consecuencia, para que Fable la revise (no la elegí: sale de que la relación es una conexión en los dos sentidos):** en el panel de relacionados de un tema reunido aparece la entrada de proyecto que lo reúne.
+- **Cómo deshacerlo.** Quitar la línea de `kind === 'project'` en `relatedOf`.
+
+### 2.3 Aspecto del lector de una entrada
+
+- **Qué.** En `Reader.tsx`: si el nodo o el contenido es una entrada, no hay pestañas ni etiqueta de frecuencia; la columna lleva `context`, `walkthrough` y la lista de `covers`, cada uno bajo su rótulo `h3`. `context` y `walkthrough` usan la clase `.steps`, así cada "Parte N." se ve igual que un título de paso del grupo 1. La lista es una `<ul>` de enlaces con `data-node` (los abre el mismo manejador que los enlaces del texto), con el título completo de cada tema y el color de enlace de siempre. Sin pestañas, una línea igual a la que subraya las pestañas (`.noTabs::after` en `Reader.module.css`) separa la cabecera del contenido. El cuerpo de una entrada no lleva `role="tabpanel"`, porque no hay pestañas. Rótulos nuevos: `section.context`, `section.walkthrough` y `reader.covers` en `src/locales/es.json` y `en.json`, con los textos de la decisión 6.
+- **Por qué.** Reutilizar el estilo de los pasos y de los enlaces mantiene la estética sin elementos nuevos; la línea evita que la cabecera se pegue al contenido cuando faltan las pestañas.
+- **Cómo deshacerlo.** Revertir el bloque `isProject` de `Reader.tsx`, `.noTabs` del CSS y las tres claves de los textos.
+
+### 2.4 Listas y cerebro: sin refuerzo visual
+
+- **Qué.** No se añadió ningún refuerzo visual opcional a la entrada en el sidebar ni en la hoja del teléfono: la distingue solo el prefijo "Proyecto:" de su título corto. En el cerebro, el nodo de una entrada, que no tiene frecuencia, toma el tamaño de un tema "a veces" (el valor por defecto que el renderizador ya usaba para un tema sin frecuencia); no se cambió código para ello.
+- **Por qué.** La decisión 6 deja el refuerzo como opcional y el prefijo ya cumple; el tamaño del nodo no está fijado en el diseño. **Para que Fable lo revise:** el tamaño del nodo es visible para el usuario.
+- **Cómo deshacerlo.** No hay nada que revertir; un refuerzo o un tamaño propio se añadiría en `Sidebar.tsx`, `BottomBar.tsx` o `canvas-renderer/scene.ts`.
+
+### 2.1 a 2.4 Dónde van las pruebas
+
+- **Qué.** En los mismos archivos del grupo 1: `scripts/content/contenido-claro.test.ts` (`describe` "2.1" con los nueve escenarios de content-model y las reglas añadidas, y "2.2" con salida, buscador, grafo y "Más conexiones entre pistas") y `src/test/contenido-claro.test.tsx` ("2.3" con los seis escenarios de lectura, más cerrar, teléfono y un tema normal, y "2.4" con los tres de las listas, más relacionados y cerebro). Las entradas de prueba usan los identificadores y títulos de `content-map.md`, sección 3, para que los escenarios se lean igual que en la spec. `scripts/content/fixtures.ts` gana `project()` y `walkthrough()`.
+- **Cómo deshacerlo.** Borrar esos `describe` y las dos funciones de `fixtures.ts`.

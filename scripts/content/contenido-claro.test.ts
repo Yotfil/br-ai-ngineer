@@ -1,8 +1,14 @@
 // @vitest-environment node
-/** Pruebas del modelo de contenido ampliado en el cambio contenido-claro (grupo 1: pasos y paridad de código). */
+/**
+ * Pruebas del modelo de contenido ampliado en el cambio contenido-claro: grupo 1 (pasos y paridad de código) y
+ * grupo 2 (entradas de proyecto: modelo, validación, salida, buscador y grafo).
+ */
 import { describe, expect, it } from 'vitest'
+import { computeHighlight } from '../../src/graph/highlight.ts'
+import { indexGraph, relatedOf } from '../../src/graph/relations.ts'
+import { buildSearchIndex } from '../../src/search/searchIndex.ts'
 import { buildContent } from './build.ts'
-import { BASE_SECTIONS, makeContent, topic } from './fixtures.ts'
+import { BASE_SECTIONS, GROUPED_TRACKS_YAML, makeContent, project, topic, walkthrough, type TopicFixture } from './fixtures.ts'
 import { renderMarkdown } from './markdown.ts'
 import { readContent } from './reader.ts'
 import { ContentError } from './schema.ts'
@@ -182,5 +188,271 @@ describe('1.4 paridad de código entre idiomas', () => {
   it('el contenido real completo cumple la paridad', async () => {
     const out = await buildContent(new URL('../../content', import.meta.url).pathname)
     expect(out.topics.es.length).toBe(out.topics.en.length)
+  })
+})
+
+// ---------- Grupo 2: entradas de proyecto ----------
+
+/** Cinco temas de Python y FastAPI y tres de HTTP y REST, como los de "Proyecto: el endpoint de crear un pedido". */
+const PY_TOPICS = ['rutas-y-parametros', 'modelos-y-response-model', 'inyeccion-con-depends', 'errores-y-httpexception', 'endpoints-async-vs-sync']
+const REST_TOPICS = ['metodos-http', 'codigos-de-estado', 'errores-problem-details']
+/** En el orden de `content-map.md`, sección 3: mezcla las dos pistas. */
+const COVERS = [...PY_TOPICS, ...REST_TOPICS]
+
+const pyTopic = (id: string, order: number, group = 'fastapi') => topic(id, { track: 'python', order, group })
+const BASE: Array<[string, TopicFixture]> = [
+  pyTopic('decoradores', 1, 'lenguaje'),
+  ...PY_TOPICS.map((id, i) => pyTopic(id, 10 + i)),
+  pyTopic('orm-y-sesiones', 30),
+  ...REST_TOPICS.map((id, i) => topic(id, { track: 'rest', order: i + 1 })),
+]
+const crearPedido = (opts: Partial<Parameters<typeof project>[1]> = {}) =>
+  project('proyecto-crear-pedido', { order: 23, group: 'fastapi', covers: COVERS, short: 'Proyecto: crear un pedido', ...opts })
+const contentWith = (...extra: Array<[string, TopicFixture]>) => makeContent([...BASE, ...extra], GROUPED_TRACKS_YAML)
+const validate = (...extra: Array<[string, TopicFixture]>) => () => validateContent(readContent(contentWith(...extra)))
+const read = (...extra: Array<[string, TopicFixture]>) => () => readContent(contentWith(...extra))
+
+describe('2.1 entradas de proyecto: modelo y validación', () => {
+  it('Entrada de proyecto válida: compila con su contexto, su recorrido y los ocho temas en el orden declarado', async () => {
+    const out = await buildContent(contentWith(crearPedido()))
+    for (const locale of ['es', 'en'] as const) {
+      const entry = out.topics[locale].find((t) => t.id === 'proyecto-crear-pedido')!
+      expect(entry.kind).toBe('project')
+      expect(entry.covers).toEqual(COVERS)
+      expect(Object.keys(entry.sections)).toEqual(['context', 'walkthrough'])
+      expect(entry.sections.context).toMatch(/^<p>/)
+      expect(entry.sections.walkthrough!.match(/<h4>/g)).toHaveLength(8)
+      expect(entry).not.toHaveProperty('freq')
+      expect(entry).not.toHaveProperty('demo')
+      expect(entry.exercises).toEqual([])
+    }
+  })
+
+  it('Tema reunido inexistente: nombra la entrada y el identificador', () => {
+    const p = problemsOf(validate(crearPedido({ covers: [...COVERS, 'no-existe'] })))
+    expect(p).toContain('entrada de proyecto "proyecto-crear-pedido": el tema reunido "no-existe" no existe')
+  })
+
+  it('Reúne un concepto: nombra la entrada y el identificador', () => {
+    const conDep = topic('dependencias', { track: 'python', order: 31, group: 'fastapi', concepts: { 'depends-concepto': 'Depends' } })
+    const p = problemsOf(validate(conDep, crearPedido({ covers: [...COVERS, 'depends-concepto'] })))
+    expect(p).toContain('entrada de proyecto "proyecto-crear-pedido": "depends-concepto" es un concepto y covers solo admite temas')
+  })
+
+  it('Tema reunido sin enlazar: nombra la entrada, el idioma y el tema', () => {
+    const enWalk = walkthrough(COVERS.filter((c) => c !== 'codigos-de-estado'), 'en')
+    const p = problemsOf(validate(crearPedido({ enSections: { context: 'What we build.', walkthrough: enWalk } })))
+    expect(p).toContain('entrada de proyecto "proyecto-crear-pedido" (en): el recorrido (walkthrough) no enlaza el tema reunido "codigos-de-estado"')
+    expect(p.filter((m) => m.includes('(es)'))).toEqual([])
+  })
+
+  it('un enlace en el contexto no cuenta: cada tema reunido se enlaza en el recorrido', () => {
+    const esWalk = walkthrough(COVERS, 'es').replace(`[[${COVERS[0]}]]`, 'el tema de rutas')
+    const p = problemsOf(validate(crearPedido({ sections: { context: `Usa [[${COVERS[0]}]].`, walkthrough: esWalk } })))
+    expect(p).toEqual([`entrada de proyecto "proyecto-crear-pedido" (es): el recorrido (walkthrough) no enlaza el tema reunido "${COVERS[0]}"`])
+  })
+
+  it('Entrada de proyecto con conceptos: en meta.yaml o en el idioma, nombra la entrada', () => {
+    expect(problemsOf(read(crearPedido({ meta: { concepts: ['pedido'] } })))).toEqual([
+      'python/proyecto-crear-pedido/meta.yaml: concepts: la entrada de proyecto "proyecto-crear-pedido" no puede declarar "concepts"',
+    ])
+    expect(problemsOf(read(crearPedido({ front: { concepts: { pedido: { name: 'pedido' } } } })))).toEqual([
+      'python/proyecto-crear-pedido/es.md: la entrada de proyecto "proyecto-crear-pedido" no puede declarar "concepts"',
+      'python/proyecto-crear-pedido/en.md: la entrada de proyecto "proyecto-crear-pedido" no puede declarar "concepts"',
+    ])
+  })
+
+  it.each([
+    ['freq', 'always'],
+    ['related', ['decoradores']],
+    ['demo', 'status-explorer'],
+  ])('una entrada de proyecto no puede declarar "%s"', (field, value) => {
+    expect(problemsOf(read(crearPedido({ meta: { [field]: value } })))).toEqual([
+      `python/proyecto-crear-pedido/meta.yaml: ${field}: la entrada de proyecto "proyecto-crear-pedido" no puede declarar "${field}"`,
+    ])
+  })
+
+  it('una entrada de proyecto no lleva ejercicios', () => {
+    const exercises = [{ type: 'verdict', prompt: 'Revisa', items: [{ statement: 'x', ok: true, why: 'y' }] }]
+    expect(problemsOf(read(crearPedido({ front: { exercises } })))).toEqual([
+      'python/proyecto-crear-pedido/es.md: la entrada de proyecto "proyecto-crear-pedido" no puede declarar "exercises"',
+      'python/proyecto-crear-pedido/en.md: la entrada de proyecto "proyecto-crear-pedido" no puede declarar "exercises"',
+    ])
+  })
+
+  it('covers es obligatorio, con al menos dos temas distintos', () => {
+    const meta = (m: Record<string, unknown>) => problemsOf(read(crearPedido({ meta: m, sections: { context: 'C.', walkthrough: 'W.' }, enSections: { context: 'C.', walkthrough: 'W.' } })))
+    expect(meta({ covers: undefined })).toEqual([
+      'python/proyecto-crear-pedido/meta.yaml: covers: la entrada de proyecto "proyecto-crear-pedido" debe declarar los temas que reúne (covers)',
+    ])
+    expect(meta({ covers: ['decoradores'] })).toEqual(['python/proyecto-crear-pedido/meta.yaml: covers: la entrada de proyecto "proyecto-crear-pedido" debe reunir al menos 2 temas'])
+    expect(meta({ covers: ['decoradores', 'decoradores'] })).toEqual(['python/proyecto-crear-pedido/meta.yaml: covers: la entrada de proyecto "proyecto-crear-pedido" repite el tema "decoradores"'])
+  })
+
+  it('un tema reunido no puede ser otra entrada de proyecto, ni la propia', () => {
+    const otra = project('proyecto-total-del-pedido', { order: 2, group: 'lenguaje', covers: ['decoradores', 'rutas-y-parametros'] })
+    const p = problemsOf(validate(otra, crearPedido({ covers: [...COVERS, 'proyecto-total-del-pedido', 'proyecto-crear-pedido'] })))
+    expect(p).toContain('entrada de proyecto "proyecto-crear-pedido": el tema reunido "proyecto-total-del-pedido" es otra entrada de proyecto')
+    expect(p).toContain('entrada de proyecto "proyecto-crear-pedido": se reúne a sí misma en covers')
+  })
+
+  it('kind solo admite "project"', () => {
+    const p = problemsOf(read(crearPedido({ meta: { kind: 'tutorial' } })))
+    expect(p.join('\n')).toMatch(/^python\/proyecto-crear-pedido\/meta\.yaml: kind: /)
+  })
+
+  it('Falta una sección: nombra la entrada y la sección ausente', () => {
+    const p = problemsOf(read(crearPedido({ sections: { walkthrough: walkthrough(COVERS) } })))
+    expect(p).toEqual(['python/proyecto-crear-pedido/es.md: falta la sección obligatoria "context"'])
+    const q = problemsOf(read(crearPedido({ enSections: { context: 'What we build.' } })))
+    expect(q).toEqual(['python/proyecto-crear-pedido/en.md: falta la sección obligatoria "walkthrough"'])
+  })
+
+  it('Sección de tema en una entrada de proyecto: una analogía nombra el archivo y la sección', () => {
+    const sections = { context: 'Qué vamos a construir.', analogy: 'Como una cocina.', walkthrough: walkthrough(COVERS) }
+    expect(problemsOf(read(crearPedido({ sections })))).toEqual([
+      'python/proyecto-crear-pedido/es.md: la sección "analogy" es de un tema y no se admite en una entrada de proyecto',
+    ])
+  })
+
+  it('las dos secciones admiten títulos de paso; el recorrido exige el lenguaje de cada bloque', () => {
+    const context = '### Qué hace\n\nCrea un pedido.'
+    expect(read(crearPedido({ sections: { context, walkthrough: walkthrough(COVERS) } }))).not.toThrow()
+    const sinLenguaje = `${walkthrough(COVERS)}\n\n### Parte 9. Sin lenguaje\n\n\`\`\`\nx = 1\n\`\`\``
+    expect(problemsOf(read(crearPedido({ sections: { context: 'C.', walkthrough: sinLenguaje } })))).toEqual([
+      'python/proyecto-crear-pedido/es.md: el bloque 9 de "walkthrough" no declara lenguaje',
+    ])
+  })
+
+  it('la paridad de código entre idiomas se aplica a las dos secciones', () => {
+    const enWalk = `${walkthrough(COVERS, 'en')}\n\n\`\`\`python\nextra = 1\n\`\`\``
+    const p = problemsOf(validate(crearPedido({ enSections: { context: "### What\n\nWe're building it.", walkthrough: enWalk } })))
+    expect(p).toEqual([
+      'tema "proyecto-crear-pedido": la sección "context" tiene 0 títulos de paso en "es" y 1 en "en"',
+      'tema "proyecto-crear-pedido": la sección "walkthrough" tiene 8 bloques de código en "es" y 9 en "en"',
+    ])
+  })
+
+  it('Un tema normal no cambia: exige las secciones de siempre y no puede declarar temas reunidos', () => {
+    const conCovers = topic('a', { track: 'python', order: 40, group: 'fastapi' })
+    conCovers[1].meta.covers = ['decoradores', 'orm-y-sesiones']
+    expect(problemsOf(read(conCovers))).toEqual([
+      'python/a/meta.yaml: covers: el tema "a" no es una entrada de proyecto (kind: project) y no puede declarar covers',
+    ])
+    const comoProyecto = topic('b', { track: 'python', order: 40, group: 'fastapi', sections: { context: 'C.', walkthrough: walkthrough(['decoradores', 'orm-y-sesiones']) } })
+    const p = problemsOf(read(comoProyecto)).filter((m) => m.startsWith('python/b/es.md'))
+    expect(p).toEqual([
+      'python/b/es.md: la sección "context" solo se admite en una entrada de proyecto (kind: project)',
+      'python/b/es.md: la sección "walkthrough" solo se admite en una entrada de proyecto (kind: project)',
+      ...['definition', 'analogy', 'problem', 'interview', 'myths'].map((k) => `python/b/es.md: falta la sección obligatoria "${k}"`),
+    ])
+    const sinFreq = topic('c', { track: 'python', order: 40, group: 'fastapi' })
+    delete sinFreq[1].meta.freq
+    expect(problemsOf(read(sinFreq))).toEqual(['python/c/meta.yaml: freq: el tema "c" debe declarar su frecuencia (freq)'])
+  })
+})
+
+describe('2.2 entradas de proyecto: salida, buscador y grafo', () => {
+  it('Aparece sin cambios de código: en el cerebro, en el buscador y en la lista de su pista, en la posición de su orden', async () => {
+    const before = await buildContent(contentWith())
+    const out = await buildContent(contentWith(crearPedido()))
+
+    // Cerebro: un nodo de tema más, de su pista y su grupo, sin frecuencia ni conceptos.
+    expect(out.graph.nodes.length).toBe(before.graph.nodes.length + 1)
+    const n = out.graph.nodes.find((x) => x.id === 'proyecto-crear-pedido')!
+    expect(n).toMatchObject({ type: 'topic', track: 'python', parent: 'python', order: 23, group: 'fastapi', kind: 'project', covers: COVERS })
+    expect(n).not.toHaveProperty('freq')
+    expect(out.graph.nodes.filter((x) => x.parent === 'proyecto-crear-pedido')).toEqual([])
+
+    // Lista de la pista: entre "endpoints-async-vs-sync" (orden 14) y "orm-y-sesiones" (orden 30).
+    const list = indexGraph(out.graph).topicsOfTrack.get('python')!.map((x) => x.id)
+    expect(list).toEqual(['decoradores', ...PY_TOPICS, 'proyecto-crear-pedido', 'orm-y-sesiones'])
+
+    // Buscador: un documento de tema con título, título del otro idioma como alias, resumen y título corto.
+    for (const [locale, other] of [['es', 'en'], ['en', 'es']] as const) {
+      const d = out.search[locale].find((x) => x.id === 'proyecto-crear-pedido')!
+      const title = { es: 'Proyecto: proyecto-crear-pedido', en: 'Project: proyecto-crear-pedido' }
+      expect(d).toEqual({
+        id: 'proyecto-crear-pedido',
+        type: 'topic',
+        track: 'python',
+        name: title[locale],
+        aliases: [title[other]],
+        summary: 'Resumen de proyecto-crear-pedido.',
+        short: 'Proyecto: crear un pedido',
+        topic: 'proyecto-crear-pedido',
+      })
+    }
+    expect(out.search.es.filter((x) => x.topic === 'proyecto-crear-pedido')).toHaveLength(1)
+    const hits = buildSearchIndex(out.search.es).search('crear pedido')
+    expect(hits[0]?.id).toBe('proyecto-crear-pedido')
+  })
+
+  it('Vecinos de una entrada de proyecto: los ocho temas que reúne, con una relación cada uno; los tres de HTTP y REST son de esa pista', async () => {
+    const out = await buildContent(contentWith(crearPedido()))
+    const own = out.graph.links.filter((l) => l.source === 'proyecto-crear-pedido' || l.target === 'proyecto-crear-pedido')
+    const other = (l: (typeof own)[number]) => (l.source === 'proyecto-crear-pedido' ? l.target : l.source)
+    expect(own.filter((l) => l.kind === 'related').map(other)).toEqual(COVERS)
+    expect(own.filter((l) => l.kind === 'hierarchy').map(other)).toEqual(['python'])
+    // Los enlaces [[id]] del recorrido no añaden conexiones distintas: ya son los mismos temas.
+    expect(own).toHaveLength(COVERS.length + 1)
+
+    const idx = indexGraph(out.graph)
+    const lit = computeHighlight(idx, { hovered: 'proyecto-crear-pedido', selected: null, matches: null })!
+    for (const c of COVERS) expect(lit.has(c)).toBe(true)
+    expect(COVERS.filter((c) => idx.byId.get(c)!.track === 'rest')).toEqual(REST_TOPICS)
+
+    // Relacionados: los temas reunidos en su orden, y ningún concepto.
+    expect(relatedOf(idx, 'proyecto-crear-pedido').map((x) => x.id)).toEqual(COVERS)
+  })
+
+  it('una mención anterior al mismo tema no cambia el tipo de la conexión con la entrada de proyecto', async () => {
+    const menciona = topic('aaa-menciona', { track: 'rest', order: 9, sections: { ...BASE_SECTIONS, definition: 'Ver [[proyecto-crear-pedido]].' } })
+    const covers = ['aaa-menciona', ...COVERS]
+    const out = await buildContent(contentWith(menciona, crearPedido({ covers })))
+    const l = out.graph.links.find((x) => [x.source, x.target].includes('aaa-menciona') && [x.source, x.target].includes('proyecto-crear-pedido'))
+    expect(l?.kind).toBe('related')
+  })
+
+  it('el recorrido puede enlazar otros temas o conceptos: conectan en el cerebro, pero no son relacionados de la entrada', async () => {
+    const conConcepto = topic('idempotencia', { track: 'rest', order: 9, concepts: { 'clave-idempotencia': 'clave de idempotencia' } })
+    const extra = `${walkthrough(COVERS)}\n\nVer también [[clave-idempotencia]] y [[orm-y-sesiones]].`
+    const enExtra = `${walkthrough(COVERS, 'en')}\n\nSee also [[clave-idempotencia]] and [[orm-y-sesiones]].`
+    const out = await buildContent(contentWith(conConcepto, crearPedido({ sections: { context: 'C.', walkthrough: extra }, enSections: { context: 'C.', walkthrough: enExtra } })))
+    const idx = indexGraph(out.graph)
+    expect(idx.neighbors.get('proyecto-crear-pedido')!.has('clave-idempotencia')).toBe(true)
+    expect(relatedOf(idx, 'proyecto-crear-pedido').map((x) => x.id)).toEqual(COVERS)
+  })
+
+  it('Más conexiones entre pistas: las entradas de proyecto del grupo FastAPI unen Python y FastAPI con HTTP y REST', async () => {
+    const cross = (g: Awaited<ReturnType<typeof buildContent>>['graph']) => {
+      const track = new Map(g.nodes.map((x) => [x.id, x.track]))
+      return g.links.filter((l) => l.kind !== 'hierarchy' && track.get(l.source) !== track.get(l.target))
+    }
+    const before = await buildContent(contentWith())
+    expect(cross(before.graph)).toEqual([])
+
+    const projects = [
+      crearPedido(),
+      project('proyecto-pedidos-con-login', { order: 31, group: 'fastapi', covers: ['orm-y-sesiones', 'codigos-de-estado'] }),
+      project('proyecto-api-completa', { order: 32, group: 'fastapi', covers: ['rutas-y-parametros', 'metodos-http', 'errores-problem-details'] }),
+    ]
+    const out = await buildContent(contentWith(...projects))
+    const links = cross(out.graph)
+    expect(links.every((l) => l.kind === 'related' && l.source.startsWith('proyecto-'))).toBe(true)
+    expect(links.map((l) => `${l.source}→${l.target}`).sort()).toEqual(
+      [
+        ...REST_TOPICS.map((r) => `proyecto-crear-pedido→${r}`),
+        'proyecto-pedidos-con-login→codigos-de-estado',
+        'proyecto-api-completa→metodos-http',
+        'proyecto-api-completa→errores-problem-details',
+      ].sort(),
+    )
+  })
+
+  it('el contenido real no cambia: ningún tema es entrada de proyecto todavía', async () => {
+    const out = await buildContent(new URL('../../content', import.meta.url).pathname)
+    expect(out.topics.es.every((t) => t.kind === undefined && t.freq !== undefined)).toBe(true)
+    expect(out.graph.nodes.every((n) => n.kind === undefined)).toBe(true)
   })
 })

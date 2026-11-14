@@ -1,7 +1,7 @@
 import { Marked, type Tokens } from 'marked'
 import sanitizeHtml from 'sanitize-html'
 import { createHighlighter, type Highlighter, type ThemeRegistration } from 'shiki'
-import type { SectionKey } from '../../src/content/model.ts'
+import type { BodySectionKey } from '../../src/content/model.ts'
 
 /** Lenguajes que carga Shiki. */
 export const CODE_LANGS = ['python', 'http', 'json', 'bash', 'typescript'] as const
@@ -49,7 +49,7 @@ export const FENCE_ALIASES: Record<string, CodeLang> = {
  * Si no lo declara, se mantiene la regla anterior: `code:server` es python; en `code:wire`, `bad` y `good`
  * el bloque es python si contiene `def `, `@app.` o `import `, y http en caso contrario; en el resto, http.
  */
-export function codeLanguage(section: SectionKey | null, code: string, fence: string | undefined): CodeLang {
+export function codeLanguage(section: BodySectionKey | null, code: string, fence: string | undefined): CodeLang {
   const declared = FENCE_ALIASES[(fence ?? '').toLowerCase()]
   if (declared) return declared
   if (section === 'code:server') return 'python'
@@ -85,7 +85,7 @@ function replaceMentions(md: string, resolve: MentionResolver): string {
  * Un título de paso (`### …`, decisión 2 de contenido-claro) sale como `<h4>`, con su texto inline saneado aparte:
  * así el saneado general sigue sin admitir encabezados y cualquier otro nivel se trata como antes.
  */
-export async function renderMarkdown(md: string, section: SectionKey | null, resolve: MentionResolver = () => null): Promise<string> {
+export async function renderMarkdown(md: string, section: BodySectionKey | null, resolve: MentionResolver = () => null): Promise<string> {
   const hl = await getHighlighter()
   /** Fragmentos ya resueltos (código resaltado, títulos de paso) que no pasan por el saneado general. */
   const raw: string[] = []

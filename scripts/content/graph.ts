@@ -83,7 +83,8 @@ export function buildGraph(content: RawContent, index: IdIndex): GraphData {
         type: 'topic',
         track: tr.id,
         parent: tr.id,
-        freq: t.meta.freq,
+        ...(t.meta.freq !== undefined ? { freq: t.meta.freq } : {}),
+        ...(t.meta.kind !== undefined ? { kind: t.meta.kind, covers: t.meta.covers ?? [] } : {}),
         order: t.meta.order,
         ...(t.meta.group !== undefined ? { group: t.meta.group } : {}),
         x: hub.x + Math.cos(a) * 110,
@@ -107,6 +108,9 @@ export function buildGraph(content: RawContent, index: IdIndex): GraphData {
     }
   })
 
+  // Entradas de proyecto (decisión 6 de contenido-claro): una relación con cada tema reunido, de cualquier pista.
+  // Van antes que el resto para que ninguna mención previa ocupe ese par con otro tipo de conexión.
+  for (const t of content.topics) for (const c of t.meta.covers ?? []) link(t.meta.id, c, 'related')
   for (const t of content.topics) {
     for (const r of t.meta.related) link(t.meta.id, r, 'related')
     for (const loc of Object.values(t.locales)) {
@@ -143,13 +147,14 @@ export function buildGraph(content: RawContent, index: IdIndex): GraphData {
   sim.tick(TICKS)
 
   const outNodes: GraphNode[] = nodes.map((n) => {
-    const { id, type, track, parent, freq, order, group, empty } = n
+    const { id, type, track, parent, freq, kind, covers, order, group, empty } = n
     return {
       id,
       type,
       track,
       ...(parent !== undefined ? { parent } : {}),
       ...(freq !== undefined ? { freq } : {}),
+      ...(kind !== undefined ? { kind, covers } : {}),
       ...(order !== undefined ? { order } : {}),
       ...(group !== undefined ? { group } : {}),
       ...(empty ? { empty } : {}),

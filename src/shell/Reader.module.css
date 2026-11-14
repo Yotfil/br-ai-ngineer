@@ -70,6 +70,13 @@
   margin: 0 0 14px;
   max-width: 62ch;
 }
+/* Entrada de proyecto (contenido-claro, decisión 6): sin pestañas; la misma línea que las subraya, con el mismo
+   sangrado, separa la cabecera del contenido. */
+.noTabs::after {
+  content: '';
+  display: block;
+  border-bottom: 1px solid var(--edge-soft);
+}
 .tabs {
   display: flex;
   gap: 4px;
