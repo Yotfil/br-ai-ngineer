@@ -3,6 +3,43 @@ import { BRIDGE_TECHS, CODE_KINDS, REQUIRED_SECTIONS, SECTION_KEYS, type Section
 import { FENCE_ALIASES } from './markdown.ts'
 
 const HEADING = /^##\s+(\S.*?)\s*$/
+const FENCE = /^\s*(```|~~~)\s*(\S*)/
+/** Título de paso: encabezado ATX de nivel 3, como lo reconoce marked (hasta tres espacios delante). */
+const STEP = /^ {0,3}###(?:[ \t]+(.*?))?[ \t]*$/
+
+/** Secciones que admiten títulos de paso (`### …`), design.md de contenido-claro, decisión 2. */
+export const STEP_SECTIONS: readonly SectionKey[] = ['code:example', 'code:wire', 'code:server']
+
+export interface CodeBlock {
+  /** Lenguaje tal como lo declara la valla (vacío si no declara ninguno). */
+  fence: string
+  code: string
+}
+
+/** Bloques de código y títulos de paso de una sección, en orden. Lo que va dentro de una valla no cuenta como título. */
+export function scanSection(md: string): { blocks: CodeBlock[]; steps: string[] } {
+  const blocks: CodeBlock[] = []
+  const steps: string[] = []
+  let open: { fence: string; lines: string[] } | null = null
+  for (const line of md.split(/\r?\n/)) {
+    const fence = FENCE.exec(line)
+    if (fence) {
+      if (open) {
+        blocks.push({ fence: open.fence, code: open.lines.join('\n') })
+        open = null
+      } else open = { fence: fence[2], lines: [] }
+      continue
+    }
+    if (open) {
+      open.lines.push(line)
+      continue
+    }
+    const step = STEP.exec(line)
+    if (step) steps.push((step[1] ?? '').replace(/[ \t]+#+$/, ''))
+  }
+  if (open) blocks.push({ fence: open.fence, code: open.lines.join('\n') })
+  return { blocks, steps }
+}
 
 /**
  * Separa el cuerpo Markdown en secciones por los encabezados de nivel 2 (`## clave`).
@@ -21,7 +58,7 @@ export function splitSections(body: string, file: string, problems: string[]): P
   }
 
   for (const line of body.split(/\r?\n/)) {
-    const fence = /^\s*(```|~~~)\s*(\S*)/.exec(line)
+    const fence = FENCE.exec(line)
     if (fence) {
       // Decisión 11 de pista-python: una valla con un lenguaje no admitido es un error, en cualquier sección.
       if (!inFence && fence[2] && !Object.hasOwn(FENCE_ALIASES, fence[2].toLowerCase())) {
@@ -62,6 +99,10 @@ export function splitSections(body: string, file: string, problems: string[]): P
   for (const key of REQUIRED_SECTIONS) {
     if (out[key] === undefined) problems.push(`${file}: falta la sección obligatoria "${key}"`)
   }
+  for (const key of Object.keys(out) as SectionKey[]) {
+    if (STEP_SECTIONS.includes(key) || !out[key]) continue
+    if (scanSection(out[key]).steps.length) problems.push(`${file}: la sección "${key}" no admite títulos de paso (###)`)
+  }
   if (out['code:example']) checkExample(out['code:example'], file, problems)
   if ((out.bad === undefined) !== (out.good === undefined)) {
     const missing = out.bad === undefined ? 'bad' : 'good'
@@ -71,25 +112,13 @@ export function splitSections(body: string, file: string, problems: string[]): P
 }
 
 /**
- * `code:example` (decisión 2 de pista-python): uno o más bloques de código consecutivos, cada uno con su
- * lenguaje declarado en la valla.
+ * `code:example` (decisión 2 de pista-python, ampliada por la decisión 2 de contenido-claro): uno o más bloques
+ * de código, cada uno con su lenguaje declarado en la valla, con texto y títulos de paso entre ellos.
  */
 function checkExample(md: string, file: string, problems: string[]): void {
-  let inFence = false
-  let blocks = 0
-  let stray = false
-  for (const line of md.split(/\r?\n/)) {
-    const fence = /^\s*(```|~~~)\s*(\S*)/.exec(line)
-    if (fence) {
-      if (!inFence) {
-        blocks++
-        if (!fence[2]) problems.push(`${file}: el bloque ${blocks} de "code:example" no declara lenguaje`)
-      }
-      inFence = !inFence
-      continue
-    }
-    if (!inFence && line.trim()) stray = true
-  }
-  if (!blocks) problems.push(`${file}: la sección "code:example" no tiene bloques de código`)
-  if (stray) problems.push(`${file}: la sección "code:example" solo admite bloques de código`)
+  const { blocks } = scanSection(md)
+  blocks.forEach((b, i) => {
+    if (!b.fence) problems.push(`${file}: el bloque ${i + 1} de "code:example" no declara lenguaje`)
+  })
+  if (!blocks.length) problems.push(`${file}: la sección "code:example" no tiene bloques de código`)
 }

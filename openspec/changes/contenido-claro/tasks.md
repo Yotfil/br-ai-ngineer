@@ -8,12 +8,12 @@ Cada grupo (`## N.`) es una sesión de Opus. Documentos vinculantes: `design.md`
 
 ## 1. Formato: pasos y paridad de código
 
-- [ ] 1.1 [opus] Comprobar que la rama es `feature/contenido-claro` y que `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` están en verde antes de tocar nada; verificar anotando el número de pruebas que pasan
-- [ ] 1.2 [opus] Admitir títulos de paso (`###`) y texto en `code:example`, `code:wire` y `code:server`, y rechazarlos en las demás secciones de un tema (design.md decisión 2); verificar con pruebas los escenarios "Ejemplo principal con pasos", "Conversación por la red con momentos" y "Título de paso en una sección que no lo admite" de specs/content-model, y los cinco escenarios de "Ejemplo principal opcional"
-- [ ] 1.3 [opus] Mostrar en el lector los títulos de paso como subtítulo encima de su contenido, con el mismo estilo en las tres secciones, y anotar en `decisiones.md` el aspecto elegido (design.md decisión 2); verificar con pruebas los escenarios "Tema con pasos" y "Texto entre bloques" de specs/app-shell usando un tema de prueba, y en el navegador a 390 px de ancho el escenario "Teléfono"
-- [ ] 1.4 [opus] Añadir la comprobación de paridad de código entre idiomas (design.md decisión 4); verificar con pruebas los cuatro escenarios de "Paridad de código entre idiomas" y que el contenido actual completo sigue compilando
-- [ ] 1.5 [opus] Cambiar el rótulo de `code:example` a "Paso a paso" y "Step by step" en `src/locales/es.json` y `en.json` (design.md decisión 5); verificar que la prueba de paridad de textos de interfaz sigue en verde
-- [ ] 1.6 [opus] Ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`; verificar que los cuatro terminan en verde y anotar el número de pruebas
+- [x] 1.1 [opus] Comprobar que la rama es `feature/contenido-claro` y que `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` están en verde antes de tocar nada; verificar anotando el número de pruebas que pasan
+- [x] 1.2 [opus] Admitir títulos de paso (`###`) y texto en `code:example`, `code:wire` y `code:server`, y rechazarlos en las demás secciones de un tema (design.md decisión 2); verificar con pruebas los escenarios "Ejemplo principal con pasos", "Conversación por la red con momentos" y "Título de paso en una sección que no lo admite" de specs/content-model, y los cinco escenarios de "Ejemplo principal opcional"
+- [x] 1.3 [opus] Mostrar en el lector los títulos de paso como subtítulo encima de su contenido, con el mismo estilo en las tres secciones, y anotar en `decisiones.md` el aspecto elegido (design.md decisión 2); verificar con pruebas los escenarios "Tema con pasos" y "Texto entre bloques" de specs/app-shell usando un tema de prueba, y en el navegador a 390 px de ancho el escenario "Teléfono"
+- [x] 1.4 [opus] Añadir la comprobación de paridad de código entre idiomas (design.md decisión 4); verificar con pruebas los cuatro escenarios de "Paridad de código entre idiomas" y que el contenido actual completo sigue compilando
+- [x] 1.5 [opus] Cambiar el rótulo de `code:example` a "Paso a paso" y "Step by step" en `src/locales/es.json` y `en.json` (design.md decisión 5); verificar que la prueba de paridad de textos de interfaz sigue en verde
+- [x] 1.6 [opus] Ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`; verificar que los cuatro terminan en verde y anotar el número de pruebas
 
 ## 2. Modelo: entradas de proyecto
 

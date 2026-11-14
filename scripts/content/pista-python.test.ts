@@ -134,9 +134,16 @@ describe('1.3 ejemplo principal opcional', () => {
     expect(p).toEqual(['rest/a/es.md: el bloque 2 de "code:example" no declara lenguaje', 'rest/a/en.md: el bloque 2 de "code:example" no declara lenguaje'])
   })
 
-  it('el ejemplo principal solo admite bloques de código', () => {
-    const p = problemsOf(() => readContent(makeContent([topic('a', { sections: { ...BASE_SECTIONS, 'code:example': 'Texto\n\n```python\nx = 1\n```' } })])))
-    expect(p[0]).toBe('rest/a/es.md: la sección "code:example" solo admite bloques de código')
+  // contenido-claro, decisión 2: el ejemplo principal deja de exigir solo bloques de código.
+  it('una frase entre dos bloques compila y se conserva entre ambos', async () => {
+    const out = await buildContent(makeContent([topic('a', { sections: { ...BASE_SECTIONS, 'code:example': '```python\nx = 1\n```\n\nY ahora se usa.\n\n```python\nprint(x)\n```' } })]))
+    const html = out.topics.es[0].sections['code:example']!
+    expect(html).toMatch(/^<pre class="shiki[\s\S]*?<\/pre>\s*<p>Y ahora se usa\.<\/p>\s*<pre class="shiki[\s\S]*<\/pre>$/)
+  })
+
+  it('un ejemplo principal con solo texto: nombra el tema', () => {
+    const p = problemsOf(() => readContent(makeContent([topic('a', { sections: { ...BASE_SECTIONS, 'code:example': 'Solo texto, sin código.' } })])))
+    expect(p).toEqual(['rest/a/es.md: la sección "code:example" no tiene bloques de código', 'rest/a/en.md: la sección "code:example" no tiene bloques de código'])
   })
 
   it('un tema sin ejemplo principal compila', async () => {
@@ -148,8 +155,8 @@ describe('1.3 ejemplo principal opcional', () => {
     const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../src/locales')
     const es = JSON.parse(fs.readFileSync(path.join(root, 'es.json'), 'utf8'))
     const en = JSON.parse(fs.readFileSync(path.join(root, 'en.json'), 'utf8'))
-    expect(es.section['code:example']).toBe('Ejemplo: la API de la tienda')
-    expect(en.section['code:example']).toBe('Example: the store API')
+    expect(es.section['code:example']).toBe('Paso a paso')
+    expect(en.section['code:example']).toBe('Step by step')
   })
 })
 

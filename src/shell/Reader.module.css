@@ -152,9 +152,26 @@
   border-color: color-mix(in srgb, var(--track) 40%, transparent);
   background: color-mix(in srgb, var(--track) 7%, transparent);
 }
-/* Ejemplo principal: bloques de código consecutivos (decisión 2 de pista-python). */
-.example pre + pre {
+/* Secciones de código con pasos (contenido-claro, decisión 2): ejemplo principal, red y servidor. Cada título de
+   paso es un `h4` encima de su texto y sus bloques; el mismo estilo en las tres. Entre un bloque y lo que le
+   sigue quedan 10px, como entre los bloques consecutivos de antes (decisión 2 de pista-python). */
+.steps > * + pre,
+.steps > pre + * {
   margin-top: 10px;
+}
+.steps > h4 {
+  margin: 22px 0 8px;
+  padding-left: 10px;
+  border-left: 2px solid color-mix(in srgb, var(--track) 70%, transparent);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+.steps > h4:first-child {
+  margin-top: 2px;
 }
 /* Nota bajo el código del ejemplo riesgoso y del correcto (decisión 3). */
 .noted p {

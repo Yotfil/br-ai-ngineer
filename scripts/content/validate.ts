@@ -1,7 +1,9 @@
-import { LOCALES, SECTION_KEYS } from '../../src/content/model.ts'
+import { LOCALES, SECTION_KEYS, type Locale, type SectionKey } from '../../src/content/model.ts'
 import { DEMO_IDS } from '../../src/demos/ids.ts'
+import { codeLanguage } from './markdown.ts'
 import type { RawContent, RawTopic } from './reader.ts'
 import { ContentError } from './schema.ts'
+import { scanSection } from './sections.ts'
 
 /** Enlaces `[[id]]` dentro del texto. */
 export const MENTION = /\[\[([a-z0-9]+(?:-[a-z0-9]+)*)\]\]/g
@@ -108,6 +110,7 @@ export function validateContent(content: RawContent): IdIndex {
         const inB = b.sections[key] !== undefined
         if (inA && !inB) problems.push(`tema "${id}": la sección "${key}" está en "${first[0]}" y falta en "${locale}"`)
         if (!inA && inB) problems.push(`tema "${id}": la sección "${key}" está en "${locale}" y falta en "${first[0]}"`)
+        if (inA && inB) checkCodeParity(id, key, [first[0], a.sections[key]!], [locale, b.sections[key]!], problems)
       }
       const ea = a.front.exercises
       const eb = b.front.exercises
@@ -148,6 +151,31 @@ export function validateContent(content: RawContent): IdIndex {
 
   if (problems.length) throw new ContentError(problems)
   return { tracks, topics, conceptHome }
+}
+
+/**
+ * Paridad de código entre idiomas (design.md de contenido-claro, decisión 4): en una sección, los dos idiomas tienen
+ * el mismo número de bloques de código, en el mismo orden y con el mismo lenguaje resuelto, y el mismo número de
+ * títulos de paso. El texto del código (comentarios, mensajes) puede ser distinto.
+ */
+function checkCodeParity(id: string, key: SectionKey, [la, mdA]: [Locale, string], [lb, mdB]: [Locale, string], problems: string[]): void {
+  const a = scanSection(mdA)
+  const b = scanSection(mdB)
+  if (a.blocks.length !== b.blocks.length) {
+    problems.push(`tema "${id}": la sección "${key}" tiene ${a.blocks.length} bloques de código en "${la}" y ${b.blocks.length} en "${lb}"`)
+  } else {
+    a.blocks.forEach((ba, i) => {
+      const bb = b.blocks[i]
+      const langA = codeLanguage(key, ba.code, ba.fence)
+      const langB = codeLanguage(key, bb.code, bb.fence)
+      if (langA !== langB) {
+        problems.push(`tema "${id}": en la sección "${key}", el bloque ${i + 1} es ${langA} en "${la}" y ${langB} en "${lb}"`)
+      }
+    })
+  }
+  if (a.steps.length !== b.steps.length) {
+    problems.push(`tema "${id}": la sección "${key}" tiene ${a.steps.length} títulos de paso en "${la}" y ${b.steps.length} en "${lb}"`)
+  }
 }
 
 /**

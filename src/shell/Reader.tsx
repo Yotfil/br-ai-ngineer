@@ -123,19 +123,19 @@ export default function Reader({ locale, topicId, track, tab, onTab, layout, mod
       {s['code:example'] && (
         <>
           <h3>{t('section.code:example')}</h3>
-          <div className={styles.example} data-section="code:example" dangerouslySetInnerHTML={html(s['code:example'])} />
+          <div className={styles.steps} data-section="code:example" dangerouslySetInnerHTML={html(s['code:example'])} />
         </>
       )}
       {s['code:wire'] && (
         <>
           <h3>{t('section.code:wire')}</h3>
-          <div dangerouslySetInnerHTML={html(s['code:wire'])} />
+          <div className={styles.steps} data-section="code:wire" dangerouslySetInnerHTML={html(s['code:wire'])} />
         </>
       )}
       {s['code:server'] && (
         <>
           <h3>{t('section.code:server')}</h3>
-          <div dangerouslySetInnerHTML={html(s['code:server'])} />
+          <div className={styles.steps} data-section="code:server" dangerouslySetInnerHTML={html(s['code:server'])} />
         </>
       )}
       {s.bad && s.good && (

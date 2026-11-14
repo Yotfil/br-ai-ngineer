@@ -48,7 +48,7 @@
     "retry": "Retry"
   },
   "section": {
-    "code:example": "Example: the store API",
+    "code:example": "Step by step",
     "analogy": "Analogy",
     "problem": "What problem it solves",
     "code:wire": "How it travels over the wire",
