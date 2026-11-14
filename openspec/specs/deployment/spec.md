@@ -1,6 +1,9 @@
-# Spec Delta
+# deployment Specification
 
-## ADDED Requirements
+## Purpose
+Publica la aplicación sola a partir de lo que está en el repositorio: producción desde `main` y una vista previa de cada otra rama para probarla en un teléfono antes de integrar, con direcciones que se pueden abrir directamente y archivos que el navegador no vuelve a descargar sin necesidad.
+
+## Requirements
 
 ### Requirement: Publicación de producción desde main
 La versión de producción de la aplicación SHALL publicarse sola con cada push a la rama `main`, sin pasos manuales, a partir de la configuración que está en el repositorio. Un push a cualquier otra rama no SHALL cambiar la versión de producción.
@@ -26,13 +29,17 @@ Cada push a una rama distinta de `main` SHALL generar una vista previa de la apl
 
 #### Scenario: Probar en un teléfono
 - **WHEN** el usuario abre en su teléfono la dirección de vista previa de una rama
-- **THEN** ve la aplicación de esa rama, con todas sus direcciones funcionando igual que en producción
+- **THEN** ve la aplicación de esa rama, y en el navegador todas sus direcciones funcionan igual que en producción
 
 ### Requirement: Direcciones compartibles servidas por el hosting
-Cualquier dirección de la aplicación SHALL poder abrirse directamente en producción y en las vistas previas: el hosting SHALL responder con la aplicación a las direcciones de idioma, pista y tema, y la aplicación SHALL mostrar lo que corresponda a esa dirección.
+Cualquier dirección de la aplicación SHALL poder abrirse directamente en un navegador, en producción y en las vistas previas: el hosting SHALL responder con la aplicación a la navegación a las direcciones de idioma, pista y tema, y la aplicación SHALL mostrar lo que corresponda a esa dirección.
 
 #### Scenario: Abrir un enlace a un tema
 - **WHEN** alguien abre directamente la dirección de un tema en producción, sin pasar por la página inicial
+- **THEN** la aplicación carga y muestra ese tema
+
+#### Scenario: Abrir un enlace a un tema en una vista previa
+- **WHEN** alguien abre en un navegador la dirección de un tema en la vista previa de una rama, sin pasar por la página inicial
 - **THEN** la aplicación carga y muestra ese tema
 
 #### Scenario: Recargar con un tema abierto
