@@ -34,11 +34,13 @@
 - [x] 5.3 Limitar la densidad del canvas a `min(devicePixelRatio, 2)` (design.md decisión 10); verificar con pruebas los escenarios "Pantalla de densidad 3x" y "Pantalla de densidad 1x"
 - [x] 5.4 Con `compact`, pulso en una de cada seis conexiones en reposo y en todas las resaltadas (design.md decisión 8); verificar con una prueba que cuenta los pulsos dibujados con `compact` y sin él
 - [x] 5.5 Sustituir `shadowBlur` por imágenes de resplandor reutilizadas y contorno de texto (design.md decisión 11); verificar con una prueba que el dibujo de un cuadro no asigna `shadowBlur` ni crea degradados radiales, y que las imágenes de resplandor se generan una vez por color y no en cada cuadro
-- [ ] 5.6 Repetir las capturas de la tarea 1.2 con el cerebro nuevo y los dos modos nuevos, y entregárselas al usuario junto a las de referencia; verificar que el usuario confirma el escenario "Aspecto equivalente" y el aspecto de Cristal y Sólido. Si pide ajustes, detenerse: es una decisión para Fable 5.2
+- [x] 5.6 Repetir las capturas de la tarea 1.2 con el cerebro nuevo y los dos modos nuevos, y entregárselas al usuario junto a las de referencia; verificar que el usuario confirma el escenario "Aspecto equivalente" y el aspecto de Cristal y Sólido. Si pide ajustes, detenerse: es una decisión para Fable 5.2
+  - Hecho el 2026-11-13. Las capturas de referencia de la 1.2 no se encontraron (su ruta no quedó anotada en ningún archivo); se regeneraron a 1440 px desde el tag `v0.2.0`, el anterior a este cambio. El usuario confirmó "Aspecto equivalente" y el aspecto de Cristal y Sólido.
 
 ## 6. Verificación de conjunto
 
 - [x] 6.1 Ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build`; verificar que los cuatro terminan en verde y anotar el número de pruebas
 - [x] 6.2 Recorrer en el navegador de escritorio, con el tamaño de teléfono (375 × 812), el flujo completo: abrir un tema desde la barra inferior, las cuatro pestañas, tema siguiente, relacionados, cerrar; verificar que no hay errores en la consola y que con un tema abierto no se solicitan cuadros de animación
 - [x] 6.3 Preparar la prueba en iPhone: indicarle al usuario cómo abrir la app desde su teléfono (servidor local en la misma red Wi-Fi o despliegue, lo que él elija) y entregarle el guion de 12 puntos de design.md decisión 15; verificar que el usuario tiene la dirección y el guion
-- [ ] 6.4 Registrar las respuestas del usuario a los 12 puntos del guion; verificar que los puntos 1 a 11 son "sí". Ante cualquier "no", anotar lo observado, detenerse y dejar la decisión para una sesión con Fable 5.2
+- [x] 6.4 Registrar las respuestas del usuario a los 12 puntos del guion; verificar que los puntos 1 a 11 son "sí". Ante cualquier "no", anotar lo observado, detenerse y dejar la decisión para una sesión con Fable 5.2
+  - Respuestas del usuario el 2026-11-13, en producción, con su iPhone: 1 Carga sí; 2 Entender sí; 3 En código sí; 4 Practicar y En la entrevista sí; 5 Pestañas fijas sí; 6 Final del tema sí; 7 Modo sí; 8 Fondo quieto sí; 9 Fluidez sí; 10 Calor sí; 11 Giro sí; 12 iPad sí.
