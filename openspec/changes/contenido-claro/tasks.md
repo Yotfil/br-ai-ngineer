@@ -40,14 +40,14 @@ Pedida por el usuario el 2026-11-13. Vale para toda tarea que escriba o traduzca
 
 ## 4. Piloto
 
-- [ ] 4.1 [opus] Reescribir `decoradores` partiendo del Modelo 1 de la guía y traducirlo; es el primer tema y fija el patrón de reescritura y de traducción
-- [ ] 4.2 [opus] Partir `funciones-y-closures` en `funciones-y-parametros` y `closures-y-lambdas` según `content-map.md` sección 1 (conceptos, títulos, ejercicios, relaciones, órdenes 5 y 6) y reescribir ambos, `closures-y-lambdas` partiendo del Modelo 2; es la primera partición y fija su patrón; verificar además que la carpeta antigua ya no existe y que ningún `related` ni enlace `[[...]]` apunta a ella
-- [ ] 4.3 [opus] Reescribir `cache-http` partiendo del Modelo 3 de la guía
-- [ ] 4.4 [opus] Reescribir `codigos-de-estado` con el Modelo 3 como referencia
-- [ ] 4.5 [opus] Reescribir `inyeccion-con-depends` partiendo del Modelo 4 de la guía
-- [ ] 4.6 [opus] Escribir la entrada `proyecto-crear-pedido` en español y traducirla, con el alcance, los archivos y los `covers` de `content-map.md` sección 3 y el formato de design.md decisión 6; es la primera entrada de proyecto y fija su patrón; verificar los escenarios "Entrada de proyecto válida" de specs/content-model y "Abrir una entrada de proyecto" de specs/app-shell con el contenido real
-- [ ] 4.7 [sonnet: como 4.1] Traducir `funciones-y-parametros`, `closures-y-lambdas`, `cache-http`, `codigos-de-estado` e `inyeccion-con-depends`; un subagente por tema, en paralelo
-- [ ] 4.8 [opus] Verificación del grupo (design.md decisión 11): ejecutar el código de los ejercicios "¿Qué imprime?" de las piezas del piloto y comprobar su respuesta; dejar en `decisiones.md` una línea por pieza; ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` y anotar el resultado
+- [x] 4.1 [opus] Reescribir `decoradores` partiendo del Modelo 1 de la guía y traducirlo; es el primer tema y fija el patrón de reescritura y de traducción
+- [x] 4.2 [opus] Partir `funciones-y-closures` en `funciones-y-parametros` y `closures-y-lambdas` según `content-map.md` sección 1 (conceptos, títulos, ejercicios, relaciones, órdenes 5 y 6) y reescribir ambos, `closures-y-lambdas` partiendo del Modelo 2; es la primera partición y fija su patrón; verificar además que la carpeta antigua ya no existe y que ningún `related` ni enlace `[[...]]` apunta a ella
+- [x] 4.3 [opus] Reescribir `cache-http` partiendo del Modelo 3 de la guía
+- [x] 4.4 [opus] Reescribir `codigos-de-estado` con el Modelo 3 como referencia
+- [x] 4.5 [opus] Reescribir `inyeccion-con-depends` partiendo del Modelo 4 de la guía
+- [x] 4.6 [opus] Escribir la entrada `proyecto-crear-pedido` en español y traducirla, con el alcance, los archivos y los `covers` de `content-map.md` sección 3 y el formato de design.md decisión 6; es la primera entrada de proyecto y fija su patrón; verificar los escenarios "Entrada de proyecto válida" de specs/content-model y "Abrir una entrada de proyecto" de specs/app-shell con el contenido real
+- [x] 4.7 [sonnet: como 4.1] Traducir `funciones-y-parametros`, `closures-y-lambdas`, `cache-http`, `codigos-de-estado` e `inyeccion-con-depends`; un subagente por tema, en paralelo
+- [x] 4.8 [opus] Verificación del grupo (design.md decisión 11): ejecutar el código de los ejercicios "¿Qué imprime?" de las piezas del piloto y comprobar su respuesta; dejar en `decisiones.md` una línea por pieza; ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` y anotar el resultado
 - [ ] 4.9 [opus] Parada del piloto (design.md decisión 12): pedir al usuario que publique la rama y lea las siete piezas en la vista previa; leerle el guion de 11 preguntas, una a una, y registrar sus respuestas en `decisiones.md`; verificar que las once coinciden con lo esperado. Si alguna no coincide, anotar el detalle que dé el usuario, dejarlo en el relevo como pregunta para Fable 5.2 y no empezar el grupo 5
 
 ## 5. Python: datos, comprehensions y primer proyecto

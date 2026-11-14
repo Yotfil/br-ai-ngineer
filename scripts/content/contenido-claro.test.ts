@@ -450,9 +450,14 @@ describe('2.2 entradas de proyecto: salida, buscador y grafo', () => {
     )
   })
 
-  it('el contenido real no cambia: ningún tema es entrada de proyecto todavía', async () => {
+  it('el contenido real: solo las entradas de content-map.md (sección 3) son entradas de proyecto; los demás temas no cambian', async () => {
+    // Las cinco entradas de proyecto de este cambio; se escriben a partir del grupo 4 (piloto).
+    const PROJECTS = new Set(['proyecto-total-del-pedido', 'proyecto-importar-catalogo', 'proyecto-crear-pedido', 'proyecto-pedidos-con-login', 'proyecto-api-completa'])
     const out = await buildContent(new URL('../../content', import.meta.url).pathname)
-    expect(out.topics.es.every((t) => t.kind === undefined && t.freq !== undefined)).toBe(true)
-    expect(out.graph.nodes.every((n) => n.kind === undefined)).toBe(true)
+    for (const t of out.topics.es) {
+      const esperado = PROJECTS.has(t.id) ? { kind: 'project', conFreq: false } : { kind: undefined, conFreq: true }
+      expect({ id: t.id, kind: t.kind, conFreq: t.freq !== undefined }).toEqual({ id: t.id, ...esperado })
+    }
+    expect(out.graph.nodes.filter((n) => n.kind !== undefined).every((n) => n.kind === 'project' && PROJECTS.has(n.id))).toBe(true)
   })
 })

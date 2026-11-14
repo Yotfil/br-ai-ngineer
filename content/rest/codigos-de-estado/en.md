@@ -1,6 +1,6 @@
 ---
 title: Status codes and their classic confusions
-summary: A three-digit number that summarizes the result.
+summary: A status code is the three-digit number that summarizes the result of a request; the first digit gives the family.
 concepts:
   401-vs-403:
     name: 401 vs. 403
@@ -19,7 +19,7 @@ exercises:
           - "404"
           - "400"
         answer: 1
-        why: "We already know who they are (authenticated), but they lack permission: 403. Some APIs return 404 on purpose so as not to reveal that the resource exists."
+        why: "The token already says who they are, so they are not missing identification (that would be 401): they are missing permission. Some APIs answer 404 on purpose, so as not to reveal that the order exists."
       - q: The body is valid JSON, but the quantity field comes as -3.
         options:
           - "400"
@@ -27,7 +27,7 @@ exercises:
           - "500"
           - "409"
         answer: 1
-        why: The syntax is correct; the content breaks the rules. FastAPI responds 422 automatically.
+        why: "The JSON can be read; what fails is a rule about the data, because the quantity must be greater than 0. That is what 422 is for, and FastAPI answers it by itself when the data does not fit its model."
       - q: You try to register a customer with an email that already exists.
         options:
           - "400"
@@ -35,7 +35,7 @@ exercises:
           - "422"
           - "500"
         answer: 1
-        why: "409 Conflict: the request clashes with the current state of the resource."
+        why: "The request is well written and the data is valid; the problem is that it clashes with what is already stored. That is a conflict with the current state of the resource."
       - q: The load balancer waited 60 s for your payments API and it never responded.
         options:
           - "500"
@@ -43,7 +43,7 @@ exercises:
           - "503"
           - "504"
         answer: 3
-        why: "504 Gateway Timeout: the intermediary did not get a response from the origin server in time."
+        why: "The one answering is the load balancer, which sits between the client and your API: it had to wait for a response and none arrived in time. 502 would be an invalid response, not one that never arrives."
       - q: POST /v1/pedidos was processed and the order was created.
         options:
           - "200"
@@ -51,7 +51,7 @@ exercises:
           - "202"
           - "204"
         answer: 1
-        why: 201 Created, with the Location header pointing to the new resource.
+        why: "A new resource was created, and that is exactly what 201 says; 200 would only say that it went well. It usually carries the Location header with the address of the order."
       - q: The request arrives without an Authorization header at a protected endpoint.
         options:
           - "401"
@@ -59,7 +59,7 @@ exercises:
           - "400"
           - "404"
         answer: 0
-        why: "401: there are no credentials. It comes with WWW-Authenticate."
+        why: "The identification is missing, not the permission. That is why a 401 carries the WWW-Authenticate header, which tells the client how to identify itself."
       - q: You receive an order to generate a heavy report; you queue it and will process it later.
         options:
           - "200"
@@ -67,7 +67,7 @@ exercises:
           - "202"
           - "204"
         answer: 2
-        why: "202 Accepted: it was accepted, but not completed yet. A URL to check the status is usually returned."
+        why: "202 says the request was accepted but has not finished yet; 200 or 201 would say it is already done. An address to check its progress is usually returned."
       - q: An authenticated customer requests `GET /pedidos/1042`, but that order belongs to another customer.
         options:
           - "401"
@@ -75,7 +75,7 @@ exercises:
           - "404"
           - "422"
         answer: 1
-        why: "They are authenticated, but not authorized: 403. Some APIs respond 404 on purpose so as not to reveal that the order exists; if you mention it in the interview, it earns you points."
+        why: "They are already identified, so it is not 401; the order exists, but it is not theirs. If in the interview you add that some APIs answer 404 so as not to reveal that it exists, you earn points."
       - q: "`POST /clientes` with an email that is already registered."
         options:
           - "400"
@@ -83,12 +83,14 @@ exercises:
           - "422"
           - "500"
         answer: 1
-        why: "The request is valid, but it conflicts with the current state: 409 Conflict."
+        why: "The data is valid, but it cannot be saved without clashing with a customer that already exists: it is a conflict with the current state, not a format error."
 ---
 
 ## definition
 
-A three-digit number that summarizes the result. The first digit gives the family: **1xx** informational, **2xx** success, **3xx** redirection, **4xx** client error (the request is wrong) and **5xx** server error (the request was fine, but the server failed).
+A status code is the three-digit number that every HTTP response starts with. It summarizes what happened to the request.
+
+The first digit gives the family: **1xx** informational, **2xx** success, **3xx** redirection (the resource has to be looked for somewhere else), **4xx** client error (the request is wrong) and **5xx** server error (the request looked fine, but the server failed).
 
 ## analogy
 
@@ -96,71 +98,123 @@ The traffic lights at a service counter: green (**2xx**) "done"; yellow (**3xx**
 
 ## problem
 
-The code is the first thing the client, retries, monitors and alerts read. Responding `200` with `{"error": true}` forces the frontend to inspect the body, hides the errors from monitoring and makes caches store error responses as if they were valid.
+The code is the first thing the browser, the frontend and the monitoring tools read. If you respond `200` with `{"ok": false}`, `fetch` takes it as good, monitoring counts no error, and every client has to check the body after each request.
 
 ## code:wire
 
+### Moment 1. Ana creates an order: 201 and where it ended up
+
 ```http
-HTTP/1.1 201 Created            ← creado; incluye Location
-Location: /v1/pedidos/1093
+POST /v1/pedidos HTTP/1.1
+Authorization: Bearer <Ana's token>
+Content-Type: application/json
 
-HTTP/1.1 204 No Content         ← éxito sin body (DELETE, PUT sin retorno)
+{"lineas":[{"producto_id":42,"cantidad":2}]}
 
-HTTP/1.1 401 Unauthorized       ← no sé quién eres (falta token o es inválido)
-WWW-Authenticate: Bearer
+HTTP/1.1 201 Created                 # something new was created
+Location: /v1/pedidos/1093           # and this is its address
+```
 
-HTTP/1.1 403 Forbidden          ← sé quién eres, pero no tienes permiso
+### Moment 2. A request without a token: 401
+
+```http
+GET /v1/pedidos/1093 HTTP/1.1        # it carries no Authorization
+
+HTTP/1.1 401 Unauthorized            # "I don't know who you are"
+WWW-Authenticate: Bearer             # required in a 401: how to identify yourself
+```
+
+### Moment 3. Luis asks for Ana's order: 403
+
+```http
+GET /v1/pedidos/1093 HTTP/1.1
+Authorization: Bearer <Luis's token>    # Luis is identified...
+
+HTTP/1.1 403 Forbidden                  # ...but order 1093 is Ana's
+```
+
+The server can also respond `404 Not Found`, so as not to reveal that the order exists.
+
+### Moment 4. Data that breaks the rules: 422
+
+```http
+POST /v1/pedidos HTTP/1.1
+Authorization: Bearer <Ana's token>
+Content-Type: application/json
+
+{"lineas":[{"producto_id":42,"cantidad":0}]}   # the JSON is well written; the quantity is not
 
 HTTP/1.1 422 Unprocessable Content
 Content-Type: application/json
 
-{"detail":[{"loc":["body","cantidad"],"msg":"Input should be greater than 0"}]}
+{"detail":[{"type":"greater_than","loc":["body","lineas",0,"cantidad"],"msg":"Input should be greater than 0"}]}
 ```
+
+This is the format FastAPI uses, trimmed down: each error says where it is (`loc`) and which rule failed.
 
 ## code:server
 
-```python
-from fastapi import HTTPException, status
+In the store, this is the `GET /v1/pedidos/{id}` endpoint, which can respond 200, 401, 403 or 404. `router` is the `APIRouter` of the file.
 
-@app.get("/v1/pedidos/{id}")
-def obtener(id: int, usuario = Depends(usuario_actual)):   # sin token → 401
-    pedido = repo.buscar(id)
-    if pedido is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
-    if pedido.cliente_id != usuario.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "No es tu pedido")
-    return pedido
-# FastAPI devuelve 422 automáticamente si Pydantic no puede validar el body.
+```python
+# app/pedidos/router.py
+from fastapi import HTTPException
+
+from app.deps import ClienteActual, SessionDep   # the customer from the token and the database session
+from app.pedidos.models import Pedido
+
+@router.get("/v1/pedidos/{id}")
+def obtener_pedido(id: int, cliente: ClienteActual, session: SessionDep):
+    # 1. Before getting in here, ClienteActual read the token: if it was missing or invalid, it already responded 401.
+    pedido = session.get(Pedido, id)
+    if pedido is None:                                   # 2. it does not exist: 404
+        raise HTTPException(status_code=404, detail="Order not found")
+    if pedido.cliente_id != cliente.id:                  # 3. it exists, but it belongs to another customer: 403
+        raise HTTPException(status_code=403, detail="Not your order")
+    return pedido                                        # 4. all good: 200
 ```
+
+FastAPI calls this function on every `GET /v1/pedidos/{id}`. A `raise HTTPException` cuts the function short and responds with that code and `{"detail": "..."}` in the body. How `ClienteActual` works is covered in [[autenticacion-en-fastapi]].
 
 ## bad
 
 ```http
-HTTP/1.1 200 OK
-{"ok": false, "error": "Pedido no encontrado"}
+GET /v1/pedidos/9999 HTTP/1.1
+Authorization: Bearer <Ana's token>
+
+HTTP/1.1 200 OK                                  # "all good"...
+Content-Type: application/json
+
+{"ok":false,"error":"Order not found"}           # ...but the body says the opposite
 ```
+
+For the browser and for monitoring it is a success: `response.ok` is `true` and no alert goes off. Only whoever reads the body finds out, and every client has to remember to do it.
 
 ## good
 
 ```http
-HTTP/1.1 404 Not Found
-Content-Type: application/problem+json
-{"title":"Pedido no encontrado","status":404}
+GET /v1/pedidos/9999 HTTP/1.1
+Authorization: Bearer <Ana's token>
+
+HTTP/1.1 404 Not Found                           # the code already says what happened
+Content-Type: application/json
+
+{"detail":"Order not found"}                     # the body only adds the detail
 ```
+
+The code tells the result. It is what `HTTPException(status_code=404, ...)` responds in the server block.
 
 ## bridge:typescript
 
-After `await fetch(...)`, `response.ok` and `response.status` signal an error only when the code is 4xx or 5xx. When a backend answers 200 with an error inside, you have to check a field in the body (for example `ok: false`) after every request: that is a symptom of a poorly designed API. And your own function that wraps `fetch` and redirects to the login should react to **401**, not to 403.
+`fetch` does not throw an error for a 404 or a 500: only when there is no response, for example with no network. That is why you check `response.ok`, which is `true` from 200 to 299, or `response.status` to decide what to do. The difference that confuses people most: on a 401 it makes sense to send the user to the login; on a 403 it does not, because they are already identified and identifying themselves again does not give them permission.
 
 ## interview
 
-Codes are grouped into families: 2xx success, 3xx redirection, 4xx the client made a mistake and 5xx the server failed. The ones I use most are 200, 201 with Location when creating, 204 with no content, 400 and 422 for validation, 401 when authentication is missing, 403 when the user has no permission, 404, 409 for conflicts such as a duplicate email, 429 for rate limiting, 500 for internal errors, and 502, 503 and 504, which usually come from the proxy or the load balancer. The rule is that the code must reflect the real result, because clients, retries and monitoring depend on it.
+Status codes are grouped by the first digit: 2xx success, 3xx redirection, 4xx client error and 5xx server error. When creating I respond 201 with `Location`, and 204 when there is nothing to return. For client errors I use 400 if the request is malformed, 422 if it is well formed but the data does not meet the rules, 401 if identification is missing, 403 if the user is identified but has no permission, 404 if it does not exist and 409 if it clashes with what is already stored, such as a repeated email. Among the 5xx I tell apart 500, when my application fails, from 502 and 504, which are generated by the proxy or load balancer in front, and from 503, which warns that the service cannot handle requests for now. The rule is that the code reflects the real result, because the frontend and monitoring depend on it.
 
 ## myths
 
-- 401 vs. 403: 401 means "not authenticated" (despite the name Unauthorized); 403 is "authenticated but without permission".
-- 400 vs. 422: 400 is a malformed request (broken JSON, impossible types); 422 is correct syntax but invalid content (negative quantity). FastAPI uses 422 for validation.
-- 200 vs. 201 vs. 204: 200 success with body; 201 a resource was created (with Location); 204 success without body.
-- 301 vs. 302: 301 is permanent (search engines and browsers remember it); 302 is temporary. 307 and 308 are their versions that do not allow changing the method.
-- 404 vs. 410: 404 does not exist (or I will not tell you); 410 existed and was deleted for good.
-- 500 vs. 502 vs. 503 vs. 504: 500 your app failed; 502 the proxy got an invalid response from your app; 503 the service is unavailable (maintenance or overload, with Retry-After); 504 the proxy got tired of waiting for your app.
+- **"401 means 'not authorized'."** Despite its name, *Unauthorized*, it means "not identified": a token is missing, or the one that arrived is not valid. When the user is identified but has no permission, the code is 403.
+- **"400 and 422 are the same."** 400 is a request the server cannot even read properly, for example a malformed message. 422 is a well-written request whose data does not meet the rules, such as a quantity of 0. FastAPI responds 422 to both cases of its body: to broken JSON and to data that does not fit the model.
+- **"If it went well, always 200."** When creating something you respond 201 Created, which says there is a new resource and usually carries `Location` with its address. If there is nothing to return, as when cancelling an order with `DELETE /v1/pedidos/{id}`, you respond 204 No Content, with no body.
+- **"Every 5xx is a failure in my code."** Only 500 says that. 502 and 504 are generated by an intermediate server (a proxy or a load balancer, which distributes the requests) when your application answers it something invalid or does not answer in time. 503 warns that the service cannot handle requests now, because of overload or maintenance.
