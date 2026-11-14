@@ -2,9 +2,20 @@
 
 Cada grupo (`## N.`) es una sesión de Opus. Documentos vinculantes: `design.md`, `content-map.md` y `proyecto-tienda.md` de este cambio, y `openspec/guia-de-contenido.md`.
 
-"Reescribir un tema" significa siempre: escribir su `es.md` completo según la guía (reglas, tabla por sección y modelo de su tipo), con el proyecto de `proyecto-tienda.md`; ejecutar cada bloque de Python ejecutable y pegar la salida real (design.md decisión 11); y pasar la lista de comprobación de la guía. La tarea se verifica mostrando que las 12 preguntas de la lista son "sí" y la salida de los bloques ejecutados.
+## Regla sin excepciones: no se inventa información
 
-"Traducir un tema" significa: escribir su `en.md` como traducción del `es.md` ya terminado, con la misma estructura, los mismos bloques y pasos, los comentarios y los textos impresos en inglés y los nombres del código sin tocar (design.md decisiones 4 y 10). Se verifica con `npm run content` en verde para ese tema y revisando el diff.
+Pedida por el usuario el 2026-11-13. Vale para toda tarea que escriba o traduzca contenido, la haga Opus o un subagente; Opus la copia en cada encargo a Sonnet.
+
+1. **Bajo ninguna circunstancia se inventa información.** Ni un dato, ni el nombre de una función, un parámetro, una cabecera o un comando, ni un código de estado, ni un número de versión, ni la salida de un programa, ni un comportamiento "que seguramente es así".
+2. **Toda la información se confirma antes de escribirla.** El código ejecutable se ejecuta y se pega su salida real. Lo que no se puede ejecutar (FastAPI, SQLModel, Alembic, HTTP, Docker, uv) se comprueba en su fuente: la documentación oficial de la librería o la especificación (RFC, MDN).
+3. **Si hay cualquier duda, se busca en internet y se confirma** en una fuente oficial y actual, antes de escribir. Recordar algo no es confirmarlo: las librerías cambian de una versión a otra.
+4. **Lo que no se pueda confirmar no se escribe.** Se deja fuera, se anota en `decisiones.md` qué faltó y dónde se buscó, y es una pregunta para Fable 5.2.
+5. El texto que ya está en `content/` y los modelos de la guía tampoco se dan por buenos: si se conservan, se confirman igual. Un error encontrado en el contenido antiguo se corrige y se anota en `decisiones.md` con la fuente.
+6. Cada tarea de verificación de grupo deja en `decisiones.md`, por tema, las fuentes consultadas (dirección y fecha) para lo que no se pudo ejecutar.
+
+"Reescribir un tema" significa siempre: escribir su `es.md` completo según la guía (reglas, tabla por sección y modelo de su tipo), con el proyecto de `proyecto-tienda.md`; ejecutar cada bloque de Python ejecutable y pegar la salida real (design.md decisión 11); confirmar en su fuente todo lo que no se pueda ejecutar, según la regla anterior; y pasar la lista de comprobación de la guía. La tarea se verifica mostrando que las 13 preguntas de la lista son "sí", la salida de los bloques ejecutados y las fuentes consultadas.
+
+"Traducir un tema" significa: escribir su `en.md` como traducción del `es.md` ya terminado, con la misma estructura, los mismos bloques y pasos, los comentarios y los textos impresos en inglés y los nombres del código sin tocar (design.md decisiones 4 y 10). La traducción no añade, quita ni cambia información respecto al español. Se verifica con `npm run content` en verde para ese tema y revisando el diff.
 
 ## 1. Formato: pasos y paridad de código
 

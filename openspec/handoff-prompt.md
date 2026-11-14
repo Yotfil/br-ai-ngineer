@@ -14,13 +14,13 @@ Este prompt es para **Opus 5.5**. Vas a implementar conmigo el **grupo 3** del c
 **Antes de escribir nada:**
 
 1. Lee `openspec/git-workflow.md` y, del cambio `openspec/changes/contenido-claro/`: `design.md` (decisión 9; también la 8, temas partidos, para entender el orden provisional), `content-map.md` sección 2 (orden final y provisional de la pista Python), `tasks.md` y `decisiones.md`. Lee también `scripts/content/pista-python.test.ts`: tiene la prueba de los 21 órdenes consecutivos que hay que adaptar.
-2. Comprueba la rama con `git branch --show-current` y `git status --short`. Lo esperado: rama `feature/contenido-claro`, con el grupo 2 ya en el último commit (`feat: entradas de proyecto…`). Si no hice yo el commit de la regla "no se inventa información" (la escribió otra sesión mientras Opus hacía el grupo 2 y quedó fuera de ese commit), verás sin commit estos tres archivos y ninguno más: `openspec/guia-de-contenido.md`, `openspec/changes/contenido-claro/design.md` y `openspec/changes/contenido-claro/tasks.md` (en este, solo la sección "Regla sin excepciones" del inicio). Si hay algo más, detente y dímelo.
+2. Comprueba la rama con `git branch --show-current` y `git status --short`. Lo esperado: rama `feature/contenido-claro` y nada sin commit. Si hay algo sin commit, detente y dímelo.
 3. `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` en verde antes de tocar nada (última ejecución: 327 pruebas en 16 archivos; lint con 0 errores y 14 avisos que ya estaban).
 
 **Estado al 2026-11-13.**
 
 - `contenido-claro`: 11 de 86 tareas. Grupos 1 (1.1–1.6) y 2 (2.1–2.5) hechos y verificados por Opus.
-- Commits: grupo 1 en `6004c9a` y grupo 2 en el commit siguiente, los dos sin push (compruébalo con `git status -sb`). La regla "no se inventa información" sigue sin commit. Sin pull request: el PR a `develop` va al final, con el cambio archivado.
+- Commits: grupo 1 en `6004c9a`, grupo 2 en `164a83f` y la regla "no se inventa información" en un commit `docs` posterior, los tres sin push (compruébalo con `git status -sb`). Sin pull request: el PR a `develop` va al final, con el cambio archivado.
 - Lo que dejó el grupo 2 (detalle en `decisiones.md`, sección "Grupo 2"):
   - El modelo admite entradas de proyecto: `kind: project` y `covers` en `meta.yaml`, secciones `context` y `walkthrough`, sin `freq`, conceptos, `related`, demo ni ejercicios. La compilación lo valida todo (decisión 6) y la paridad de código entre idiomas también recorre esas dos secciones.
   - Una entrada sale en el buscador como un tema, en el cerebro como un nodo de tema conectado con cada tema de `covers`, en el sidebar y en la hoja del teléfono en la posición de su `order`, y en el lector sin pestañas ni frecuencia, con "Qué vamos a construir", "El código, parte por parte" y "Temas que reúne este proyecto".
