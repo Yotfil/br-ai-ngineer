@@ -13,7 +13,7 @@ exercises:
   - type: choice
     prompt: Quick question
     items:
-      - q: Two dependencies of the same endpoint ask for `SessionDep`. How many times does `get_session` run in that request?
+      - q: Two dependencies of the same endpoint ask for `SessionDep`, the session that `get_session` provides. How many times does `get_session` run in that request?
         options:
           - Once
           - Twice
@@ -70,7 +70,7 @@ def listar_productos(pag: dict = Depends(paginacion)):   # no parentheses: I giv
 
 ### Step 2. A dependency that opens something and closes it at the end
 
-With `yield` instead of `return` ([[yield]]), the function stays paused while the endpoint works and continues afterwards, once the response has already been sent. That way the `with` ([[context-manager]]) closes the database session ([[session-orm]]) without the endpoint noticing.
+`get_session` is the dependency that opens a database session ([[session-orm]]) and hands it to the endpoint. It uses `yield` instead of `return` ([[yield]]): the function stays paused while the endpoint works and continues once the response has already been sent, and then the `with` ([[context-manager]]) closes the session without the endpoint noticing.
 
 ```python
 from sqlmodel import Session, select
@@ -87,7 +87,7 @@ def listar_productos(session: Session = Depends(get_session)):
 
 ### Step 3. A short name so you do not repeat `Depends(...)`
 
-`Annotated` joins the type and the dependency into a single name you can reuse.
+`Annotated` joins the type and the dependency into a single name you can reuse. Here that name is `SessionDep`: a `Session` that FastAPI gets from `get_session` on every request.
 
 ```python
 from typing import Annotated
@@ -170,5 +170,5 @@ In the frontend you already inject dependencies when you pass a function what it
 ## myths
 
 - **"`Depends(get_session())` and `Depends(get_session)` are the same."** With parentheses you call the function yourself, once, when the file loads, and `Depends` receives what it returned. FastAPI needs the function uncalled, so it can call it itself on every request.
-- **"The dependency is created once and shared."** It runs again on every request: each request receives its own session. Only within a single request, if two pieces ask for the same dependency, FastAPI runs it once and gives them the same result.
-- **"It is framework magic."** It is a normal function that FastAPI calls before yours. Put a `print` in it and you will see it runs first.
+- **"The dependency is created once and shared."** It runs again on every request: each request receives its own session. Only within a single request, if two pieces ask for the same dependency (a dependency can also ask for others, just like an endpoint), FastAPI runs it once and gives them the same result.
+- **"It is framework magic."** It is a normal function, with `def` or with `async def` ([[async-await]]), that FastAPI calls before yours. Put a `print` in it and you will see it runs first.

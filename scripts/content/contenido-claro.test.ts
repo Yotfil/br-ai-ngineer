@@ -193,9 +193,9 @@ describe('1.4 paridad de código entre idiomas', () => {
 
 // ---------- Grupo 2: entradas de proyecto ----------
 
-/** Cinco temas de Python y FastAPI y tres de HTTP y REST, como los de "Proyecto: el endpoint de crear un pedido". */
+/** Cinco temas de Python y FastAPI y dos de HTTP y REST, como los de "Proyecto: el endpoint de crear un pedido". */
 const PY_TOPICS = ['rutas-y-parametros', 'modelos-y-response-model', 'inyeccion-con-depends', 'errores-y-httpexception', 'endpoints-async-vs-sync']
-const REST_TOPICS = ['metodos-http', 'codigos-de-estado', 'errores-problem-details']
+const REST_TOPICS = ['metodos-http', 'codigos-de-estado']
 /** En el orden de `content-map.md`, sección 3: mezcla las dos pistas. */
 const COVERS = [...PY_TOPICS, ...REST_TOPICS]
 
@@ -204,7 +204,8 @@ const BASE: Array<[string, TopicFixture]> = [
   pyTopic('decoradores', 1, 'lenguaje'),
   ...PY_TOPICS.map((id, i) => pyTopic(id, 10 + i)),
   pyTopic('orm-y-sesiones', 30),
-  ...REST_TOPICS.map((id, i) => topic(id, { track: 'rest', order: i + 1 })),
+  // `errores-problem-details` no lo reúne "crear un pedido" (content-map.md, sección 3), pero sí la entrada de la API completa.
+  ...[...REST_TOPICS, 'errores-problem-details'].map((id, i) => topic(id, { track: 'rest', order: i + 1 })),
 ]
 const crearPedido = (opts: Partial<Parameters<typeof project>[1]> = {}) =>
   project('proyecto-crear-pedido', { order: 23, group: 'fastapi', covers: COVERS, short: 'Proyecto: crear un pedido', ...opts })
@@ -213,7 +214,7 @@ const validate = (...extra: Array<[string, TopicFixture]>) => () => validateCont
 const read = (...extra: Array<[string, TopicFixture]>) => () => readContent(contentWith(...extra))
 
 describe('2.1 entradas de proyecto: modelo y validación', () => {
-  it('Entrada de proyecto válida: compila con su contexto, su recorrido y los ocho temas en el orden declarado', async () => {
+  it('Entrada de proyecto válida: compila con su contexto, su recorrido y los siete temas en el orden declarado', async () => {
     const out = await buildContent(contentWith(crearPedido()))
     for (const locale of ['es', 'en'] as const) {
       const entry = out.topics[locale].find((t) => t.id === 'proyecto-crear-pedido')!
@@ -221,7 +222,8 @@ describe('2.1 entradas de proyecto: modelo y validación', () => {
       expect(entry.covers).toEqual(COVERS)
       expect(Object.keys(entry.sections)).toEqual(['context', 'walkthrough'])
       expect(entry.sections.context).toMatch(/^<p>/)
-      expect(entry.sections.walkthrough!.match(/<h4>/g)).toHaveLength(8)
+      expect(entry.covers).toHaveLength(7)
+      expect(entry.sections.walkthrough!.match(/<h4>/g)).toHaveLength(COVERS.length)
       expect(entry).not.toHaveProperty('freq')
       expect(entry).not.toHaveProperty('demo')
       expect(entry.exercises).toEqual([])
@@ -318,9 +320,11 @@ describe('2.1 entradas de proyecto: modelo y validación', () => {
   it('las dos secciones admiten títulos de paso; el recorrido exige el lenguaje de cada bloque', () => {
     const context = '### Qué hace\n\nCrea un pedido.'
     expect(read(crearPedido({ sections: { context, walkthrough: walkthrough(COVERS) } }))).not.toThrow()
-    const sinLenguaje = `${walkthrough(COVERS)}\n\n### Parte 9. Sin lenguaje\n\n\`\`\`\nx = 1\n\`\`\``
+    // walkthrough() escribe una parte con un bloque por tema reunido; la parte añadida es la siguiente.
+    const n = COVERS.length + 1
+    const sinLenguaje = `${walkthrough(COVERS)}\n\n### Parte ${n}. Sin lenguaje\n\n\`\`\`\nx = 1\n\`\`\``
     expect(problemsOf(read(crearPedido({ sections: { context: 'C.', walkthrough: sinLenguaje } })))).toEqual([
-      'python/proyecto-crear-pedido/es.md: el bloque 9 de "walkthrough" no declara lenguaje',
+      `python/proyecto-crear-pedido/es.md: el bloque ${n} de "walkthrough" no declara lenguaje`,
     ])
   })
 
@@ -329,7 +333,7 @@ describe('2.1 entradas de proyecto: modelo y validación', () => {
     const p = problemsOf(validate(crearPedido({ enSections: { context: "### What\n\nWe're building it.", walkthrough: enWalk } })))
     expect(p).toEqual([
       'tema "proyecto-crear-pedido": la sección "context" tiene 0 títulos de paso en "es" y 1 en "en"',
-      'tema "proyecto-crear-pedido": la sección "walkthrough" tiene 8 bloques de código en "es" y 9 en "en"',
+      `tema "proyecto-crear-pedido": la sección "walkthrough" tiene ${COVERS.length} bloques de código en "es" y ${COVERS.length + 1} en "en"`,
     ])
   })
 
@@ -388,7 +392,7 @@ describe('2.2 entradas de proyecto: salida, buscador y grafo', () => {
     expect(hits[0]?.id).toBe('proyecto-crear-pedido')
   })
 
-  it('Vecinos de una entrada de proyecto: los ocho temas que reúne, con una relación cada uno; los tres de HTTP y REST son de esa pista', async () => {
+  it('Vecinos de una entrada de proyecto: los siete temas que reúne, con una relación cada uno; los dos de HTTP y REST son de esa pista', async () => {
     const out = await buildContent(contentWith(crearPedido()))
     const own = out.graph.links.filter((l) => l.source === 'proyecto-crear-pedido' || l.target === 'proyecto-crear-pedido')
     const other = (l: (typeof own)[number]) => (l.source === 'proyecto-crear-pedido' ? l.target : l.source)

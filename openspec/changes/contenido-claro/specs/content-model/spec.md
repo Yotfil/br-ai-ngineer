@@ -51,8 +51,8 @@ En cada sección de un tema o de una entrada de proyecto, las versiones en espa�
 El contenido SHALL poder incluir, dentro de una pista, entradas de proyecto: entradas que muestran una funcionalidad del proyecto de ejemplo y declaran los temas que reúnen, de la misma pista o de otra. Una entrada de proyecto SHALL tener título y resumen por idioma, una sección que explica qué se construye y una sección con el código dividido en partes con título. No SHALL declarar conceptos, frecuencia, ejercicios ni demo. Cada tema que reúne SHALL existir, no SHALL ser otra entrada de proyecto y SHALL estar enlazado desde el texto del recorrido en ambos idiomas.
 
 #### Scenario: Entrada de proyecto válida
-- **WHEN** se compila la entrada "Proyecto: el endpoint de crear un pedido", que reúne cinco temas de Python y FastAPI y tres de HTTP y REST
-- **THEN** la compilación termina bien y la entrada queda disponible con su contexto, su recorrido y la lista de los ocho temas en el orden declarado
+- **WHEN** se compila la entrada "Proyecto: el endpoint de crear un pedido", que reúne cinco temas de Python y FastAPI y dos de HTTP y REST
+- **THEN** la compilación termina bien y la entrada queda disponible con su contexto, su recorrido y la lista de los siete temas en el orden declarado
 
 #### Scenario: Aparece sin cambios de código
 - **WHEN** se añade una entrada de proyecto válida a una pista y se recompila
@@ -140,7 +140,7 @@ El sistema SHALL incluir la pista Python y FastAPI con 29 temas y 5 entradas de 
 
 #### Scenario: Ejercicios trasladados
 - **WHEN** se consulta el tema "Códigos de estado y sus confusiones clásicas" de HTTP y REST
-- **THEN** incluye los dos ejercicios de códigos de estado que la guía de Python tenía en su tema de HTTP
+- **THEN** tiene siete ejercicios, y los dos casos que la guía de Python tenía en su tema de HTTP (el pedido de otro cliente y el email ya registrado) aparecen una sola vez cada uno, sin repetirse
 
 #### Scenario: La pista deja de estar pendiente
 - **WHEN** se compila el contenido

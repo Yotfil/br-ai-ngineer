@@ -36,14 +36,14 @@ exercises:
   - type: choice
     prompt: Pregunta rápida
     items:
-      - q: ¿A qué equivale `@cache` encima de `def precio()`?
+      - q: ¿A qué equivale `@registrar` encima de `def calcular_total`?
         options:
-          - "`precio = cache`"
-          - "`precio = cache(precio)`"
-          - "`cache = precio(cache)`"
-          - "`precio()` se ejecuta al importar"
+          - "`calcular_total = registrar`"
+          - "`calcular_total = registrar(calcular_total)`"
+          - "`registrar = calcular_total(registrar)`"
+          - "`calcular_total()` se ejecuta al importar"
         answer: 1
-        why: 'La arroba es un atajo de una asignación: Python le pasa la función a `cache` y guarda lo que `cache` devuelva en el mismo nombre, `precio`. La función no se ejecuta: solo se envuelve.'
+        why: 'La arroba es un atajo de una asignación: Python le pasa la función a `registrar` y guarda lo que `registrar` devuelva en el mismo nombre, `calcular_total`. La función no se ejecuta: solo se envuelve.'
 ---
 
 ## definition

@@ -1,0 +1,10 @@
+id: generadores
+track: python
+order: 4
+freq: often
+group: lenguaje
+concepts:
+  - generador
+  - yield
+related:
+  - comprehensions

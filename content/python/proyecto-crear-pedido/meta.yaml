@@ -11,4 +11,3 @@ covers:
   - endpoints-async-vs-sync
   - metodos-http
   - codigos-de-estado
-  - errores-problem-details

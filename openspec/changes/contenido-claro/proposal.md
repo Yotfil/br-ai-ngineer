@@ -16,6 +16,7 @@ Este cambio reescribe ese contenido según `openspec/guia-de-contenido.md`, acor
 - **Comentarios del código en el idioma de la página.** La versión inglesa deja de mostrar comentarios en español. La compilación comprueba que ambos idiomas tienen los mismos bloques de código.
 - El rótulo del ejemplo principal pasa de "Ejemplo: la API de la tienda" a "Paso a paso".
 - **Piloto antes del resto:** primero se reescriben seis temas y una entrada de proyecto; el usuario los lee en la vista previa y, solo si el nivel es el correcto, se sigue con los demás.
+- **Ejercicios que solo preguntan lo que el tema explica** (añadido el 2026-11-14, tras leer el usuario el piloto). Si un ejercicio pregunta algo que el tema no explica o usa un nombre que el tema no presenta, se amplía el tema o se reescribe el enunciado; la respuesta no cambia. En "Códigos de estado" se quitan dos ejercicios repetidos.
 - Se retiran los scripts de migración de un solo uso (`scripts/migrate/`): desde este cambio, `content/` se mantiene a mano y es la única fuente.
 
 Fuera de este cambio: ejercicios nuevos, demos, títulos cortos para REST, las pistas SQL, POO y Git (que se redactarán directamente con la guía, con sus propias entradas de proyecto) y la sección "Casos" de fintech y logística.

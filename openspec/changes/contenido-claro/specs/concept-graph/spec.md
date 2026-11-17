@@ -7,7 +7,7 @@ Cada entrada de proyecto SHALL aparecer en el cerebro como un nodo de su pista, 
 
 #### Scenario: Vecinos de una entrada de proyecto
 - **WHEN** el usuario pasa el cursor sobre el nodo "Proyecto: crear un pedido"
-- **THEN** entre sus vecinos resaltados están los ocho temas que reúne, y los tres de HTTP y REST aparecen con el color de esa pista
+- **THEN** entre sus vecinos resaltados están los siete temas que reúne, y los dos de HTTP y REST aparecen con el color de esa pista
 
 #### Scenario: Abrir desde el cerebro
 - **WHEN** el usuario pulsa el nodo de una entrada de proyecto

@@ -30,7 +30,7 @@ Al abrir una entrada de proyecto, el sistema SHALL mostrarla en el lector con su
 
 #### Scenario: Abrir una entrada de proyecto
 - **WHEN** el usuario abre "Proyecto: el endpoint de crear un pedido"
-- **THEN** ve, sin pestañas, el bloque "Qué vamos a construir", después "El código, parte por parte" con sus partes tituladas y, al final, "Temas que reúne este proyecto" con ocho temas
+- **THEN** ve, sin pestañas, el bloque "Qué vamos a construir", después "El código, parte por parte" con sus partes tituladas y, al final, "Temas que reúne este proyecto" con siete temas
 
 #### Scenario: Ir de una parte a su tema
 - **WHEN** el usuario pulsa en la nota de una parte el enlace al tema "Inyección de dependencias con Depends"

@@ -36,14 +36,14 @@ exercises:
   - type: choice
     prompt: Quick question
     items:
-      - q: What is `@cache` above `def precio()` equivalent to?
+      - q: What is `@registrar` above `def calcular_total` equivalent to?
         options:
-          - "`precio = cache`"
-          - "`precio = cache(precio)`"
-          - "`cache = precio(cache)`"
-          - "`precio()` runs on import"
+          - "`calcular_total = registrar`"
+          - "`calcular_total = registrar(calcular_total)`"
+          - "`registrar = calcular_total(registrar)`"
+          - "`calcular_total()` runs on import"
         answer: 1
-        why: 'The at sign is a shortcut for an assignment: Python passes the function to `cache` and stores whatever `cache` returns under the same name, `precio`. The function does not run: it only gets wrapped.'
+        why: 'The at sign is a shortcut for an assignment: Python passes the function to `registrar` and stores whatever `registrar` returns under the same name, `calcular_total`. The function does not run: it only gets wrapped.'
 ---
 
 ## definition

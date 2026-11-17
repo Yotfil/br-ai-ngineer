@@ -21,8 +21,8 @@ Estado del código que condiciona el diseño:
 ## Reglas de implementación
 
 - Rama `feature/contenido-claro`. Una sesión de Opus por grupo de `tasks.md`.
-- El grupo 4 (piloto) termina con una parada obligatoria: no se empieza el grupo 5 hasta que el usuario haya respondido el guion de la decisión 12 con todo "sí".
-- La redacción de textos y código de ejemplo dentro de las reglas de la guía, de `proyecto-tienda.md` y de `content-map.md` está delegada a Opus: no es una decisión crítica mientras siga esos tres documentos. Sí son críticas, y van a Fable 5.2: cambiar un identificador, un título, el hogar de un concepto, la respuesta de un ejercicio, el alcance de una entrada de proyecto, añadir algo al proyecto de ejemplo, o saltarse una regla de la guía.
+- El grupo 4 (piloto) termina con una parada obligatoria: no se empieza el grupo 5 hasta que el usuario haya respondido el guion de la decisión 12 con todo "sí" y, tras las correcciones de la decisión 17, la pregunta de la segunda parada.
+- La redacción de textos y código de ejemplo dentro de las reglas de la guía, de `proyecto-tienda.md` y de `content-map.md` está delegada a Opus: no es una decisión crítica mientras siga esos tres documentos. Eso incluye ampliar un tema o reescribir el enunciado de un ejercicio para cumplir la sección "Los ejercicios" de la guía, dentro de lo que permite `content-map.md` sección 7. Sí son críticas, y van a Fable 5.2: cambiar un identificador, un título, el hogar de un concepto, la respuesta de un ejercicio, quitar o añadir un ejercicio, el alcance de una entrada de proyecto, añadir algo al proyecto de ejemplo, o saltarse una regla de la guía.
 - Ningún bloque de código se da por bueno sin ejecutarlo cuando es ejecutable (decisión 11).
 
 ## Goals / Non-Goals
@@ -36,7 +36,7 @@ Estado del código que condiciona el diseño:
 
 **Non-Goals:**
 
-- Ejercicios nuevos y demos.
+- Ejercicios nuevos y demos. Los ejercicios existentes sí se ajustan para que solo pregunten lo que su tema explica (decisión 17).
 - Cambiar el aspecto general del lector, las pestañas o el cerebro.
 - Reordenar temas, salvo lo que impone partir ocho de ellos e intercalar las entradas de proyecto.
 - Títulos cortos para la pista HTTP y REST.
@@ -180,9 +180,10 @@ Decidido por el usuario: Opus verifica; el usuario solo lee el piloto.
 - **No se inventa información** (pedido por el usuario el 2026-11-13; regla completa al inicio de `tasks.md`). Nada se escribe de memoria o por suposición: se ejecuta o se confirma en su fuente oficial, y ante cualquier duda se busca en internet. Lo que no se pueda confirmar no se escribe y va a Fable 5.2.
 - **Código ejecutable.** Todo bloque de Python que no dependa de un servidor, una base de datos o un paquete externo se ejecuta con el `python3` de la máquina, y la salida escrita en los comentarios es la salida real. Se ejecuta la versión española; la inglesa solo difiere en textos.
 - **Código no ejecutable** (FastAPI, SQLModel, HTTP): no se instala nada para ejecutarlo. Cada nombre, firma, parámetro, cabecera, código de estado y comando se confirma en la documentación oficial actual o en la especificación, y un comentario del bloque dice qué se da por hecho. Las fuentes consultadas se anotan en `decisiones.md`.
-- **Lista de comprobación.** Cada tema pasa las 13 preguntas de la guía antes de marcarse hecho. La tarea de verificación de cada grupo deja en `decisiones.md` una línea por tema: "lista pasada", y cualquier excepción con su motivo.
-- **Ejercicios.** Se ejecuta el código de cada ejercicio "¿Qué imprime?" de los temas del grupo y se comprueba que la respuesta marcada es la real. Una discrepancia no se corrige: se escala.
+- **Lista de comprobación.** Cada tema pasa las 14 preguntas de la guía antes de marcarse hecho. La tarea de verificación de cada grupo deja en `decisiones.md` una línea por tema: "lista pasada", y cualquier excepción con su motivo.
+- **Ejercicios.** Se ejecuta el código de cada ejercicio "¿Qué imprime?" de los temas del grupo y se comprueba que la respuesta marcada es la real. Una discrepancia no se corrige: se escala. Además, para la pregunta 14, la verificación del grupo deja en `decisiones.md`, por cada ejercicio, en qué sección del tema está explicado lo que pregunta y, si se tocó el tema o el enunciado para cumplirla, qué se cambió (decisión 17).
 - No se añaden pruebas automáticas que ejecuten el contenido.
+- **Herramientas de verificación** (decidido por el usuario el 2026-11-14). Los scripts con los que Opus verificó el piloto (ejecutar los bloques de Python de un tema y comparar su salida con la escrita, validar el contenido sin escribir `src/generated/` mientras el servidor de desarrollo está abierto, comprobar los ejercicios y las entradas de proyecto) se guardan en el repositorio y los usan los grupos siguientes. No son pruebas: no los ejecuta `npm test`, no añaden dependencias y `typecheck`, `lint` y `build` siguen en verde con ellos. Dónde se guardan y cómo se llaman lo decide Opus y lo anota. En el cierre del cambio se quedan, para las pistas siguientes.
 
 ### 12. Piloto y guion de revisión
 
@@ -204,6 +205,10 @@ Guion que el usuario responde con sí o no, leyendo las siete piezas en español
 
 Las preguntas 2 y 8 esperan "no"; las demás, "sí". Con todas las respuestas esperadas, Opus sigue con el grupo 5 en una sesión nueva. Cualquier otra respuesta se anota con el detalle que dé el usuario y vuelve a Fable 5.2, que ajusta la guía antes de continuar.
 
+**Resultado (2026-11-14).** Diez de las once respuestas coincidieron. La 1 no: el usuario no entendió algunos ejercicios de Practicar, con sus palabras "porque pregunta cosas que no se explicaron". El ajuste es la decisión 17.
+
+**Segunda parada.** Hechas las correcciones de la decisión 17 en las piezas del piloto, Opus se detiene otra vez y pide al usuario que publique la rama y relea solo la pestaña Practicar de `codigos-de-estado`, `decoradores` e `inyeccion-con-depends`, en español. Una pregunta, que espera "sí": ¿entendiste todas las preguntas de Practicar sin que nombraran nada que el tema no hubiera explicado antes? Con un "sí", Opus sigue con el grupo 5 en una sesión nueva. Cualquier otra respuesta se anota y vuelve a Fable 5.2.
+
 ### 13. Scripts de migración
 
 Se borra `scripts/migrate/` completo en el grupo de cierre. Desde este cambio `content/` es la única fuente y se edita a mano. Las guías originales siguen en `legacy/` sin tocar. Si alguna prueba o script de `package.json` depende de `scripts/migrate/`, se retira con él.
@@ -220,6 +225,17 @@ Las pruebas que comprueban textos, títulos, número de temas o estructura del c
 ### 16. Versión
 
 `v0.2.3`, según la regla de los cambios intercalados de `openspec/git-workflow.md`.
+
+### 17. Los ejercicios solo preguntan lo que el tema explica
+
+Decidido por el usuario el 2026-11-14, tras leer el piloto.
+
+- **La regla** está en la guía, sección "Los ejercicios", y es la pregunta 14 de su lista de comprobación: un ejercicio solo pregunta lo que su tema explica en prosa, y todo nombre que usan su enunciado y sus opciones se presenta antes en una frase del tema. La respuesta de entrevista y el interior de un bloque de código no cuentan como explicación.
+- **Cómo se cumple.** Si falta algo que es materia del tema, se amplía el tema. Si es un nombre accesorio, se reescribe el enunciado. La respuesta correcta no cambia nunca. Qué campos de un ejercicio pueden cambiar está en `content-map.md`, sección 7.
+- **A qué se aplica.** A las piezas del piloto ya escritas (correcciones concretas en `content-map.md`, sección 7) y a todos los temas de los grupos 5 a 13. "Reescribir un tema" incluye desde ahora repasar sus ejercicios con esta regla.
+- **Cómo se verifica.** Con la pregunta 14 de la lista, tema por tema, y con el registro por ejercicio de la decisión 11. El usuario relee Practicar en la segunda parada de la decisión 12.
+- **Ejercicios repetidos.** En `codigos-de-estado` se quitan los dos ejercicios que la pista Python había trasladado a ese tema, porque repiten otros dos que ya estaban. Esto cambia un escenario del requisito "Pista Python y FastAPI completa" de specs/content-model.
+- **No se escriben ejercicios nuevos.** Sigue fuera de este cambio.
 
 ## Risks / Trade-offs
 

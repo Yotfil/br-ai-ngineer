@@ -366,14 +366,17 @@ describe('3.x pista Python y FastAPI en el contenido real', () => {
     expect(offenders).toEqual([])
   })
 
-  it('ejercicios trasladados: códigos de estado y clasificación de métodos en REST', async () => {
+  it('ejercicios trasladados: códigos de estado sin repetir y clasificación de métodos en REST', async () => {
     const { topics } = await build()
+    // contenido-claro, design.md decisión 17: se quitan los dos ejercicios trasladados que repetían el 1 y el 3.
+    for (const lang of ['es', 'en'] as const) {
+      const codes = topics[lang].find((t) => t.id === 'codigos-de-estado')!.exercises
+      expect(codes.reduce((n, g) => n + g.items.length, 0)).toBe(7)
+    }
     const codes = topics.es.find((t) => t.id === 'codigos-de-estado')!.exercises
-    const g = codes[codes.length - 1]
-    expect(g.type === 'choice' && g.items.slice(-2).map((it) => it.q)).toEqual([
-      'Un cliente autenticado pide <code>GET /pedidos/1042</code>, pero ese pedido es de otro cliente.',
-      '<code>POST /clientes</code> con un email que ya está registrado.',
-    ])
+    const qs = codes.flatMap((g) => (g.type === 'choice' ? g.items.map((it) => it.q) : []))
+    expect(qs.filter((q) => q.includes('otro cliente'))).toHaveLength(1)
+    expect(qs.filter((q) => q.includes('email'))).toHaveLength(1)
     const methods = topics.es.find((t) => t.id === 'metodos-seguros-idempotentes')!.exercises
     expect(methods[methods.length - 1]).toMatchObject({ type: 'classify', prompt: '¿Qué método HTTP corresponde?', categories: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] })
   })

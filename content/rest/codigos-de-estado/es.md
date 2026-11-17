@@ -68,22 +68,6 @@ exercises:
           - "204"
         answer: 2
         why: "202 dice que la petición se aceptó pero aún no terminó; 200 o 201 dirían que ya está hecha. Se suele devolver una dirección para consultar cómo va."
-      - q: Un cliente autenticado pide `GET /pedidos/1042`, pero ese pedido es de otro cliente.
-        options:
-          - "401"
-          - "403"
-          - "404"
-          - "422"
-        answer: 1
-        why: "Ya está identificado, así que no es 401; el pedido existe, pero no es suyo. Si en la entrevista añades que algunas APIs responden 404 para no revelar que existe, suma puntos."
-      - q: "`POST /clientes` con un email que ya está registrado."
-        options:
-          - "400"
-          - "409"
-          - "422"
-          - "500"
-        answer: 1
-        why: "Los datos son válidos, pero no se pueden guardar sin chocar con un cliente que ya existe: es un conflicto con el estado actual, no un error de formato."
 ---
 
 ## definition
@@ -115,6 +99,8 @@ HTTP/1.1 201 Created                 # se creó algo nuevo
 Location: /v1/pedidos/1093           # y esta es su dirección
 ```
 
+Ana crea un pedido con `POST /v1/pedidos`: la respuesta es 201 Created, y la cabecera `Location` dice dónde quedó el pedido nuevo.
+
 ### Momento 2. Una petición sin token: 401
 
 ```http
@@ -123,6 +109,8 @@ GET /v1/pedidos/1093 HTTP/1.1        # no lleva Authorization
 HTTP/1.1 401 Unauthorized            # "no sé quién eres"
 WWW-Authenticate: Bearer             # obligatoria en un 401: cómo identificarse
 ```
+
+La petición no lleva la cabecera `Authorization`, que es donde viaja el token que identifica al cliente: sin ella, el servidor no sabe quién pide y responde 401.
 
 ### Momento 3. Luis pide el pedido de Ana: 403
 
@@ -215,6 +203,6 @@ Los códigos de estado se agrupan por el primer dígito: 2xx éxito, 3xx redirec
 ## myths
 
 - **"401 significa «no autorizado»."** A pesar de su nombre, *Unauthorized*, significa "no identificado": falta un token, o el que llegó no vale. Cuando el usuario sí está identificado pero no tiene permiso, el código es 403.
-- **"400 y 422 son lo mismo."** 400 es una petición que el servidor no puede ni leer bien, por ejemplo un mensaje mal formado. 422 es una petición bien escrita cuyos datos no cumplen las reglas, como una cantidad de 0. FastAPI responde 422 a los dos casos de su cuerpo: al JSON roto y a los datos que no cumplen el modelo.
-- **"Si salió bien, siempre 200."** Al crear algo se responde 201 Created, que dice que hay un recurso nuevo y suele llevar `Location` con su dirección. Si no hay nada que devolver, como al cancelar un pedido con `DELETE /v1/pedidos/{id}`, se responde 204 No Content, sin cuerpo.
-- **"Todo 5xx es un fallo de mi código."** Solo el 500 dice eso. El 502 y el 504 los genera un servidor intermedio (un proxy o un balanceador, que reparte las peticiones) cuando tu aplicación le responde algo inválido o no le responde a tiempo. El 503 avisa que el servicio no puede atender ahora, por sobrecarga o mantenimiento.
+- **"400 y 422 son lo mismo."** 400 es una petición que el servidor no puede ni leer bien, por ejemplo un mensaje mal formado. 422 es una petición bien escrita cuyos datos no cumplen las reglas, como una cantidad de 0. FastAPI responde 422 a los dos casos de su cuerpo: al JSON roto y a los datos que no cumplen el modelo. Y si los datos cumplen las reglas pero chocan con lo que ya está guardado, como registrar un cliente con un email que ya usa otro, el código es 409 Conflict: el cliente puede resolver el conflicto y volver a enviar la petición.
+- **"Si salió bien, siempre 200."** Al crear algo se responde 201 Created, que dice que hay un recurso nuevo y suele llevar `Location` con su dirección. Si no hay nada que devolver, como al cancelar un pedido con `DELETE /v1/pedidos/{id}`, se responde 204 No Content, sin cuerpo. Y si la petición se aceptó pero se procesará después, como un reporte pesado que se deja en cola, se responde 202 Accepted: dice que aún no está terminada, y la respuesta debería indicar dónde consultar cómo va.
+- **"Todo 5xx es un fallo de mi código."** Solo el 500 dice eso. El 502 y el 504 los genera un servidor intermedio (un proxy o un balanceador, que reparte las peticiones): el 502 cuando tu aplicación le responde algo inválido, y el 504 cuando no le responde a tiempo. El 503 avisa que el servicio no puede atender ahora, por sobrecarga o mantenimiento.

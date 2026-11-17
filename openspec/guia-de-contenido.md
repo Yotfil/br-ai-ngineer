@@ -5,6 +5,7 @@ Cómo se escribe cada tema de la app para que se entienda. Incluye las reglas, c
 ## Estado
 
 - **Acordado con el usuario el 2026-11-13:** el nivel de explicación (casi como para un junior), las seis reglas, el ejemplo de Decoradores como referencia de tono, el proyecto de ejemplo único y todas las decisiones de la sección [Decisiones tomadas](#decisiones-tomadas).
+- **Acordado con el usuario el 2026-11-14, tras leer el piloto:** la sección [Los ejercicios](#los-ejercicios) y la pregunta 14 de la lista de comprobación. El usuario lo dijo así: en Practicar "algunos no los entiendo porque pregunta cosas que no se explicaron".
 - **Se aplica mediante el cambio de OpenSpec `contenido-claro`** (`openspec/changes/contenido-claro/`), que cambia el formato, reescribe los temas de HTTP y REST y de Python y FastAPI, y añade las entradas de proyecto.
 - **Esta guía no autoriza por sí sola a reescribir `content/`.** Se reescribe siguiendo las tareas de ese cambio, o de los cambios de las pistas siguientes.
 - Solo Fable 5.2 modifica esta guía, con el usuario.
@@ -74,7 +75,7 @@ No se comenta cada línea: solo las que alguien nuevo no entendería.
 Formato fijo: la creencia entre comillas y en negrita, y después lo que ocurre de verdad, con la consecuencia.
 
 - Mal: "Olvidar `@functools.wraps`."
-- Bien: "**"`functools.wraps` es opcional."** Sin él, `sumar.__name__` devuelve `"envoltura"`. FastAPI lee el nombre y los parámetros de tu función para saber qué recibe el endpoint; sin `wraps` deja de verlos."
+- Bien: "**"`functools.wraps` es opcional."** Sin él, `sumar.__name__` devuelve `"envoltura"`, y Python ve los parámetros de la envoltura, `(*args, **kwargs)`, en lugar de `(a, b)`. FastAPI lee los parámetros de tu función para saber qué datos recibe el endpoint: sin `wraps`, los que encuentra no son los tuyos."
 
 Tres o cuatro malentendidos por tema. Mejor tres bien explicados que seis en una línea.
 
@@ -100,7 +101,7 @@ def calcular_total(lineas: list[LineaPedido]) -> int:
     return sum(linea.cantidad * linea.precio_unitario for linea in lineas)
 ```
 
-Esta función la llama el endpoint `POST /v1/pedidos` cada vez que un cliente crea un pedido.
+Esta función la llama el endpoint `POST /v1/pagos` cuando un cliente paga un pedido, para saber cuánto cobrar: lo que devuelve es el monto del pago.
 
 Además, cada cierto número de temas hay una **entrada de proyecto**: una entrada propia en la lista de temas ("Proyecto: …") que muestra una funcionalidad completa de la tienda, parte por parte, y enlaza cada parte al tema donde se estudia. Su formato está en la sección [Entradas de proyecto](#entradas-de-proyecto).
 
@@ -135,7 +136,26 @@ Además:
 
 - Frases cortas. Una idea por frase.
 - Se habla de tú al lector.
-- Los ejercicios (`exercises`) no cambian de formato, pero su `why` sigue la regla 4: explica por qué, no repite la respuesta.
+- Los ejercicios (`exercises`) no cambian de formato; cómo se escriben está en la sección siguiente.
+
+### Los ejercicios
+
+Los ejercicios de la pestaña Practicar comprueban lo que el tema enseñó. No enseñan nada nuevo ni dan nada por sabido.
+
+1. **Un ejercicio solo pregunta lo que su tema explica en prosa.** Cuenta lo que está en Entender, en el texto de un paso o de un momento, en las notas de `bad` y `good` o en Malentendidos. No cuenta lo que solo aparece en la respuesta de entrevista ni lo que solo se ve dentro de un bloque de código.
+2. **Todo nombre que use el enunciado o las opciones se presenta antes en una frase del tema**: una función, un alias, una cabecera, un código de estado, un comando. Que aparezca dentro de un bloque de código no basta: una frase tiene que decir qué es.
+3. **El `why` sigue la regla 4**: explica por qué, no repite la respuesta.
+
+Cuando un ejercicio no cumple el punto 1 o el 2, se arregla así. La respuesta correcta nunca cambia.
+
+| Qué falta | Qué se hace | Ejemplo |
+|---|---|---|
+| Algo que es materia del tema | Se amplía el tema: una frase o un paso que lo explique, dentro de las extensiones de la tabla anterior. | `codigos-de-estado` preguntaba por el 202 y el 409 sin explicarlos: el tema los explica. `inyeccion-con-depends` preguntaba por `SessionDep` y `get_session`, que solo estaban en el código: una frase los presenta. |
+| Un nombre accesorio, que no es materia del tema | Se reescribe el enunciado (`q`) y, si lo nombran, las opciones, con un nombre que el tema sí presenta. La opción correcta sigue siendo la misma y en la misma posición. | `decoradores` preguntaba a qué equivale `@cache`, que el tema no explica: la pregunta usa un decorador del tema. |
+
+- Si ampliar el tema lo sacaría de sus extensiones, o no está claro si algo es materia del tema, es una pregunta para Fable 5.2.
+- Un ejercicio no se quita ni se añade sin decidirlo con el usuario.
+- En las pistas que se redactan desde cero, los ejercicios se escriben después del tema y contra su texto.
 
 ### Cómo se escriben los pasos en el archivo
 
@@ -196,6 +216,8 @@ Cuatro temas completos, de cuatro tipos distintos. Un tema nuevo se escribe imit
 | 4. Inyección con `Depends` | Mecanismo de un framework: lo importante es quién llama a quién y cuándo | FastAPI, SQL con ORM |
 
 Los modelos muestran las secciones Entender, En código y Malentendidos. Las secciones `bridge:typescript`, `interview`, `bad` y `good` siguen la tabla anterior. Los modelos se escribieron antes de acordar la regla 6: a cada uno le falta su paso de proyecto, que se añade al reescribir el tema.
+
+Los cuatro temas ya están publicados en `content/` (`decoradores`, `closures-y-lambdas`, `cache-http` e `inyeccion-con-depends`), completos y con cada dato confirmado en su fuente. Si un modelo y su tema publicado difieren, vale el tema publicado. El 2026-11-14 se corrigieron aquí los datos que esa confirmación encontró mal: el 304 del Modelo 3, que no repetía `Cache-Control`; la etiqueta `(disk cache)`, que no se pudo confirmar; lo que FastAPI lee de una función sin `functools.wraps`; y cuándo se ejecuta el código que sigue al `yield` de una dependencia.
 
 ---
 
@@ -311,7 +333,7 @@ def consultar():
 #### myths
 
 - **"El decorador se ejecuta cada vez que llamo a la función."** No: `avisar` se ejecuta una sola vez, cuando Python lee el `def`. Lo que se ejecuta en cada llamada es `envoltura`.
-- **"`functools.wraps` es opcional."** Sin él, `sumar.__name__` devuelve `"envoltura"`. FastAPI lee el nombre y los parámetros de tu función para saber qué recibe el endpoint; sin `wraps` deja de verlos.
+- **"`functools.wraps` es opcional."** Sin él, `sumar.__name__` devuelve `"envoltura"`, y Python ve los parámetros de la envoltura, `(*args, **kwargs)`, en lugar de `(a, b)`. FastAPI lee los parámetros de tu función para saber qué datos recibe el endpoint: sin `wraps`, los que encuentra no son los tuyos.
 - **"`@avisar` y `@avisar()` son lo mismo."** El segundo llama primero a `avisar` y usa lo que devuelva como decorador. Solo funciona si el decorador fue escrito para recibir argumentos, como el del paso avanzado.
 
 ---
@@ -444,7 +466,7 @@ ETag: "a1b2c3"                       # identificador de esta versión del produc
 
 **Momento 2. A los 30 segundos: no hay petición**
 
-El navegador necesita el producto otra vez. Aún no pasaron los 60 segundos, así que usa su copia y **no envía nada al servidor**. En la pestaña Network aparece como `(disk cache)`.
+El navegador necesita el producto otra vez. Aún no pasaron los 60 segundos, así que usa su copia y **no envía nada al servidor**.
 
 **Momento 3. A los 2 minutos: la copia caducó y el navegador pregunta si sigue valiendo**
 
@@ -453,35 +475,34 @@ GET /v1/productos/42 HTTP/1.1
 If-None-Match: "a1b2c3"              # "tengo la versión a1b2c3, ¿sigue siendo la actual?"
 
 HTTP/1.1 304 Not Modified            # "sí, no cambió"
+Cache-Control: public, max-age=60    # el 304 repite las cabeceras de caché del 200
 ETag: "a1b2c3"
                                      # sin cuerpo: el navegador reutiliza su copia
 ```
 
-Si el producto hubiera cambiado, el servidor respondería `200 OK` con el producto nuevo y un `ETag` distinto, como en el momento 1.
+Con las cabeceras del 304, el navegador renueva su copia: vuelve a valer 60 segundos. Si el producto hubiera cambiado, el servidor respondería `200 OK` con el producto nuevo y un `ETag` distinto, como en el momento 1.
 
 #### code:server
 
 ```python
+# app/productos/router.py
 import hashlib, json
 from fastapi import Request, Response
 
-@app.get("/v1/productos/{id}")
-def obtener(id: int, request: Request, response: Response):
-    producto = repo.buscar(id)       # se da por hecho que devuelve un dict
-
-    # 1. Calcula el ETag: una huella del contenido. Si el producto cambia, la huella cambia.
-    huella = hashlib.md5(json.dumps(producto).encode()).hexdigest()
-    etag = f'"{huella}"'             # el estándar pide que vaya entre comillas dobles
-
-    # 2. ¿El navegador ya tiene esta misma versión? Entonces 304 y nada más.
-    if request.headers.get("if-none-match") == etag:
-        return Response(status_code=304, headers={"ETag": etag})
-
-    # 3. Si no la tiene (o cambió), envía el producto con sus instrucciones de caché.
-    response.headers["ETag"] = etag
-    response.headers["Cache-Control"] = "public, max-age=60"
+@router.get("/v1/productos/{id}")
+def obtener_producto(id: int, request: Request, response: Response):
+    producto = repository.buscar(id)   # se da por hecho: el producto como dict (sin el caso 404)
+    # 1. El ETag es una huella del contenido: si el producto cambia, la huella cambia.
+    etag = '"' + hashlib.md5(json.dumps(producto).encode()).hexdigest() + '"'   # entre comillas dobles
+    cache = {"ETag": etag, "Cache-Control": "public, max-age=60"}
+    # 2. ¿El navegador ya tiene esta versión? If-None-Match puede traer varias, separadas por comas.
+    if etag in request.headers.get("if-none-match", ""):
+        return Response(status_code=304, headers=cache)   # sin cuerpo, pero con sus cabeceras
+    response.headers.update(cache)   # 3. si no la tiene, o cambió: el producto con sus cabeceras
     return producto
 ```
+
+Este bloque es el del tema `cache-http` ya publicado, que se confirmó en la RFC 9110 (secciones 13.1.2 y 15.4.5): el 304 repite `Cache-Control` y `ETag`, porque el estándar lo exige.
 
 #### bad
 
@@ -560,7 +581,7 @@ from sqlmodel import Session
 def get_session():
     with Session(engine) as session:   # 1. abre la sesión (engine: la conexión ya configurada)
         yield session                  # 2. se la entrega al endpoint y espera
-                                       # 3. al terminar la petición, el with cierra la sesión
+                                       # 3. cuando la respuesta ya salió, el with cierra la sesión
 
 @app.get("/pedidos")
 def listar_pedidos(session: Session = Depends(get_session)):
@@ -623,12 +644,13 @@ Antes de dar un tema por terminado, quien lo redacta comprueba cada punto. Si al
 11. ¿Sigue siendo corto? Si una frase se puede quitar sin que se entienda menos, se quita.
 12. ¿Todo lo que afirma el tema está confirmado, ejecutándolo o en su fuente oficial, y nada se escribió de memoria o por suposición?
 13. ¿El último paso muestra el concepto dentro de la tienda, con la ruta del archivo y quién lo llama? (O, si no tiene lugar natural en la tienda, ¿está anotado el motivo?)
+14. ¿Cada ejercicio pregunta solo lo que el tema explica en prosa, y cada nombre que usan su enunciado y sus opciones está presentado antes en una frase del tema, no solo dentro de un bloque de código?
 
 Quien redacta ejecuta cada bloque de Python ejecutable y pega la salida real, no la que supone, y anota las fuentes de lo que no pudo ejecutar.
 
 ## Decisiones tomadas
 
-Tomadas por el usuario el 2026-11-13. El detalle técnico de cada una está en `design.md` del cambio `contenido-claro`.
+Tomadas por el usuario el 2026-11-13, salvo la de los ejercicios, del 2026-11-14. El detalle técnico de cada una está en `design.md` del cambio `contenido-claro`.
 
 | Decisión | Qué se decidió |
 |---|---|
@@ -641,6 +663,7 @@ Tomadas por el usuario el 2026-11-13. El detalle técnico de cada una está en `
 | Paso avanzado | Un paso más al final, con el título "Avanzado", siempre visible. |
 | Ejemplos de proyecto real | Un solo proyecto, la tienda en línea. Último paso de cada tema en el proyecto (regla 6) y entradas de proyecto cada cierto número de temas. |
 | Dónde van las entradas de proyecto | Cinco en la pista Python y FastAPI; ninguna en HTTP y REST, que explica el protocolo y cuyo código real es la API. En las pistas siguientes se decide al definir cada una. |
+| Ejercicios | Solo preguntan lo que el tema explica en prosa, con nombres ya presentados. Si no, se amplía el tema o se reescribe el enunciado; la respuesta no cambia. |
 
 ## Para quien retome esto
 

@@ -1,0 +1,13 @@
+id: proyecto-total-del-pedido
+track: python
+order: 8
+group: lenguaje
+kind: project
+covers:
+  - tipado-y-type-hints
+  - estructuras-de-datos
+  - comprehensions
+  - generadores
+  - funciones-y-parametros
+  - closures-y-lambdas
+  - decoradores

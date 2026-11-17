@@ -73,7 +73,7 @@ No se escriben ejercicios nuevos en este cambio. Los existentes se reparten así
 | | Pregunta sobre `await call_next(request)` | `middleware-y-cors` |
 | `openapi-y-despliegue` | Las dos preguntas (Docker Compose; `fastapi run` frente a `fastapi dev`) | `despliegue-uvicorn-docker` |
 
-Cuando un grupo se reparte entre dos temas, cada mitad conserva el enunciado (`prompt`) del grupo. El texto de las preguntas y sus explicaciones (`why`) se revisan con la regla 4 de la guía; las respuestas correctas no cambian.
+Cuando un grupo se reparte entre dos temas, cada mitad conserva el enunciado (`prompt`) del grupo. El texto de las preguntas y sus explicaciones (`why`) se revisan con la sección "Los ejercicios" de la guía, en todos los temas y no solo en los partidos; las respuestas correctas no cambian. El detalle está en la sección 7.
 
 Si al ejecutar el código de un ejercicio la respuesta marcada resulta incorrecta, no se corrige en silencio: se anota y es una pregunta para Fable 5.2.
 
@@ -185,11 +185,15 @@ Cada entrada muestra código de los archivos indicados de `proyecto-tienda.md`. 
 
 | Id | Qué construye | Archivos | `covers` |
 |---|---|---|---|
-| `proyecto-total-del-pedido` | La función que calcula el total de un pedido: recorre sus líneas, aplica un descuento y deja registro de cada cálculo. Python puro, sin FastAPI. | `app/pedidos/service.py` | `tipado-y-type-hints`, `estructuras-de-datos`, `comprehensions`, `generadores`, `funciones-y-parametros`, `closures-y-lambdas`, `decoradores` |
+| `proyecto-total-del-pedido` | La función que calcula el total de un pedido: recorre sus líneas, suma los subtotales, aplica el descuento de la tienda cuando el pedido llega al mínimo y deja registro de cada cálculo en el log. Python puro, sin FastAPI. | `app/pedidos/service.py`, `app/core/registro.py` | `tipado-y-type-hints`, `estructuras-de-datos`, `comprehensions`, `generadores`, `funciones-y-parametros`, `closures-y-lambdas`, `decoradores` |
 | `proyecto-importar-catalogo` | El script que carga el catálogo de productos desde un archivo CSV del proveedor: lo descarga, valida cada fila, descarta las que tienen errores y devuelve los productos listos para guardar. | `scripts/importar_catalogo.py` | `excepciones`, `context-managers`, `modulos-y-paquetes`, `async-y-event-loop`, `dataclasses-y-pydantic`, `identidad-copias-mutabilidad` |
-| `proyecto-crear-pedido` | El endpoint `POST /v1/pedidos` completo: recibe y valida los datos, comprueba que los productos existen, guarda el pedido y responde 201; responde 404 o 422 cuando corresponde. | `app/pedidos/router.py`, `app/pedidos/schemas.py`, `app/deps.py` | `rutas-y-parametros`, `modelos-y-response-model`, `inyeccion-con-depends`, `errores-y-httpexception`, `endpoints-async-vs-sync`, `metodos-http`, `codigos-de-estado`, `errores-problem-details` |
+| `proyecto-crear-pedido` | El endpoint `POST /v1/pedidos` completo: recibe y valida los datos, comprueba que los productos existen, guarda el pedido y responde 201; responde 404 o 422 cuando corresponde. | `app/pedidos/router.py`, `app/pedidos/schemas.py`, `app/deps.py` | `rutas-y-parametros`, `modelos-y-response-model`, `inyeccion-con-depends`, `errores-y-httpexception`, `endpoints-async-vs-sync`, `metodos-http`, `codigos-de-estado` |
 | `proyecto-pedidos-con-login` | Lo que hace falta para que solo el dueño vea y pague sus pedidos: las tablas, una migración, el login que entrega el token, la dependencia que identifica al cliente, CORS para el frontend y el pago con clave de idempotencia y correo de confirmación en segundo plano. | `app/pedidos/models.py`, `migrations/`, `app/core/security.py`, `app/deps.py`, `app/main.py`, `app/pagos/router.py` | `orm-y-sesiones`, `migraciones-con-alembic`, `autenticacion-en-fastapi`, `middleware-y-cors`, `tareas-en-segundo-plano`, `autenticacion-autorizacion`, `cors`, `idempotencia-en-la-practica` |
-| `proyecto-api-completa` | El proyecto visto entero: cómo se reparten las carpetas, cómo `main.py` une los routers, una prueba que sustituye la base de datos, la documentación automática, el listado paginado y cacheable de productos y el contenedor que lo despliega. | `app/main.py`, `app/productos/router.py`, `tests/`, `Dockerfile` | `estructura-del-proyecto`, `pytest-y-testclient`, `openapi-automatico`, `despliegue-uvicorn-docker`, `diseno-api-rest`, `cache-http` |
+| `proyecto-api-completa` | El proyecto visto entero: cómo se reparten las carpetas, cómo `main.py` une los routers y convierte los errores al formato Problem Details, una prueba que sustituye la base de datos, la documentación automática, el listado paginado y cacheable de productos y el contenedor que lo despliega. | `app/main.py`, `app/productos/router.py`, `tests/`, `Dockerfile` | `estructura-del-proyecto`, `pytest-y-testclient`, `openapi-automatico`, `despliegue-uvicorn-docker`, `diseno-api-rest`, `errores-problem-details`, `cache-http` |
+
+Decidido por el usuario el 2026-11-14: `errores-problem-details` pasa de `proyecto-crear-pedido` a `proyecto-api-completa`. La primera responde sus errores con el formato propio de FastAPI y conserva en el texto el enlace `[[errores-problem-details]]`; la segunda muestra en `app/main.py` el manejador que los convierte (ver "Detalles ya fijados por el contenido publicado" en `proyecto-tienda.md`).
+
+Decidido por el usuario el 2026-11-17: el descuento de `proyecto-total-del-pedido` es la regla fija de la tienda (10 % desde 100000 pesos), aplicada dentro de `calcular_total` sin cambiar su firma, y la entrada muestra también el cuerpo de `registrar`, con `logging`. La regla está en "Reglas de negocio" de `proyecto-tienda.md`, y el código, en "Versión final de `calcular_total` y de `registrar`" del mismo archivo.
 
 Los temas `entornos-y-dependencias` y `hilos-procesos-y-gil` no figuran en ninguna entrada de proyecto a propósito: no tienen un lugar natural en ese código.
 
@@ -230,5 +234,35 @@ Los textos de los modelos 1 a 4 de `openspec/guia-de-contenido.md` son el punto 
 - Identificadores, nombres y alias de los conceptos.
 - `freq`, `demo` y `track`.
 - Las respuestas correctas de los ejercicios.
+- El número de ejercicios de cada tema, salvo lo que dice la sección 7.
 - Las claves de sección de los temas y el orden de las pestañas.
 - La regla de no mencionar Angular, NestJS ni RxJS fuera de los bloques de código.
+
+## 7. Ejercicios
+
+Decidido por el usuario el 2026-11-14, tras leer el piloto. La regla está en la guía, sección "Los ejercicios", y es la pregunta 14 de su lista de comprobación.
+
+### Qué puede cambiar en un ejercicio
+
+| Campo | ¿Puede cambiar? |
+|---|---|
+| `why` | Sí: se reescribe con la regla 4. |
+| `q` | Sí, solo para cumplir la regla: cambiar un nombre que el tema no presenta por uno que sí, o decir en pocas palabras qué es. No puede cambiar qué se pregunta. |
+| `options` | Solo el nombre sustituido en `q`, cuando las opciones lo repiten. Mismo número de opciones, en el mismo orden. |
+| `answer` | No. La opción correcta es la misma y está en la misma posición. |
+| `code` | No. |
+| `prompt` | No. |
+
+Ampliar el tema para que explique lo que un ejercicio pregunta es redacción delegada a Opus, dentro de las extensiones de la guía. Si no cabe, o no está claro si algo es materia del tema, es una pregunta para Fable 5.2. Quitar o añadir un ejercicio también lo es.
+
+### Correcciones de las piezas del piloto
+
+| Tema | Ejercicio | Qué se hace |
+|---|---|---|
+| `codigos-de-estado` | El 8 ("Un cliente autenticado pide `GET /pedidos/1042`…", respuesta 403) y el 9 ("`POST /clientes` con un email que ya está registrado", respuesta 409) | Se quitan, en los dos idiomas: repiten el 1 y el 3. Quedan siete. |
+| `codigos-de-estado` | El 3 (email repetido, respuesta 409) | Se amplía el tema: el 409 se explica en prosa fuera de la respuesta de entrevista. |
+| `codigos-de-estado` | El 7 (reporte pesado encolado, respuesta 202) | Se amplía el tema: el 202 se explica en prosa. |
+| `decoradores` | "¿A qué equivale `@cache` encima de `def precio()`?" | Se reescribe: `cache` se cambia, en `q` y en las opciones, por un decorador que el tema presente en prosa (por ejemplo `registrar`, el del paso de proyecto). La opción correcta sigue siendo la segunda. |
+| `inyeccion-con-depends` | "Dos dependencias del mismo endpoint piden `SessionDep`…" | Se amplía el tema: una frase del paso 2 presenta `get_session` y una del paso 3 presenta `SessionDep`, por su nombre. El enunciado puede además recordar en pocas palabras qué es cada uno. |
+
+Las demás preguntas de las siete piezas se repasan con la misma regla; lo que no la cumpla se corrige igual y se anota en `decisiones.md`.
