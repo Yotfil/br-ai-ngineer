@@ -89,7 +89,6 @@ const CREAR_PEDIDO_COVERS = [
   'endpoints-async-vs-sync',
   'metodos-http',
   'codigos-de-estado',
-  'errores-problem-details',
 ]
 const ENTRIES: Entry[] = [
   { id: 'metodos-http', track: 're', order: 1, es: 'Métodos HTTP', en: 'HTTP methods' },
@@ -283,7 +282,7 @@ const labelsIn = (el: HTMLElement) => within(el).getAllByRole('heading', { level
 const coversList = () => reader().querySelector('[data-section="covers"]') as HTMLElement
 
 describe('2.3 lectura de una entrada de proyecto', () => {
-  it('Abrir una entrada de proyecto: sin pestañas ni frecuencia; contexto, partes tituladas y los ocho temas que reúne', async () => {
+  it('Abrir una entrada de proyecto: sin pestañas ni frecuencia; contexto, partes tituladas y los siete temas que reúne', async () => {
     renderProjects('/es/py/proyecto-crear-pedido')
     await screen.findByRole('heading', { level: 1, name: CREAR })
     const r = reader()

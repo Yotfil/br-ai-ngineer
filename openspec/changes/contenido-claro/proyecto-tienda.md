@@ -8,6 +8,8 @@ Parte de lo que el contenido ya usaba: el árbol `tienda-api/` del tema `estruct
 
 Una API REST de una tienda en línea, hecha con FastAPI y SQLModel sobre PostgreSQL. Los clientes consultan productos, crean pedidos y los pagan.
 
+Su dominio es `api.tienda.co` (decidido por el usuario el 2026-11-14).
+
 ## Entidades
 
 | Entidad | Campos | Notas |
@@ -26,11 +28,11 @@ Modelos de entrada y salida, cuando hagan falta: `PedidoCrear`, `LineaCrear`, `P
 |---|---|---|
 | `GET /v1/productos` | Lista paginada de productos | 200 |
 | `GET /v1/productos/{id}` | Un producto | 200, o 404 |
-| `POST /v1/pedidos` | Crea un pedido del cliente autenticado | 201 |
+| `POST /v1/pedidos` | Crea un pedido del cliente autenticado | 201, con `Location` |
 | `GET /v1/pedidos` | Pedidos del cliente autenticado | 200 |
 | `GET /v1/pedidos/{id}` | Un pedido suyo | 200, 403 o 404 |
 | `DELETE /v1/pedidos/{id}` | Cancela un pedido pendiente | 204 |
-| `POST /v1/pagos` | Paga un pedido; admite `Idempotency-Key` | 201 |
+| `POST /v1/pagos` | Paga un pedido; admite `Idempotency-Key`. El `monto` es lo que devuelve `calcular_total` | 201 |
 | `GET /v1/clientes/me` | Datos del cliente autenticado | 200 |
 | `PATCH /v1/clientes/{id}` | Modifica datos del cliente | 200 |
 | `POST /v1/login` | Devuelve el token de acceso | 200 |
@@ -51,17 +53,17 @@ tienda-api/
 │   ├── core/
 │   │   ├── config.py       # Settings
 │   │   ├── registro.py     # decorador registrar (logs)
-│   │   └── security.py     # hash de contraseñas y JWT
+│   │   └── security.py     # hash de contraseñas, JWT y get_cliente_actual
 │   ├── db.py               # engine y get_session
 │   ├── deps.py             # SessionDep, ClienteActual
 │   ├── pedidos/
 │   │   ├── router.py       # endpoints
 │   │   ├── schemas.py      # PedidoCrear, PedidoPublico
 │   │   ├── models.py       # Pedido, LineaPedido
-│   │   ├── service.py      # reglas de negocio
+│   │   ├── service.py      # reglas de negocio: calcular_total, crear_descuento
 │   │   └── repository.py   # consultas
 │   ├── productos/          # misma forma que pedidos/
-│   ├── clientes/
+│   ├── clientes/           # models.py tiene Cliente
 │   └── pagos/
 ├── scripts/
 │   └── importar_catalogo.py
@@ -77,3 +79,18 @@ tienda-api/
 5. **Cuándo no hay paso de proyecto.** Si el concepto no tiene un lugar natural en la tienda, el tema no lo fuerza. Hoy solo se prevé en `entornos-y-dependencias` (trata de herramientas, no de código) y en temas de HTTP y REST sin bloque de servidor. Cualquier otro caso se anota en `decisiones.md` con el motivo.
 6. **Datos de ejemplo.** Clientes: Ana y Luis. Productos: café (38000), taza (25000), molinillo (120000). Así los resultados son comparables entre temas.
 7. **Lo que se da por hecho se dice.** Si un bloque usa `engine`, `repo` o `settings` sin definirlos, un comentario dice de qué archivo salen.
+8. **La cabecera `Host` solo cuando hace falta** (decidido por el usuario el 2026-11-14). Las peticiones de ejemplo llevan `Host: api.tienda.co` en los temas que explican esa cabecera o la necesitan para lo que cuentan (por ejemplo la anatomía de una petición, la de una URL, CORS o TLS). En los demás se omite, para ahorrar líneas.
+
+## Detalles ya fijados por el contenido publicado
+
+El piloto (grupo 4) fijó estos detalles al escribir sus siete piezas, y el usuario las leyó. Los temas y las entradas de proyecto que vengan después deben coincidir con ellos; cambiarlos es una pregunta para Fable 5.2.
+
+| Detalle | Dónde se ve | Quién debe coincidir |
+|---|---|---|
+| `calcular_total(lineas: list[LineaPedido]) -> int` vive en `app/pedidos/service.py` y lleva el decorador `registrar`. La llama `POST /v1/pagos` para saber cuánto cobrar (decidido por el usuario el 2026-11-14). El pedido no guarda ningún total. | `decoradores`, paso de proyecto | `proyecto-total-del-pedido` (5.4), `proyecto-pedidos-con-login` (9.4) |
+| `crear_descuento(porcentaje)` vive en `app/pedidos/service.py`: el porcentaje es un entero y el descuento se calcula con división entera, porque los precios son enteros en pesos. | `closures-y-lambdas`, paso de proyecto | `proyecto-total-del-pedido` (5.4), que usa esta misma función |
+| `GET /v1/productos` está en `app/productos/router.py`, con `pagina: int = 1` y `tamano: int = 20`, y llama a `repository.listar(pagina, tamano)`. | `funciones-y-parametros`, paso de proyecto; `inyeccion-con-depends`, paso 1 | `proyecto-api-completa` (10.4) |
+| Cada router se crea sin prefijo, `router = APIRouter()`, y cada decorador lleva la ruta completa (`@router.get("/v1/productos")`). | `funciones-y-parametros`, `cache-http`, `proyecto-crear-pedido` | todos los temas de FastAPI y `estructura-del-proyecto` (10.1) |
+| `ClienteActual` responde 401 si el token falta o no vale. La función que lo produce, `get_cliente_actual`, vive en `app/core/security.py`. | `codigos-de-estado`, bloque del servidor; `proyecto-crear-pedido`, parte 2 | `autenticacion-en-fastapi` (9.2), `proyecto-pedidos-con-login` (9.4) |
+| El modelo `Pedido` pone `creado_en` él solo al crearse. `PedidoPublico` lleva `id`, `estado` y `creado_en`. | `proyecto-crear-pedido`, partes 1 y 4 | `orm-y-sesiones` (9.1), `proyecto-pedidos-con-login` (9.4) |
+| Los endpoints responden sus errores con `HTTPException`, cuyo cuerpo es `{"detail": …}`. El manejador que convierte esos errores al formato Problem Details vive en `app/main.py` y se muestra en `proyecto-api-completa`, que lo presenta como el paso que cambia el formato de los errores vistos hasta entonces (decidido por el usuario el 2026-11-14). | `codigos-de-estado`, `proyecto-crear-pedido`, parte 3 | `errores-y-httpexception` (8.3), `proyecto-api-completa` (10.4), `errores-problem-details` (13.2) |

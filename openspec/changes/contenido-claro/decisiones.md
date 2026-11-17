@@ -352,3 +352,157 @@ Bitácora de Opus 5.5 (regla "Anotar y seguir"). Una entrada por decisión: tare
 - **Qué.** La primera vez, `npm test` falló en una sola prueba, de `scripts/content/contenido-claro.test.ts` (grupo 2): "el contenido real no cambia: ningún tema es entrada de proyecto todavía". Era una guarda temporal para el grupo 2, y la 4.6 añade a propósito la primera entrada. Se adaptó (design.md decisión 14) a "el contenido real: solo las entradas de `content-map.md` (sección 3) son entradas de proyecto; los demás temas no cambian": las cinco ids de la sección 3 deben ser `kind: project` y sin `freq`, y todos los demás temas, sin `kind` y con `freq`. Se comprobó que falla, nombrando el tema, si una entrada del contenido no está en la lista (se quitó `proyecto-crear-pedido` de la lista y luego se restauró).
 - **Por qué.** Mantiene lo que la guarda protegía (que el modelo nuevo no cambia los temas normales) y lo ajusta al contenido que este cambio va añadiendo; los números son los del documento vinculante.
 - **Cómo deshacerlo.** Restaurar la prueba desde Git; volvería a fallar mientras exista una entrada de proyecto.
+
+### 4.9 Parada del piloto: guion de revisión
+
+Rama publicada el 2026-11-14 a petición del usuario: commit `c1ebf73` ("feat: piloto de contenido claro (siete piezas, ES/EN)"), subido a `origin/feature/contenido-claro` junto con `f437d2f` (grupo 3). El usuario lee las siete piezas en la vista previa de la rama. Respuestas, en el orden del guion (design.md decisión 12):
+
+1. **¿Entendiste cada tema leyéndolo una sola vez, sin buscar nada fuera?** Esperado: sí. **Respuesta: no del todo.** Palabras del usuario: "algunos si los estendí, otros no, hay un tema que si veo que sucede y es que en las preguntas de la tab "Practicar" algunos no los entiendo porque pregunta cosas que no se explicaron 😕 o al menos tener más pista para saber a qué se refiere". **No coincide: va a Fable 5.2.**
+   - **Comprobado por Opus en el contenido** (búsqueda en el cuerpo de cada tema, fuera del frontmatter):
+     - `codigos-de-estado`: el ejercicio "Recibes la orden de generar un reporte pesado…" tiene como respuesta 202, que el tema no menciona en ninguna sección. Los dos ejercicios del email repetido tienen como respuesta 409, que solo aparece en una frase de la respuesta de entrevista.
+     - `decoradores`: el ejercicio "¿A qué equivale `@cache` encima de `def precio()`?" usa `cache` (`functools.cache`), que el tema no explica. Lo que pregunta (la arroba) sí está explicado.
+     - `funciones-y-parametros` e `inyeccion-con-depends`: lo que preguntan sus ejercicios está en el tema ("Riesgoso" y los malentendidos).
+   - **Por qué pasa.** La guía solo pide revisar el `why` de los ejercicios (regla 4), y `content-map.md` (sección 6) prohíbe cambiar sus respuestas y no prevé ejercicios nuevos. Nada obliga a que el tema explique lo que su ejercicio pregunta, y los ejercicios vienen de las guías originales sin tocar.
+   - **Detalle del usuario** (pedido por Opus). El tema que no entendió del todo es `inyeccion-con-depends`: "aunque entiendo el concepto en general por angular, como que esa explicación es clara, luego en "Practicar" nombran "SessionDep" y no se nombró antes por lo que no sé a qué se refiere". **Comprobado por Opus:** `SessionDep` y `get_session` solo aparecen dentro de los bloques de código de la pestaña "En código" (pasos 2 y 3, y en el resto de pasos, en `good` y en los malentendidos). La frase del paso 3 explica `Annotated`, pero no nombra `SessionDep`, y la pestaña "Entender" no menciona ninguno de los dos. El primer ejercicio ("Dos dependencias del mismo endpoint piden `SessionDep`…") los da por sabidos y no dice qué son. Así que lo que el usuario echa en falta es doble: que el texto, y no solo el código, presente los nombres que luego usan los ejercicios, y que el ejercicio dé una pista de qué es cada nombre.
+   - **Pregunta para Fable 5.2.** ¿Se añade a la guía una regla del tipo "todo lo que pregunta un ejercicio está explicado en su tema, y los nombres que usa se presentan en el texto, no solo dentro de un bloque de código", y se decide cómo cumplirla? Hay dos formas: ampliar el tema (por ejemplo, 202 y 409 en `codigos-de-estado`) o reescribir el enunciado (`q`) para dar la pista, sin cambiar la respuesta. Opus no lo corrige en el piloto: es un cambio de la guía.
+2. **¿Apareció alguna palabra técnica sin explicar?** Esperado: no. **Respuesta: "No".** Coincide.
+3. **¿Los pasos van de lo simple a lo real, sin saltos?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+4. **¿Los comentarios del código te ayudaron a entenderlo?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+5. **¿El último paso de cada tema te dejó claro dónde se usa eso en un proyecto real?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+6. **¿La entrada "Proyecto: el endpoint de crear un pedido" te ayudó a ver los temas trabajando juntos?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+7. **¿Los enlaces de la entrada de proyecto te llevan al tema que esperabas?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+8. **¿Algún tema se te hizo demasiado largo o aburrido?** Esperado: no. **Respuesta: "No".** Coincide.
+9. **¿Los dos temas que salieron de "Funciones" se entienden mejor separados?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+10. **En inglés, abriendo un tema cualquiera del piloto: ¿los comentarios del código están en inglés?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+11. **En el teléfono: ¿los títulos de los pasos y los bloques de código se leen bien?** Esperado: sí. **Respuesta: "Sí".** Coincide.
+
+**Resultado del guion.** Coinciden 10 de 11 respuestas; la 1 no coincide (detalle arriba). Según design.md decisión 12 y la tarea 4.9, el grupo 5 no empieza: antes va una sesión de Fable 5.2 que decida, con el usuario, cómo ajustar la guía para que los ejercicios de Practicar solo pregunten lo que su tema explica y presenten los nombres que usan.
+
+## Resoluciones de Fable 5.2 con el usuario (2026-11-14)
+
+Sesión de specs tras la parada del piloto. Cada punto lo eligió el usuario entre opciones; aquí solo se deja dónde quedó escrito. No son decisiones de Opus.
+
+- **Pregunta 1 del guion (ejercicios).** Regla aprobada: un ejercicio solo pregunta lo que su tema explica en prosa, con nombres ya presentados; la respuesta de entrevista y el interior de un bloque de código no cuentan. Se cumple ampliando el tema (materia del tema) o reescribiendo el enunciado (nombre accesorio). Las correcciones del piloto van en una sesión propia antes del grupo 5 (tareas 4.10 a 4.16), y el usuario relee Practicar en una segunda parada. Escrito en: guía (sección "Los ejercicios" y pregunta 14), design.md decisiones 11, 12 y 17, `content-map.md` sección 7.
+- **Ejercicios repetidos de `codigos-de-estado`.** Se quitan el 8 y el 9. Lo encontró Fable al revisar; no estaba en el relevo. Cambia el escenario "Ejercicios trasladados" de specs/content-model.
+- **4.1, quién llama a `calcular_total`.** `POST /v1/pagos`, para saber cuánto cobrar. Corregida la frase del ejemplo de la regla 6 de la guía. Escrito en `proyecto-tienda.md`.
+- **4.2, `crear_descuento` y la paginación de productos.** Se fijan como los escribió Opus. Escrito en `proyecto-tienda.md`, "Detalles ya fijados por el contenido publicado".
+- **4.3, dominio.** `api.tienda.co`; la cabecera `Host` solo en los temas que la explican o la necesitan. El piloto queda como está. Escrito en `proyecto-tienda.md`, convención 8.
+- **4.4 y 4.6, supuestos sobre archivos de grupos posteriores.** Se fijan como los escribió Opus. Escrito en `proyecto-tienda.md`, misma sección.
+- **4.6, Problem Details.** `errores-problem-details` pasa de los `covers` de `proyecto-crear-pedido` a los de `proyecto-api-completa`, que muestra el manejador de `app/main.py`. Escrito en `content-map.md` sección 3 y en tres escenarios de las specs (siete temas reunidos, dos de HTTP y REST).
+- **4.5, `related` con `base-de-datos`.** Sin cambio: lo resuelve la tarea 9.1, como estaba previsto.
+- **Herramientas de verificación.** Se guardan en el repositorio (tarea 4.10) y se quedan al cerrar el cambio. Escrito en design.md decisión 11.
+- **Modelos de la guía.** Corregidos por Fable los datos que la confirmación de Opus encontró mal: el 304 sin `Cache-Control` y la comparación del ETag (Modelo 3), la etiqueta `(disk cache)` (Modelo 3), lo que FastAPI lee sin `functools.wraps` (regla 5 y Modelo 1) y cuándo se ejecuta el código tras el `yield` (Modelo 4). La guía dice ahora que, si un modelo y su tema publicado difieren, vale el tema publicado.
+
+## Grupo 4, correcciones del piloto (4.10 a 4.16)
+
+**Comprobaciones antes de tocar nada** (2026-11-16): rama `feature/contenido-claro` y árbol como dice el relevo; `typecheck`, `test` (327 pruebas en 16 archivos), `lint` (0 errores, 14 avisos) y `build` (43 temas, 158 nodos, 236 enlaces) en verde. Servidor de desarrollo del proyecto escuchando en el puerto 5173 (no lo arrancó Opus); no se tocó.
+
+### 4.10 Scripts de verificación en `scripts/check/`
+
+- **Qué.** Los cinco scripts del scratchpad del grupo 4 pasan a `scripts/check/`, con nombres en inglés como el resto de `scripts/`. Se ejecutan desde la raíz del repositorio:
+
+  | Script | Sustituye a | Qué hace | Cómo se ejecuta |
+  |---|---|---|---|
+  | `python-blocks.py` | `check-python.py` | Cuenta las líneas de cada bloque (15; 25 en `walkthrough`) y ejecuta los de Python, acumulados en `code:example`, comparando la salida real con la escrita. | `python3 scripts/check/python-blocks.py content/python/<tema>/es.md [...]` |
+  | `content.ts` | `check-content.mts` | Valida el contenido como `npm run content`, sin escribir `src/generated/`. | `npx tsx scripts/check/content.ts` |
+  | `content-es.ts` | `check-content-es.mts` | Lo mismo sobre una copia temporal, con `es.md` como inglés donde falta `en.md` o en los temas indicados. | `npx tsx scripts/check/content-es.ts [<tema> ...]` |
+  | `project-entry.ts` | `check-entry.mts` | Escenario "Entrada de proyecto válida": tipo, secciones, temas reunidos con su pista, conexiones del cerebro, anterior y siguiente. | `npx tsx scripts/check/project-entry.ts [<entrada> ...]` |
+  | `exercises.ts` | `check-48.mts` | Ejecuta los "¿Qué imprime?", compara cada ejercicio con un commit, ayuda con la pregunta 14 y compara los conceptos. | `npx tsx scripts/check/exercises.ts <tema>[=<origen>] ... [--ref <commit>]` |
+
+  Más `shared.ts`, con la raíz del repositorio y el aviso de errores de compilación. Cada script explica su uso en su comentario inicial.
+- **Cambios frente a los del scratchpad.**
+  - Sin rutas absolutas: la raíz se calcula desde el propio archivo y las copias van a la carpeta temporal del sistema (`os.tmpdir()`), que se borra al terminar.
+  - `exercises.ts` compara con un commit extraído con `git archive` (antes, una copia de `content/` hecha a mano). Compara ejercicio por ejercicio y campo por campo, porque desde la sección 7 de `content-map.md` `q` y las opciones sí pueden cambiar: dice qué campos cambian y cuáles se quitan o son nuevos, y marca PROBLEMA si cambian `answer`, `code`, `prompt` o el número de opciones, o si aparece un ejercicio nuevo. En un tema partido, `<tema>=<origen>` lo compara con el tema antiguo, y la mitad sin ejercicios lista como "quitados" los que fueron a la otra mitad.
+  - `exercises.ts` añade una ayuda para la pregunta 14 que no estaba en el scratchpad. Por ejercicio, lista los nombres del enunciado y de las opciones (lo que va entre comillas invertidas y sus identificadores, las opciones cortas y las categorías) y en qué secciones del tema aparecen en prosa, sin contar los bloques de código ni `interview`. Si no aparecen, dice "NO PRESENTADO". Si la frase explica de verdad qué es cada nombre lo sigue decidiendo quien revisa.
+  - `project-entry.ts` sirve para cualquier entrada (sin argumentos, todas) y termina con error si algo no se cumple. Además se corrigió una condición del original que daba por buena cualquier conexión de relación sin mirar a qué tema iba.
+  - `python-blocks.py` usa el mismo intérprete que lo lanza, aplica 25 líneas en `walkthrough`, no ejecuta los bloques que importan de `starlette` y separa el frontmatter sin confundirlo con un `---` del cuerpo.
+- **Sin dependencias nuevas** ni cambios en `package.json`: se lanzan con `tsx`, que ya era dependencia, y con `python3`. Los `.ts` quedan dentro de `tsconfig.node.json`, que incluye `scripts/`, así que `typecheck` y `lint` los revisan. `npm test` no los ejecuta: no se llaman `*.test.ts`.
+- **Verificación.**
+  - Sobre `decoradores`, `python-blocks.py` da la misma salida que `check-python.py` (`diff` vacío, salvo la línea nueva con la versión de Python, 3.14.7).
+  - `content.ts`: 43 temas, 158 nodos, 236 enlaces. `content-es.ts decoradores`: lo mismo, con `decoradores` como inglés provisional.
+  - `project-entry.ts`: `proyecto-crear-pedido` cumple. Hoy reúne 8 temas, 5 de Python y 3 de REST; la 4.14 lo cambia.
+  - `exercises.ts` sobre las siete piezas frente a `HEAD`: todo igual, los tres "¿Qué imprime?" coinciden y los conceptos son los mismos. Frente a `f437d2f` (antes del piloto), con `funciones-y-parametros=funciones-y-closures` y `closures-y-lambdas=funciones-y-closures`, reproduce lo anotado en la 4.8: ejercicios iguales salvo `why`, conceptos iguales, y los cuatro cambios de hogar.
+  - Sobre `decoradores`, la ayuda de la pregunta 14 ya señala `@cache`, `cache` y `precio` como "NO PRESENTADO".
+  - `python-blocks.py` sobre el contenido completo, 86 archivos: 0 problemas en las siete piezas del piloto y 80 en los temas que aún no se han reescrito. Es lo esperado: los grupos 5 a 13 los reescriben.
+  - `typecheck` en verde; `test`, 327 pruebas en 16 archivos; `lint`, 0 errores y los mismos 14 avisos.
+- **Cómo deshacerlo.** Borrar `scripts/check/`.
+
+### 4.11 `codigos-de-estado`: ejercicios y ampliación
+
+- **Ejercicios.** Quitados el 8 y el 9, en los dos idiomas (`content-map.md` sección 7). Quedan siete, iguales a los de `HEAD` campo por campo, incluido `why` (`exercises.ts`).
+- **202 y 409, en prosa.** No caben en un momento ni en un malentendido nuevos, porque los dos están en su máximo (4). Van como una frase más en dos malentendidos que ya existían, y los malentendidos siguen siendo cuatro:
+  - 202, al final del de "Si salió bien, siempre 200", que ya distinguía 201 y 204: la petición se aceptó pero se procesará después, como un reporte pesado que se deja en cola; dice que aún no está terminada, y la respuesta debería indicar dónde consultar cómo va.
+  - 409, al final del de "400 y 422 son lo mismo", que ya distinguía los dos errores de datos: los datos cumplen las reglas pero chocan con lo que ya está guardado, como un email que ya usa otro cliente; el cliente puede resolver el conflicto y volver a enviar la petición.
+- **Ampliación que la tarea no nombra.** Al repasar los siete ejercicios con la pregunta 14 (lo pide la propia 4.11), el 6 ("La petición llega sin header Authorization…") nombra una cabecera que solo aparecía dentro de los bloques de código. Se hizo como en `inyeccion-con-depends` (el ejemplo de la guía): una frase la presenta. Es la del momento 2: la petición no lleva la cabecera `Authorization`, que es donde viaja el token que identifica al cliente, y sin ella el servidor responde 401. Por coherencia, el momento 1 gana también su frase: Ana crea un pedido con `POST /v1/pedidos`, la respuesta es 201 Created y `Location` dice dónde quedó. Esa ruta la nombra el ejercicio 5. Así los cuatro momentos llevan la frase que pide la tabla de la guía; antes la llevaban solo el 3 y el 4. El enunciado del 6 no se tocó.
+- **El ejemplo del email, para que Fable lo revise.** Ni la RFC 9110 ni MDN ponen como ejemplo de 409 un email repetido: la RFC define el 409 como un conflicto "with the current state of the target resource", que el usuario puede resolver para volver a enviar la petición, y MDN pone ejemplos de WebDAV y de tareas simultáneas. La frase aplica esa definición al caso del ejercicio 3, cuya respuesta, 409, fija `content-map.md` sección 7, como ya lo hacía la respuesta de entrevista.
+- **Prueba adaptada** (design.md decisión 14). En `scripts/content/pista-python.test.ts`, "ejercicios trasladados" exigía que los dos últimos ejercicios fueran los dos que se quitan. Ahora comprueba el escenario "Ejercicios trasladados": siete ejercicios en los dos idiomas, y en español el caso del pedido de otro cliente y el del email, una vez cada uno. Con los nueve de antes, la cuenta de siete falla. La parte de `metodos-seguros-idempotentes` no cambia.
+- **Verificación.** `content.ts`: 43 temas, 158 nodos, 236 enlaces. `pista-python.test.ts`: 37 pruebas en verde. Pregunta 14 de los siete ejercicios: en la 4.15, con el registro por ejercicio.
+- **Fuentes (consultadas el 2026-11-16).**
+  - RFC 9110 (https://www.rfc-editor.org/rfc/rfc9110.txt, la copia descargada en el grupo 4): 15.3.3 (202: "accepted for processing, but the processing has not been completed"; la respuesta "ought to describe the request's current status and point to (or embed) a status monitor"), 15.5.10 (409) y 11.6.2 (`Authorization` lleva las credenciales con las que el cliente se autentica).
+  - MDN, 202 (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/202): "processing has not been completed or may not have started"; su ejemplo devuelve una URL para seguir el estado de la tarea. MDN, 409 (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409): "a request conflict with the current state of the target resource".
+  - RFC 6750, 2.1 (https://www.rfc-editor.org/rfc/rfc6750.html): el token de acceso se envía en la cabecera `Authorization` con el esquema `Bearer`.
+- **Cómo deshacerlo.** Restaurar los dos archivos del tema y la prueba desde Git.
+
+### 4.12 `decoradores`: el ejercicio de `@cache`
+
+- **Qué.** En los dos idiomas, `cache` pasa a `registrar`, como propone `content-map.md` sección 7, y además `precio` pasa a `calcular_total`. Los dos son nombres del paso 5, presentados en su frase ("el decorador `registrar` de `app/core/registro.py`…" y "`calcular_total` no sabe que existe"). `precio` tampoco se presentaba en ninguna parte del tema, y la sección 7 permite cambiar en `q` un nombre que el tema no presenta por uno que sí; las opciones solo cambian esos dos nombres. Enunciado: "¿A qué equivale `@registrar` encima de `def calcular_total`?". Sin paréntesis, porque `calcular_total` recibe `lineas`; la regla 2 de la guía escribe igual "`@avisar` encima de `def saludar`". El `why` cambia los mismos dos nombres. `answer` sigue en 1 (la segunda opción, `calcular_total = registrar(calcular_total)`); `code` y `prompt` no cambian.
+- **Comprobación.** `exercises.ts decoradores`: cambian `text` y `options`, sin PROBLEMA. `answer`, `code`, `prompt` y el número de opciones se conservan. Ejecutado con `python3` 3.14.7 en el scratchpad (`registrar_eq.py`, con un `registrar` mínimo): `@registrar` sobre `def calcular_total` y `calcular_total = registrar(calcular_total)` dejan en el nombre la misma envoltura. `content.ts` en verde.
+- **Cómo deshacerlo.** Restaurar el ejercicio desde Git.
+
+### 4.13 `inyeccion-con-depends`: `get_session` y `SessionDep` en prosa
+
+- **Qué, en los dos idiomas.**
+  - Paso 2: la primera frase presenta `get_session` ("es la dependencia que abre una sesión de base de datos y se la entrega al endpoint"). Las dos frases que había se juntan en una, para que el paso siga con dos (regla 1).
+  - Paso 3: una frase nueva presenta `SessionDep` ("una `Session` que FastAPI saca de `get_session` en cada petición"). Así queda presentado también `Session`, que nombra el ejercicio 2.
+  - Ejercicio 1: el enunciado recuerda qué es cada nombre, como permite `content-map.md` sección 7: "piden `SessionDep`, la sesión que entrega `get_session`".
+- **Ampliaciones que la tarea no nombra** (sección 7: lo que no cumpla la regla "se corrige igual"):
+  - El ejercicio 1 da por hecho que una dependencia puede pedir otra ("Dos dependencias del mismo endpoint piden…"). El tema no lo decía en prosa. El malentendido 2 lo dice ahora entre paréntesis: "una dependencia también puede pedir otras, igual que un endpoint".
+  - El ejercicio 2 tiene la opción "Falta async", y el tema no nombraba `async`. El malentendido 3 dice ahora que la dependencia es una función normal "con `def` o con `async def`" y enlaza `[[async-await]]`. Es una conexión más en el cerebro: 237 enlaces, antes 236.
+  - Los malentendidos siguen siendo tres.
+- **Verificación.** `exercises.ts inyeccion-con-depends`: solo cambia el enunciado del 1; `answer`, `code`, `prompt`, opciones y `why` quedan iguales. Los nombres `SessionDep`, `get_session`, `Session` y `Depends` aparecen en prosa en los dos idiomas. `content.ts` en verde. Pregunta 14 de los dos ejercicios: en la 4.15, con el registro por ejercicio.
+- **Fuentes (consultadas el 2026-11-16).** FastAPI, "Sub-dependencies" (https://fastapi.tiangolo.com/tutorial/dependencies/sub-dependencies/): "You can create dependencies that have sub-dependencies"; si varias dependencias tienen una subdependencia común, FastAPI la llama "only once per request". FastAPI, "Dependencies" (https://fastapi.tiangolo.com/tutorial/dependencies/): "You can use `async def` or normal `def`" para las dependencias; alias con `Annotated` (`CommonsDep`). Lo que se ejecuta tras el `yield` ya estaba confirmado en la 4.5.
+- **Ajuste de la herramienta.** En `exercises.ts`, una opción sin comillas invertidas cuenta como nombre solo si es una sola palabra con cifras, mayúsculas o signos de código ("401", "GET"). Antes salían como nombres palabras corrientes como "Una" o "Nada". Un nombre dentro de una frase sin comillas ("header Authorization", "Falta async") sigue sin detectarse: esa parte se revisa a mano.
+- **Cómo deshacerlo.** Restaurar las frases y el enunciado desde Git.
+
+### 4.14 `proyecto-crear-pedido`: siete temas reunidos
+
+- **Qué.** `errores-problem-details` sale de `covers` en `meta.yaml`. El texto no cambia: la nota de la parte 3 sigue enlazando `[[errores-problem-details]]` en los dos idiomas, como el formato estándar de los errores. Esa mención mantiene en el cerebro la conexión entre la entrada y el tema, como "mención" en lugar de "relación". Por eso el total de enlaces no cambia (237).
+- **Pruebas adaptadas** (design.md decisión 14).
+  - `scripts/content/contenido-claro.test.ts`: los temas reunidos de prueba son cinco de Python y dos de REST. `errores-problem-details` sigue entre los temas de prueba, porque la prueba de "Más conexiones entre pistas" lo reúne en `proyecto-api-completa`. Los nombres de dos pruebas pasan de "ocho" a "siete" y de "tres de HTTP y REST" a "dos". "Entrada de proyecto válida" comprueba además que los temas reunidos son 7. Dos pruebas tenían fijo el número de partes del recorrido de prueba (el bloque 9; 8 y 9 bloques) y ahora lo calculan desde la lista de temas.
+  - `src/test/contenido-claro.test.tsx`: la lista de temas de la entrada pierde `errores-problem-details`, y la prueba de "Abrir una entrada de proyecto" dice "siete".
+- **Verificación.**
+  - `project-entry.ts`: en los dos idiomas, 7 temas en el orden declarado, 5 de Python y 2 de REST, con una relación cada uno. El anterior sigue siendo `endpoints-async-vs-sync` y el siguiente, `base-de-datos`.
+  - `npm test`: 327 pruebas en 16 archivos. Los escenarios "Entrada de proyecto válida", "Vecinos de una entrada de proyecto" y "Abrir una entrada de proyecto" quedan probados con siete temas.
+  - En el navegador (servidor de desarrollo del puerto 5173, `/es/python/proyecto-crear-pedido`): sin pestañas; "Temas que reúne este proyecto" lista siete enlaces, los dos últimos de `/es/rest/`; la nota de la parte 3 conserva el enlace a `errores-problem-details`; sin errores en la consola. Captura fuera del repositorio: `/Users/yotfil/.claude/projects/-Users-yotfil-Documents-Yotfil-TechForge-Learning-ai-engineer-ai-engineer-path/1bfa5dfd-184e-4dd3-a661-f49c25ead249/tool-results/mcp-Claude_Browser-blob-1794887248798-v659du.jpg`.
+- **Observación.** Al abrir la vista previa, la herramienta arrancó un segundo servidor en el puerto 5174 en lugar de usar el abierto. Se paró enseguida, sin compilar a mano, y la comprobación se hizo en el del 5173.
+- **Cómo deshacerlo.** Volver a añadir el tema a `covers` y restaurar las dos pruebas desde Git.
+
+### 4.15 Verificación de las correcciones
+
+**Pregunta 14, ejercicio por ejercicio** (design.md decisión 11). Para cada uno: dónde explica el tema en prosa lo que pregunta y dónde presenta los nombres de su enunciado y sus opciones, y qué se cambió. Vale para los dos idiomas: `exercises.ts` encuentra los mismos nombres en las mismas secciones en español y en inglés. `closures-y-lambdas`, `cache-http` y `proyecto-crear-pedido` no tienen ejercicios.
+
+- `funciones-y-parametros`
+  1. "¿Qué imprime?" (lista como valor por defecto, `[1, 2]`): `problem`, paso 2, nota de `bad` y malentendido 1. Las opciones son salidas. Sin cambios.
+  2. "¿Qué imprime?" (`*a` y `**k`, `(1, 2) {'x': 3}`): `definition` (segundo párrafo), títulos de los pasos 3 y 4, y malentendidos 2 (es una tupla) y 3 (el nombre es una costumbre). Sin cambios.
+- `codigos-de-estado`
+  1. Token válido, pedido de otro cliente (403): momento 3 (título y frase: 403, o 404 para ocultarlo) y malentendido 1. Opciones: 401 (momento 2, malentendido 1), 404 (momento 3, `good`), 400 (malentendido 2). Sin cambios.
+  2. JSON válido con cantidad -3 (422): momento 4 y malentendido 2. Opciones: 409 (malentendido 2, desde la 4.11), 500 (malentendido 4). Sin cambios en el ejercicio.
+  3. Email que ya existe (409): malentendido 2, frase nueva de la 4.11. Se amplió el tema.
+  4. El balanceador no recibe respuesta en 60 s (504): malentendido 4. **Se cambió en esta tarea.** El malentendido nombraba juntos el 502 y el 504 ("cuando tu aplicación le responde algo inválido o no le responde a tiempo") sin decir cuál era cuál, y el ejercicio pregunta justo esa diferencia. Ahora la misma frase dice "el 502 cuando tu aplicación le responde algo inválido, y el 504 cuando no le responde a tiempo", en los dos idiomas (RFC 9110, 15.6.3 y 15.6.5). "Balanceador" ya estaba explicado ahí.
+  5. `POST /v1/pedidos` creó el pedido (201): momento 1 (frase nueva de la 4.11, que nombra la ruta) y malentendido 3. Opciones: 200 (`problem`), 202 y 204 (malentendido 3).
+  6. Sin cabecera `Authorization` (401): momento 2 (frase nueva de la 4.11, que presenta la cabecera) y malentendido 1. Se amplió el tema.
+  7. Reporte pesado en cola (202): malentendido 3, frase nueva de la 4.11. Se amplió el tema.
+- `decoradores`
+  1. "¿En qué orden se imprime?" (`A B hola C`): malentendido 1 (el decorador se ejecuta una sola vez, cuando Python lee el `def`, y en cada llamada se ejecuta la envoltura) y paso 2 (la envoltura llama por dentro a la original). Las opciones son salidas. Sin cambios.
+  2. "¿A qué equivale `@registrar` encima de `def calcular_total`?": paso 3 (la arroba es un atajo de esa asignación) y frase del paso 5 (presenta `registrar` y `calcular_total`). Se reescribió el enunciado (4.12).
+- `inyeccion-con-depends`
+  1. Cuántas veces corre `get_session` si dos dependencias piden `SessionDep` (una): malentendido 2 (una vez por petición, y una dependencia también puede pedir otras), con `get_session` presentado en el paso 2 y `SessionDep` en el paso 3. Se amplió el tema y el enunciado recuerda qué es cada nombre (4.13).
+  2. Qué está mal en `Depends(get_session())`: malentendido 1. Nombres: `Session` (paso 3), `Depends` (`definition`) y `get_session` (paso 2). Opciones: "Falta async" (malentendido 3, desde la 4.13) y "Depends solo acepta clases" (malentendido 3 y `bridge:typescript`: la dependencia es una función). Se amplió el tema (4.13).
+
+**Lista de comprobación de lo añadido.** Cada frase nueva está confirmada en su fuente (preguntas 12 y 14; fuentes en 4.11, 4.13 y aquí). Ningún bloque cambió: `python-blocks.py` sobre las siete piezas, en los dos idiomas, da "TODO OK". Las extensiones de la guía se mantienen: cuatro momentos y cuatro malentendidos en `codigos-de-estado`, tres malentendidos en `inyeccion-con-depends`, y dos frases en el paso 2.
+
+**"Detalles ya fijados por el contenido publicado"** (`proyecto-tienda.md`). Las siete piezas coinciden con las siete filas: `calcular_total` y `registrar` en `app/pedidos/service.py`; `crear_descuento(porcentaje: int)` con `//`; `GET /v1/productos` en `app/productos/router.py` con `pagina: int = 1`, `tamano: int = 20` y `repository.listar(pagina, tamano)`; `router = APIRouter()` sin prefijo y la ruta completa en cada decorador; `ClienteActual` responde 401 y `get_cliente_actual` vive en `app/core/security.py`; `creado_en` lo pone el modelo y `PedidoPublico` lleva `id`, `estado` y `creado_en`; los errores salen con `HTTPException` y `{"detail": …}`, y Problem Details solo se enlaza. **Ninguna diferencia: no hay preguntas para Fable.** Dos observaciones, sin cambios:
+- El paso 5 de `decoradores` dice cuándo se ejecuta `calcular_total` ("cada vez que la tienda calcula el total de un pedido"), que la regla 6 admite, pero no nombra `POST /v1/pagos`, que es quien la llama según la tabla. No la contradice. Si se quiere nombrar, es una frase.
+- En `inyeccion-con-depends`, los pasos 1 a 3, `bad` y `good` son ejemplos aislados con `app = FastAPI()` y `@app.get("/v1/productos")`, no el archivo de la tienda. Los valores de paginación del paso 1 coinciden con la tabla, y el paso de proyecto, el 5, usa `@router.get`.
+
+**Comprobaciones del proyecto.** `typecheck`, en verde después de un arreglo: la prueba adaptada en la 4.11 contaba los ejercicios con `flatMap` sobre una unión de tipos, que `tsc` rechaza, y ahora suma sus longitudes. `test`, 327 pruebas en 16 archivos; `lint`, 0 errores y los mismos 14 avisos; `build` en verde (`[content] 43 temas, 158 nodos, 237 enlaces → 89 archivos`). Después del build, el servidor de desarrollo del 5173 siguió mostrando los temas, y Practicar de `codigos-de-estado` lista siete ejercicios, sin los dos quitados. `exercises.ts` sobre las siete piezas: "TODO OK".

@@ -13,7 +13,7 @@ exercises:
   - type: choice
     prompt: Pregunta rápida
     items:
-      - q: Dos dependencias del mismo endpoint piden `SessionDep`. ¿Cuántas veces corre `get_session` en esa petición?
+      - q: Dos dependencias del mismo endpoint piden `SessionDep`, la sesión que entrega `get_session`. ¿Cuántas veces corre `get_session` en esa petición?
         options:
           - Una
           - Dos
@@ -70,7 +70,7 @@ def listar_productos(pag: dict = Depends(paginacion)):   # sin paréntesis: le d
 
 ### Paso 2. Una dependencia que abre algo y lo cierra al final
 
-Con `yield` en lugar de `return` ([[yield]]), la función se queda en pausa mientras el endpoint trabaja y continúa después, cuando la respuesta ya se envió. Así el `with` ([[context-manager]]) cierra la sesión de base de datos ([[session-orm]]) sin que el endpoint se entere.
+`get_session` es la dependencia que abre una sesión de base de datos ([[session-orm]]) y se la entrega al endpoint. Usa `yield` en lugar de `return` ([[yield]]): la función se queda en pausa mientras el endpoint trabaja y continúa cuando la respuesta ya se envió, y entonces el `with` ([[context-manager]]) cierra la sesión sin que el endpoint se entere.
 
 ```python
 from sqlmodel import Session, select
@@ -87,7 +87,7 @@ def listar_productos(session: Session = Depends(get_session)):
 
 ### Paso 3. Un nombre corto para no repetir `Depends(...)`
 
-`Annotated` junta el tipo y la dependencia en un solo nombre que puedes reutilizar.
+`Annotated` junta el tipo y la dependencia en un solo nombre que puedes reutilizar. Aquí ese nombre es `SessionDep`: una `Session` que FastAPI saca de `get_session` en cada petición.
 
 ```python
 from typing import Annotated
@@ -170,5 +170,5 @@ En el frontend ya inyectas dependencias cuando le pasas a una función lo que ne
 ## myths
 
 - **"`Depends(get_session())` y `Depends(get_session)` son lo mismo."** Con paréntesis llamas tú a la función, una sola vez, al cargar el archivo, y `Depends` recibe lo que devolvió. FastAPI necesita la función sin llamar, para llamarla él en cada petición.
-- **"La dependencia se crea una vez y se comparte."** Se ejecuta de nuevo en cada petición: cada petición recibe su propia sesión. Solo dentro de una misma petición, si dos piezas piden la misma dependencia, FastAPI la ejecuta una vez y les da el mismo resultado.
-- **"Es magia del framework."** Es una función normal que FastAPI llama antes que la tuya. Puedes ponerle un `print` y verás que se ejecuta primero.
+- **"La dependencia se crea una vez y se comparte."** Se ejecuta de nuevo en cada petición: cada petición recibe su propia sesión. Solo dentro de una misma petición, si dos piezas piden la misma dependencia (una dependencia también puede pedir otras, igual que un endpoint), FastAPI la ejecuta una vez y les da el mismo resultado.
+- **"Es magia del framework."** Es una función normal, con `def` o con `async def` ([[async-await]]), que FastAPI llama antes que la tuya. Puedes ponerle un `print` y verás que se ejecuta primero.
