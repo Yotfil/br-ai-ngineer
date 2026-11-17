@@ -61,10 +61,13 @@ const problem = (message: string) => {
 /** 1. Ejecuta el código de un "¿Qué imprime?" y lo compara con la opción marcada. */
 function checkPrints(it: Item, label: string) {
   if (!it.code || !it.options || typeof it.answer !== 'number') return
-  const real = execFileSync('python3', ['-I', '-c', it.code], { encoding: 'utf8' }).trim().split('\n').join(' ')
+  const lines = execFileSync('python3', ['-I', '-c', it.code], { encoding: 'utf8' }).trim().split('\n')
+  const real = lines.join(' ')
   const marked = stripTicks(it.options[it.answer] ?? '')
-  console.log(`   ${label} ¿Qué imprime?: real "${real}" | marcada "${marked}" | ${real === marked ? 'COINCIDE' : 'DISTINTA'}`)
-  if (real !== marked) problem(`la opción marcada no es lo que imprime el código (${label})`)
+  // Una opción puede unir las líneas impresas con "y" o "and": "[0, 2, 4] y []".
+  const same = [' ', ' y ', ' and '].some((sep) => lines.join(sep) === marked)
+  console.log(`   ${label} ¿Qué imprime?: real "${real}" | marcada "${marked}" | ${same ? 'COINCIDE' : 'DISTINTA'}`)
+  if (!same) problem(`la opción marcada no es lo que imprime el código (${label})`)
 }
 
 /** 2. Empareja cada ejercicio con el más parecido de la versión anterior y dice qué cambió. */

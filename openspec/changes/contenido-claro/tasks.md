@@ -60,16 +60,16 @@ Las tareas 4.10 a 4.16 las añadió Fable 5.2 el 2026-11-14, con las decisiones 
 - [x] 4.13 [opus] Ampliar `inyeccion-con-depends` según `content-map.md` sección 7, en los dos idiomas: una frase del paso 2 presenta `get_session` y una del paso 3 presenta `SessionDep`; verificar la pregunta 14 de la lista para sus dos ejercicios
 - [x] 4.14 [opus] Quitar `errores-problem-details` de los `covers` de `proyecto-crear-pedido` (`content-map.md` sección 3), conservando el enlace `[[errores-problem-details]]` del texto, y adaptar las pruebas que cuenten sus temas reunidos; verificar los escenarios "Entrada de proyecto válida" de specs/content-model, "Abrir una entrada de proyecto" de specs/app-shell y "Vecinos de una entrada de proyecto" de specs/concept-graph, que ahora dicen siete temas, dos de ellos de HTTP y REST
 - [x] 4.15 [opus] Verificación de las correcciones: repasar con la pregunta 14 los ejercicios de `funciones-y-parametros` y los de las tres piezas corregidas, y dejar en `decisiones.md` el registro por ejercicio; comprobar que las siete piezas del piloto coinciden con la sección "Detalles ya fijados por el contenido publicado" de `proyecto-tienda.md` y anotar cualquier diferencia como pregunta para Fable 5.2, sin corregirla; ejecutar `npm run typecheck`, `npm test`, `npm run lint` y `npm run build` y anotar el resultado
-- [ ] 4.16 [opus] Segunda parada del piloto (design.md decisión 12): pedir al usuario que publique la rama y relea la pestaña Practicar de `codigos-de-estado`, `decoradores` e `inyeccion-con-depends`; hacerle la pregunta de la segunda parada y registrar su respuesta en `decisiones.md`; verificar que es "sí". Si no lo es, anotar el detalle, dejarlo en el relevo como pregunta para Fable 5.2 y no empezar el grupo 5
+- [x] 4.16 [opus] Segunda parada del piloto (design.md decisión 12): pedir al usuario que publique la rama y relea la pestaña Practicar de `codigos-de-estado`, `decoradores` e `inyeccion-con-depends`; hacerle la pregunta de la segunda parada y registrar su respuesta en `decisiones.md`; verificar que es "sí". Si no lo es, anotar el detalle, dejarlo en el relevo como pregunta para Fable 5.2 y no empezar el grupo 5
 
 ## 5. Python: datos, comprehensions y primer proyecto
 
-- [ ] 5.1 [opus] Reescribir `tipado-y-type-hints`
-- [ ] 5.2 [opus] Reescribir `estructuras-de-datos`
-- [ ] 5.3 [opus] Partir `comprehensions-y-generadores` en `comprehensions` y `generadores` (como 4.2) y reescribir ambos
-- [ ] 5.4 [opus] Escribir la entrada `proyecto-total-del-pedido` en español (como 4.6); al ser Python puro, ejecutar su código completo y pegar la salida real; `calcular_total`, `crear_descuento` y `registrar` son los de "Detalles ya fijados por el contenido publicado" de `proyecto-tienda.md`
-- [ ] 5.5 [sonnet: como 4.1] Traducir las cinco piezas del grupo; un subagente por pieza, en paralelo
-- [ ] 5.6 [opus] Verificación del grupo, como 4.8
+- [x] 5.1 [opus] Reescribir `tipado-y-type-hints`
+- [x] 5.2 [opus] Reescribir `estructuras-de-datos`
+- [x] 5.3 [opus] Partir `comprehensions-y-generadores` en `comprehensions` y `generadores` (como 4.2) y reescribir ambos
+- [x] 5.4 [opus] Escribir la entrada `proyecto-total-del-pedido` en español (como 4.6); al ser Python puro, ejecutar su código completo y pegar la salida real; `calcular_total`, `crear_descuento` y `registrar` son los de "Versión final de `calcular_total` y de `registrar`" de `proyecto-tienda.md`, con la regla del descuento de "Reglas de negocio" (resuelto por Fable 5.2 con el usuario el 2026-11-17). La entrada dice en una frase que es el último paso de la función que muestran `estructuras-de-datos`, `comprehensions`, `generadores` y `decoradores`, que no se cambian; presenta `logging` en una frase confirmada en la documentación oficial; y sus ejemplos son un pedido de café y taza (63000, sin descuento) y uno de molinillo y café (142200). Cómo crear las líneas para ejecutar (el modelo real o una clase con los mismos cuatro campos de `LineaPedido`) es decisión no crítica de Opus, anotada en `decisiones.md`
+- [x] 5.5 [sonnet: como 4.1] Traducir las cinco piezas del grupo; un subagente por pieza, en paralelo
+- [x] 5.6 [opus] Verificación del grupo, como 4.8
 
 ## 6. Python: errores, módulos y entornos
 

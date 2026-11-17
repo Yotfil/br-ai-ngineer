@@ -506,3 +506,195 @@ Sesión de specs tras la parada del piloto. Cada punto lo eligió el usuario ent
 - En `inyeccion-con-depends`, los pasos 1 a 3, `bad` y `good` son ejemplos aislados con `app = FastAPI()` y `@app.get("/v1/productos")`, no el archivo de la tienda. Los valores de paginación del paso 1 coinciden con la tabla, y el paso de proyecto, el 5, usa `@router.get`.
 
 **Comprobaciones del proyecto.** `typecheck`, en verde después de un arreglo: la prueba adaptada en la 4.11 contaba los ejercicios con `flatMap` sobre una unión de tipos, que `tsc` rechaza, y ahora suma sus longitudes. `test`, 327 pruebas en 16 archivos; `lint`, 0 errores y los mismos 14 avisos; `build` en verde (`[content] 43 temas, 158 nodos, 237 enlaces → 89 archivos`). Después del build, el servidor de desarrollo del 5173 siguió mostrando los temas, y Practicar de `codigos-de-estado` lista siete ejercicios, sin los dos quitados. `exercises.ts` sobre las siete piezas: "TODO OK".
+
+### 4.16 Segunda parada del piloto
+
+Rama publicada el 2026-11-16 a petición del usuario: commit `52244bd` ("fix: correcciones del piloto (ejercicios y scripts de verificación)"), subido a `origin/feature/contenido-claro`. Incluye los cambios de Fable en `openspec/` que estaban sin commit. El usuario releyó en la vista previa, en español, la pestaña Practicar de `codigos-de-estado`, `decoradores` e `inyeccion-con-depends` (design.md decisión 12).
+
+- **Pregunta.** ¿Entendiste todas las preguntas de Practicar sin que nombraran nada que el tema no hubiera explicado antes? Esperado: sí.
+- **Respuesta.** Palabras del usuario: "todo está bien". **Coincide.**
+
+**Resultado.** Según design.md decisión 12 y la tarea 4.16, el grupo 4 queda cerrado y el grupo 5 empieza con Opus en una sesión nueva.
+
+## Grupo 5. Python: datos, comprehensions y primer proyecto
+
+**Comprobaciones antes de tocar nada** (2026-11-17): rama `feature/contenido-claro` y árbol como dice el relevo (tres archivos de `openspec/` sin commit sobre `52244bd`); `typecheck` en verde; `test`, 327 pruebas en 16 archivos; `lint`, 0 errores y 14 avisos; `build` en verde; `content.ts`: 43 temas, 158 nodos, 237 enlaces. No había ningún servidor escuchando en el puerto 5173.
+
+### 5.1 `python-blocks.py`: un paso que termina en error no rompe los siguientes
+
+- **Qué.** En `code:example`, un bloque que termina en error se acumula envuelto en `try`/`except`, como lo deja una sesión interactiva: lo asignado antes del error sigue disponible para los pasos siguientes. Su salida se sigue comparando sin envolver. Antes, el error se repetía en cada ejecución acumulada y los pasos siguientes salían sin salida, como "DISTINTA".
+- **Por qué.** El paso 2 de `tipado-y-type-hints` muestra el `TypeError` de `"2" + 1` y el bloque siguiente usa la misma variable. Es la primera vez que un error aparece antes del último bloque de un ejemplo.
+- **Comprobación.** `decoradores` en los dos idiomas sigue en "TODO OK".
+- **Cómo deshacerlo.** Volver a `acc += b + "\n"` en `check` y quitar `run_status` y `as_session`.
+
+### 5.1 `tipado-y-type-hints`: cómo se reescribió
+
+- **Forma.** Modelo 1 (concepto del lenguaje por capas). Pasos: 1. el tipo es del valor (`type()`); 2. Python no mezcla tipos (`TypeError`, `int()`, tipado fuerte); 3. la anotación (`: int`, `-> int`, `list[int]`); 4. Python no la comprueba; 5. queda guardada (`get_type_hints()`), y la leen mypy, pyright y FastAPI; 6. de proyecto.
+- **Paso de proyecto.** `GET /v1/productos/{id}` en `app/productos/router.py`, con los mismos nombres que el bloque del servidor de `cache-http` (`obtener_producto`, `repository.buscar`) y `router = APIRouter()` sin prefijo, como fija `proyecto-tienda.md`. FastAPI convierte el `7` de la URL y responde 422 a `abc`.
+- **`bad` y `good`.** Un precio leído como texto pasa por `total_linea(cantidad: int, precio: int)` y da `"3800038000"`; `good` lo convierte con `int()` al llegar. Antes, `bad` y `good` tenían `...` en lugar del cuerpo (regla 3).
+- **Ejercicios.** Solo cambia `why`. Para la pregunta 14, el tema explica en prosa lo que preguntan: que la anotación no se comprueba y que `*` repite un texto (paso 4) para el primero; `bool()`, los valores falsos y por qué `"0"` y `[0]` son verdaderos (malentendido 3) para el segundo. Era materia del tema: el contenido antiguo lo tenía como malentendido.
+- **Errores del contenido antiguo, corregidos.**
+  - El puente decía que en TypeScript "el compilador bloquea el build si no cuadran". El manual de TypeScript dice lo contrario: por defecto `tsc` genera el JavaScript aunque haya errores, salvo con `noEmitOnError`. El puente nuevo dice solo que TypeScript revisa los tipos al compilar y los borra.
+  - El puente nombraba Zod y class-validator: no se confirmó y se quitó, como en la 4.5.
+  - `func.__annotations__` pasa a `get_type_hints()`: la guía de anotaciones de Python dice que no se acceda a `__annotations__` directamente, y el glosario da `typing.get_type_hints()` para leer los type hints de una función.
+- **Quitado por no estar explicado en el tema.** Lo de tipado estructural y nominal (`typing.Protocol`) del puente, y el malentendido "solo existe `None`" (quedan tres).
+- **Cómo deshacerlo.** Es redacción: se reescribe el tema.
+
+### 5.1 Fuentes de `tipado-y-type-hints` (consultadas el 2026-11-17)
+
+- Ejecutado con `python3` 3.14.7: los seis bloques ejecutables, `bad`, `good`, los ejemplos de los malentendidos (`int("1") + 1`, `"1" + str(1)`, los seis `bool()`) y los dos ejercicios.
+- Python, glosario (https://docs.python.org/3/glossary.html): un type hint es "An annotation that specifies the expected type"; "Type hints are optional and are not enforced by Python but they are useful to static type checkers. They can also aid IDEs with code completion"; se leen con `typing.get_type_hints()`.
+- Python, `typing` (https://docs.python.org/3/library/typing.html): "The Python runtime does not enforce function and variable type annotations"; ejemplo `x: list[int] = []`.
+- Python, "Annotations Best Practices" (https://docs.python.org/3/howto/annotations.html): "You should avoid accessing `__annotations__` directly on any object".
+- Python, "Truth Value Testing" (https://docs.python.org/3/library/stdtypes.html): son falsos `None`, `False`, el cero de cualquier tipo numérico y las secuencias y colecciones vacías (`''`, `[]`…); `s * n` es "equivalent to adding s to itself n times".
+- Python Wiki, archivo, "Why is Python a dynamic language and also a strongly typed language" (https://wiki.python.org/python/archive/Why%20is%20Python%20a%20dynamic%20language%20and%20also%20a%20strongly%20typed%20language.html): en un lenguaje fuertemente tipado "you can't do 'Hello' + 5 + 'Goodbye'"; en uno dinámico "the value has a type ... but the variable itself doesn't". Es una wiki de la comunidad en python.org; la documentación oficial no define "fuerte".
+- mypy, "Getting started" (https://mypy.readthedocs.io/en/stable/getting_started.html): "it will check for errors without ever running your code"; "You can always use the Python interpreter to run your code, even if mypy reports errors"; mensaje `Argument 1 to "greeting" has incompatible type "int"; expected "str"`.
+- Pyright (https://github.com/microsoft/pyright): "a full-featured, standards-based static type checker for Python".
+- FastAPI, "Path Parameters" (https://fastapi.tiangolo.com/tutorial/path-params/): sin tipo, `/items/foo` da `{"item_id":"foo"}`; con `item_id: int`, la función recibe `3` "as a Python int, not a string"; con `foo`, error `int_parsing`. FastAPI, "Python Types Intro" (https://fastapi.tiangolo.com/python-types/): con las anotaciones FastAPI define requisitos, convierte, valida y documenta; `list[str]`. El 422 de un error de validación: `fastapi/exception_handlers.py`, fuente de la 4.4.
+- FastAPI, `fastapi/routing.py` (https://raw.githubusercontent.com/fastapi/fastapi/master/fastapi/routing.py): el `dependant` de la ruta se construye al crearla (`_build_dependant_with_parameterless_dependencies(path=..., call=route.endpoint, ...)`) y en cada petición se usa el ya guardado (`solve_dependencies(request=request, dependant=dependant, ...)`).
+- TypeScript, "The Basics" (https://www.typescriptlang.org/docs/handbook/2/basic-types.html): "Type annotations never change the runtime behavior of your program"; las anotaciones "were completely erased"; `tsc` genera el JavaScript con errores salvo con `noEmitOnError`.
+- MDN, "Falsy" (https://developer.mozilla.org/en-US/docs/Glossary/Falsy): la lista completa de valores falsos de JavaScript no incluye `[]`.
+
+### 5.2 `estructuras-de-datos`: cómo se reescribió
+
+- **Forma.** Modelo 2 (varios conceptos en un tema): un paso por estructura (1. lista; 2. tupla, con desempaquetar y el `TypeError` al cambiarla; 3. diccionario, con `KeyError` y `get()`; 4. set), 5. `in` en lista frente a set, con O(n) y O(1), y 6. de proyecto.
+- **Paso de proyecto, para que Fable lo revise.** `calcular_total(lineas: list[LineaPedido]) -> int` en `app/pedidos/service.py`, con un bucle `for`, llamada por `POST /v1/pagos`. Es el principio de un hilo entre cuatro temas: aquí, el bucle sobre la lista; en `comprehensions`, una lista de subtotales; en `generadores`, el cuerpo fijado en `proyecto-tienda.md` (`sum(... for linea in lineas)`); y en `decoradores`, ya publicado, `@registrar` encima. Los tres temas anteriores a `decoradores` muestran la función sin el decorador, que aún no se ha explicado (orden 7). La fila de "Detalles ya fijados" dice que la función "lleva el decorador `registrar`": no la contradice el nombre, la firma, el archivo ni quién la llama, pero sí la muestra antes de tener el decorador. Si se prefiere, se añade `@registrar` con un enlace a `[[decoradores]]`, o se usa otra función.
+- **`bad` y `good`.** La misma función `esta_registrado` con 100 000 ids en una lista y en un set. Medido en el scratchpad con `python3` 3.14.7: 10 000 llamadas con la lista tardan 3,8 s. Antes, `bad` tenía pseudocódigo (`[ ... 100_000 ids ... ]`), que no se puede ejecutar (regla 3).
+- **Ejercicios.** En el de clasificar, el segundo enunciado pasa de "por su código SKU" a "por su nombre": "SKU" no se presenta en el tema y el nombre sí es la clave del diccionario del paso 3 (`content-map.md` sección 7). La categoría sigue siendo `dict`. Los cinco `why` se reescriben. Para la pregunta 14: las cuatro estructuras, su orden, si cambian, la búsqueda por clave, el set sin repetidos y la búsqueda rápida están en la definición y en los pasos 1 a 5; `get()` con y sin segundo argumento y `KeyError`, en el paso 3; `len()`, en el paso 1; y un set entre llaves que pierde los repetidos, en el paso 4.
+- **Corregido o quitado del contenido antiguo.**
+  - El mensaje de una lista como clave no es `unhashable type: 'list'`: en Python 3.14.7 es `TypeError: cannot use 'list' as a dict key (unhashable type: 'list')` (ejecutado). El puente usa el real.
+  - "busca en O(1)": la tabla oficial de complejidad dice que los tiempos de `dict` y `set` son del caso promedio y que en el peor caso son O(n). El tema dice "O(1) en promedio".
+  - Se quitan "hashable", que el tema no explica, y que el diccionario conserva el orden de inserción, que es cierto pero no hace falta en el tema.
+  - El malentendido "`{}` crea un set" ya no da como motivo que las llaves "ya eran del diccionario", que no se confirmó: dice lo que se ve, `type({})` es `dict`.
+- **Cómo deshacerlo.** Es redacción: se reescribe el tema.
+
+### 5.2 Fuentes de `estructuras-de-datos` (consultadas el 2026-11-17)
+
+- Ejecutado con `python3` 3.14.7: los nueve bloques ejecutables, `bad`, `good`, los ejemplos de los malentendidos y del puente (`type((1))`, `type((1,))`, `type({})`, `type({"café"})`, `[].length`, `{["café"]: 1}`, una tupla como clave, `set(...)[0]`) y el ejercicio "¿Qué imprime?".
+- Python, tutorial, "Data Structures" (https://docs.python.org/3/tutorial/datastructures.html): `append` "Add an item to the end of the list"; "Tuples are immutable"; la tupla de un elemento lleva coma; "sequence unpacking"; "A set is an unordered collection with no duplicate elements. Basic uses include membership testing and eliminating duplicate entries"; "to create an empty set you have to use `set()`, not `{}`"; las listas no pueden ser claves y las tuplas sí, si solo contienen textos, números o tuplas; `d[key]` con una clave que no existe "raises a KeyError", y `get()` "returns None (or a specified default value)".
+- Python, "Time complexity of built-in types" (https://docs.python.org/3/builtins/time-complexity.html, la página a la que remite ahora la de la wiki): `x in l` es O(n) en una lista; `x in s` y `key in d` son O(1); los de `dict` y `set` son tiempos del caso promedio, y en el peor caso, O(n).
+- TypeScript, "Object Types" (https://www.typescriptlang.org/docs/handbook/2/objects.html): `readonly` "won't change any behavior at runtime"; las tuplas `readonly`, como `ReadonlyArray`, no tienen "representation at runtime".
+- MDN, "Working with objects" (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects): "Nonexistent properties of an object have the value `undefined`".
+
+### 5.3 Partición de `comprehensions-y-generadores`
+
+- **Como la 4.2.** Dos carpetas nuevas con su `meta.yaml`: `comprehensions` (orden 3) y `generadores` (orden 4), con `freq: often` y `group: lenguaje` heredados, y `concepts` y `related` de `content-map.md` sección 1. Los conceptos se copian con el mismo nombre y los mismos alias en cada idioma. Cada mitad se lleva su "¿Qué imprime?", con el `prompt` del grupo. La carpeta antigua se borró con `rm -r`, después de comprobar con `grep` que nada de `content/` la nombraba. El enlace `[[yield]]` de `inyeccion-con-depends` sigue valiendo: es un concepto, y ahora vive en `generadores`.
+- **`comprehensions`.** Pasos: 1. el bucle con `append` que se va a sustituir (10 % de descuento con `//`, como `crear_descuento`); 2. la misma lista en una línea; 3. con `if`; 4. con llaves, un diccionario (a partir de tuplas desempaquetadas) o un set; 5. de proyecto, `calcular_total` con una lista de subtotales. `bad` y `good`: una comprehension usada solo para imprimir, que construye `[None, None, None]`, frente a un `for`. Para la pregunta 14 del ejercicio (`{n: n ** 2 for n in range(3)}`), el paso 4 explica las llaves con `clave: valor`, el set sin clave, `range(3)` y `**`, y el malentendido 3 vuelve sobre `range`.
+- **`generadores`.** Pasos: 1. `yield` y la pausa; 2. llamar a la función no ejecuta su cuerpo, `next()`; 3. la expresión generadora, con `range` y `list()`; 4. se agota, y `next()` lanza `StopIteration`; 5. memoria, con `sys.getsizeof` (8448728 bytes la lista de un millón y 208 el generador, en Python 3.14.7; el texto dice con qué versión se midió); 6. de proyecto, `calcular_total` con el cuerpo fijado, y una frase sobre `get_session` de `app/db.py`, la otra función con `yield` de la tienda, con enlace a `[[inyeccion-con-depends]]`. `bad` y `good`: `max()` agota el generador y `sum()` da 0, frente a una lista. Para la pregunta 14 del ejercicio, los pasos 3 y 4 explican la expresión generadora, `list()`, `range(3)` y que el generador no vuelve a empezar.
+- **Del contenido antiguo.** Su `code:example` juntaba los dos conceptos y usaba `productos`, sin definir, y un archivo `pedidos.csv`; `bad` y `good` leían un archivo `ventas_2026.csv` de 4 GB que no existe. Nada de eso se podía ejecutar (regla 3). El ejemplo con IVA (`p * 1.19`) no se conserva: el porcentaje no está en `proyecto-tienda.md`.
+- **Cómo deshacerlo.** `git checkout -- content/python/comprehensions-y-generadores` y borrar las dos carpetas nuevas.
+
+### 5.3 Fuentes de `comprehensions` y `generadores` (consultadas el 2026-11-17)
+
+- Ejecutado con `python3` 3.14.7: todos los bloques ejecutables de las dos mitades, `bad` y `good`, los ejemplos de los malentendidos (`[100 // n for n in [5, 0, 2] if n != 0]`, `{n * 2 for n in [1, 1, 2]}`, `list(range(3))`, `list(range(1, 4))`, `type(...)` de una expresión generadora, `tuple(...)`) y los dos ejercicios.
+- Python, tutorial, "Data Structures" (https://docs.python.org/3/tutorial/datastructures.html): las list comprehensions y su equivalencia con el bucle que hace `append`, "the order of the `for` and `if` statements is the same"; set comprehensions; dict comprehensions, `{x: x**2 for x in (2, 4, 6)}`; `items()`.
+- Python, referencia, "Expressions" (https://docs.python.org/3/reference/expressions.html): "the expression after `if` is evaluated before each element is added to the resulting container, and if it is false, the element is skipped"; la expresión generadora tiene la sintaxis de una comprehension "enclosed in parentheses instead of brackets"; "Using a yield expression in a function's body causes that function to be a generator function"; al llamar a una función generadora "it returns an iterator known as a generator ... The execution starts when one of the generator's methods is called", y en cada `yield` se suspende conservando su estado.
+- Python, glosario (https://docs.python.org/3/glossary.html): "generator iterator": "Each `yield` temporarily suspends processing ... it picks up where it left off"; "iterator": cuando no quedan datos se lanza `StopIteration` y "the iterator object is exhausted"; un iterador agotado, recorrido otra vez, parece "an empty container".
+- Python, funciones integradas (https://docs.python.org/3/library/functions.html): `next()` lanza `StopIteration` cuando el iterador se agota y no hay valor por defecto; `max()` "Return the largest item in an iterable".
+- Python, `sys.getsizeof` (https://docs.python.org/3/library/sys.html): "Return the size of an object in bytes"; "Only the memory consumption directly attributed to the object is accounted for, not the memory consumption of objects it refers to".
+- MDN, `function*` (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*): cada llamada devuelve un `Generator` suspendido al principio del cuerpo; `next()` devuelve un objeto con `value` y `done`.
+- MDN, `Array.prototype.map()` y `filter()` (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map y .../filter), y `Object.fromEntries()` (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/fromEntries): "transforms a list of key-value pairs into an object".
+- `get_session` con `yield` y su cierre tras la respuesta: fuentes de SQLModel y FastAPI de la 4.5.
+
+### 5.4 `proyecto-total-del-pedido`: detenida, pregunta para Fable 5.2
+
+- **Qué falta.** `content-map.md` sección 3 dice que la entrada muestra "la función que calcula el total de un pedido: recorre sus líneas, aplica un descuento y deja registro de cada cálculo". Pero `proyecto-tienda.md` fija `calcular_total(lineas: list[LineaPedido]) -> int`, sin ningún parámetro para el descuento, y la tabla de rutas dice que el `monto` de `POST /v1/pagos` "es lo que devuelve `calcular_total`". Además, ni `Pedido` ni `Pago` tienen un campo de descuento o de cupón, y no hay ninguna regla que diga cuándo se aplica uno ni de cuánto.
+- **Por qué es crítica.** Cambia lo que el usuario estudia y la spec tiene un vacío justo ahí (criterios 1 y 4); cualquier forma de aplicarlo cambiaría un detalle fijado o inventaría un campo o una regla de negocio. No se escribió la entrada ni su traducción.
+- **Pregunta y opciones en el relevo** (`openspec/handoff-prompt.md`).
+- **Resuelta el 2026-11-17:** ver "Resoluciones de Fable 5.2 con el usuario (2026-11-17)", al final de este archivo.
+
+### 5.4 `proyecto-total-del-pedido`: cómo se escribió
+
+Sesión del 2026-11-17, tras la resolución de Fable. **Comprobaciones antes de tocar nada:** rama y árbol como dice el relevo; `typecheck` en verde; `test`, 327 pruebas en 16 archivos; `lint`, 0 errores y 14 avisos; `build`, 44 temas, 159 nodos y 242 enlaces.
+
+- **Forma.** Como la 4.6: `meta.yaml` con orden 8, grupo `lenguaje`, `kind: project` y los siete `covers` en el orden de `content-map.md` sección 3; `context` de cuatro frases, sin bloques. El recorrido tiene cuatro partes: 1. `app/core/registro.py`, con `registrar`; 2. `app/pedidos/service.py`, con `crear_descuento`, `MINIMO_PARA_DESCUENTO` y `diez_por_ciento`; 3. `service.py (sigue)`, con `calcular_total`; 4. los dos pedidos de ejemplo. Bloques de 13, 11, 7 y 23 líneas (el límite es 25); notas de 3, 2, 2 y 3 frases. `registro.py` va primero porque `service.py` lo importa.
+- **El código.** Nombres, firmas y valores, los de "Versión final de `calcular_total` y de `registrar`". Se comprobó con un script que, quitando los comentarios, los bloques son idénticos a los de `proyecto-tienda.md` en los dos idiomas; en inglés solo cambia el texto del log ("calling %s"), como cualquier texto impreso. Los comentarios son de Opus, y reutilizan los de `decoradores` y `closures-y-lambdas` donde la línea es la misma.
+- **La frase de la evolución** está en la nota de la parte 3: es la función que fue cambiando en los cuatro temas, enlazados, y esta es su última versión. Esos temas no se tocaron.
+- **`logging`** se presenta en la nota de la parte 1, y `basicConfig`, en un comentario y en la nota de la parte 4. Fuentes, abajo.
+- **Cómo se crean las líneas (decisión no crítica que el relevo dejó a Opus).** El bloque de la parte 4 usa el modelo real, `from app.pedidos.models import LineaPedido`, con sus cuatro campos, como hace `proyecto-crear-pedido` al crear las líneas. Para ejecutarlo, como SQLModel no está instalado, `app/pedidos/models.py` se sustituyó por una clase con esos cuatro campos: `calcular_total` solo lee `cantidad` y `precio_unitario`. **Para que Fable lo revise:** hacen falta ids, y solo el de café estaba fijado (42, en `cache-http`). Los de taza (43) y molinillo (44) y los de los dos pedidos (1201 y 1202) son nuevos; no se usó 1093 porque en HTTP y REST es otro pedido. Si se quieren fijos, van a "Detalles ya fijados" de `proyecto-tienda.md`.
+- **La parte 4 no es un archivo de la tienda. Para que Fable lo revise.** La guía dice que cada bloque de una entrada empieza por la ruta de su archivo, pero la tarea pide ejecutar los dos pedidos de ejemplo y pegar la salida, y ningún archivo de la tienda lo hace: los pedidos llegan por `POST /v1/pagos`, que es del grupo 9, y `tests/` usa pytest, que es del 10. El bloque empieza por `# en la consola de Python, abierta en la carpeta tienda-api/` (en inglés, `# in the Python console, opened in the tienda-api/ folder`), que dice dónde se ejecuta. Si se prefiere, la parte se quita y los resultados se dicen solo en prosa, o se fija un archivo de la tienda que lo haga.
+- **Cómo se ejecutó.** Un script del scratchpad saca los bloques del propio `es.md` o `en.md`, monta el paquete `app/` con ellos y ejecuta la parte 4 de tres formas: como script en una terminal de verdad (`script`, que da un pty), con las dos salidas unidas y sin búfer (`python3 -u … 2>&1`), y en modo interactivo (`python3 -i`). Las tres dan lo mismo, en este orden: la línea `INFO` y después el total de cada llamada. En una terminal, `logging` escribe en la salida de error en cuanto se llama, antes del `print`.
+- **Cómo deshacerlo.** Borrar `content/python/proyecto-total-del-pedido/`.
+
+### 5.4 Fuentes de `proyecto-total-del-pedido` (consultadas el 2026-11-17)
+
+- Ejecutado con `python3` 3.14.7: el código completo de la entrada en los dos idiomas, como se explica arriba. Salida en español: `INFO:app.core.registro:llamando a calcular_total`, `63000`, `INFO:app.core.registro:llamando a calcular_total`, `142200`. En inglés, la misma con "calling".
+- Python, `logging` (https://docs.python.org/3/library/logging.html): el módulo "defines functions and classes which implement a flexible event logging system for applications and libraries"; `getLogger(name)` "Return a logger with the specified name", y se recomienda `__name__`; `info()` "Logs a message with level INFO on this logger"; `basicConfig` crea un `StreamHandler` con un formato por defecto y lo añade al logger raíz, y ese formato son "attributes `levelname`, `name` and `message` separated by colons"; *msg* y *args* se unen "using the string formatting operator"; "the root logger is created with level WARNING".
+- Python, "Logging HOWTO" (https://docs.python.org/3/howto/logging.html): "Logging is a means of tracking events that happen when some software runs"; "The default level is WARNING, which means that only events of this severity and higher will be tracked"; INFO: "Confirmation that things are working as expected"; con `logger = logging.getLogger(__name__)`, "logger names track the package/module hierarchy"; el formato de ejemplo `WARNING:root:Watch out!`.
+- Python, `logging.handlers` (https://docs.python.org/3/library/logging.handlers.html): `StreamHandler` sin *stream* usa `sys.stderr`.
+- PEP 8 (https://peps.python.org/pep-0008/): "Constants are usually defined on a module level and written in all capital letters with underscores separating words".
+- Python, tutorial, "Modules" (https://docs.python.org/3/tutorial/modules.html): las sentencias de un módulo "are executed only the *first* time the module name is encountered in an import statement".
+- `functools.wraps`, `*args` y `**kwargs`, y el closure: fuentes de la 4.1 y la 4.2.
+
+### 5.5 Traducciones de Sonnet: encargo y revisión
+
+- **Encargo.** Cuatro subagentes `repetidor`, uno por pieza: `tipado-y-type-hints` en cuanto terminó su español, y las otras tres en paralelo al terminar la 5.3. Cada encargo llevaba lo mismo que en la 4.7: la definición de "traducir", `decoradores` en los dos idiomas como referencia (y una mitad ya traducida, para las dos nuevas), las reglas del patrón de la 4.1 y la 4.7, qué se conserva del inglés antiguo (para las mitades, del `en.md` de `comprehensions-y-generadores` en `52244bd`), la regla "no se inventa información" entera, y cómo verificar con `python-blocks.py` y `content-es.ts`, sin compilar en `src/generated/`. La entrada `proyecto-total-del-pedido` no se tradujo: no se escribió (5.4).
+- **Revisión de Opus.** Leídos los cuatro `en.md` enteros frente a su español: misma información, mismos pasos y bloques. Correcciones:
+  - `generadores` (en): lo que imprime el paso 2 pasa de "preparing coffee" y "preparing cup" a "preparing café" y "preparing taza": los productos de la tienda no se traducen (4.7), y son los mismos valores que entrega `yield`.
+  - `tipado-y-type-hints` y `estructuras-de-datos` (en): "assumed to exist" pasa a "taken for granted", como en el piloto, para el comentario de lo que se da por hecho.
+- **Lo que señalaron y se dejó así.** "two cafés and one taza" en un comentario de `tipado-y-type-hints`, que sigue la regla de los productos. Ninguno encontró errores en el español.
+- **`proyecto-total-del-pedido`, traducida por Opus (2026-11-17), no por Sonnet.** Corrige la etiqueta `[sonnet]` en este caso, como permiten las reglas: es una pieza corta que Opus acababa de escribir, y para un subagente releer el patrón (la 4.6 y la 4.1 en los dos idiomas) costaba más que traducirla. Sigue el patrón de la 4.1 y la 4.7: el título y el corto, los de `content-map.md` sección 3; los productos (`café`, `taza`, `molinillo`) sin traducir; el texto del log traducido ("calling %s"); y los comentarios que repiten una línea de `decoradores`, `closures-y-lambdas` o `generadores`, con la misma traducción que en esos temas.
+
+### 5.6 Verificación del grupo
+
+**Una línea por pieza** (lista de comprobación de la guía, ahora de 14 preguntas; las fuentes de cada pieza están en su sección de arriba):
+
+- `tipado-y-type-hints`: lista pasada (14 de 14). Fuentes: 5.1.
+- `estructuras-de-datos`: lista pasada (14 de 14). Fuentes: 5.2.
+- `comprehensions`: lista pasada (14 de 14). Fuentes: 5.3.
+- `generadores`: lista pasada (14 de 14). Fuentes: 5.3.
+- `proyecto-total-del-pedido`: cumple la sección "Entradas de proyecto" de la guía: `context` de 4 frases, 4 partes, bloques de 25 líneas como máximo, notas de 1 a 3 frases y los siete temas de `covers` enlazados en los dos idiomas; reglas 2, 3 y 4 aplicadas. La parte 4 no empieza por la ruta de un archivo (5.4, para que Fable lo revise). Fuentes: 5.4. Verificada el 2026-11-17 (abajo, "Verificación de la entrada").
+
+**Pregunta 14, ejercicio por ejercicio** (design.md decisión 11). Vale para los dos idiomas: las traducciones conservan cada frase.
+
+- `tipado-y-type-hints`
+  1. "¿Qué imprime?" (`doble("ha")` con `n: int`, `haha`): paso 4 (Python no comprueba la anotación; con un texto, `*` lo repite) y malentendido 1. Opciones: `TypeError` (paso 2), `None` (malentendido 3). Sin cambios en el ejercicio.
+  2. "¿Qué imprime?" (`bool("")`, `bool("0")`, `bool([0])`): malentendido 3, que presenta `bool()`, `True`, `False` y `None`, dice qué cuenta como falso y por qué `"0"` y `[0]` no lo son. Se amplió el tema: antes era un malentendido de una línea ("Truthiness distinta").
+- `estructuras-de-datos`
+  1. Historial de estados en orden (list): definición y paso 1.
+  2. Precio por nombre (dict): definición y paso 3. Se reescribió el enunciado: "código SKU" pasa a "nombre" (5.2).
+  3. Emails únicos (set): definición y pasos 4 y 5.
+  4. Latitud y longitud (tuple): paso 2, que pone ese ejemplo.
+  5. "¿Qué imprime?" (`d.get("b")`, `len({1, 1, 2})`): paso 3 (`get()` devuelve `None`, o el segundo argumento), paso 1 (`len()`) y paso 4 (un set entre llaves no guarda repetidos). Opciones: `KeyError` y `0` (paso 3).
+- `comprehensions`
+  1. "¿Qué imprime?" (`{n: n ** 2 for n in range(3)}`): paso 4 (llaves con `clave: valor` dan un diccionario, sin clave un set; `range(3)` da 0, 1 y 2; `**` es la potencia) y malentendidos 2 y 3. Opciones: la lista (paso 2) y el set (paso 4).
+- `generadores`
+  1. "¿Qué imprime?" (el generador recorrido dos veces): paso 3 (expresión generadora, `list()`, `range(3)`), paso 4 (se agota, y el segundo `list()` da vacío sin error) y malentendido 3. Opción "Error": el paso 4 distingue el `[]` sin error del `StopIteration` de `next()`.
+
+**Ejercicios "¿Qué imprime?"** (`exercises.ts`, que ejecuta su código): los cinco del grupo coinciden con la respuesta marcada en los dos idiomas, y los tres del piloto (`decoradores` y `funciones-y-parametros`) siguen igual. **Frente a `52244bd`**: en las cuatro piezas, los ejercicios son iguales salvo `why` y el enunciado reescrito de `estructuras-de-datos`; ningún PROBLEMA. Las dos mitades se compararon con `comprehensions-y-generadores`. Los conceptos tienen los mismos ids, nombres y alias en los dos idiomas; solo cambian de hogar los tres de `content-map.md` sección 1 (`comprehension` a `comprehensions`; `generador` y `yield` a `generadores`).
+
+**Bloques.** `python-blocks.py` sobre las cuatro piezas en los dos idiomas: "TODO OK" (15 líneas como máximo por bloque, contando todas, y la salida escrita igual a la real con `python3` 3.14.7). Ningún texto de las cuatro piezas fuera de los bloques de código menciona Angular, NestJS ni RxJS.
+
+**Comprobaciones del proyecto.** `typecheck` en verde; `test`, 327 pruebas en 16 archivos; `lint`, 0 errores y los mismos 14 avisos; `build` en verde (`[content] 44 temas, 159 nodos, 242 enlaces → 91 archivos`). La prueba de orden de `pista-python.test.ts` acepta la partición sin tocarla.
+
+**El navegador: sin verificar en la primera sesión, verificado el 2026-11-17.** En la primera sesión no había ningún servidor en el puerto 5173, y arrancar uno con la vista previa fue rechazado por el permiso de la sesión (el relevo ya pedía no usarla). En la sesión de cierre, el usuario levantó su servidor de desarrollo y Opus lo revisó con el navegador de la app:
+
+- **Lista de Python, en orden:** "Tipado y type hints", "list, tuple, dict, set", "Comprehensions", "Generadores y yield", "Funciones y parámetros", "Closures y lambdas", "Decoradores", "Proyecto: total del pedido" y "Errores y with".
+- **`/es/python/comprehensions-y-generadores`** dice "No se encontró el tema.".
+- **Pasos de las cuatro piezas** (pestaña "En código"): `tipado-y-type-hints`, 6 pasos; `estructuras-de-datos`, 6; `comprehensions`, 5; `generadores`, 6. Todos con título, y el último, "En el proyecto: …".
+- **Practicar:** cada pieza tiene sus ejercicios. Se respondió el de `comprehensions` (`{0: 0, 1: 1, 2: 4}`) y el de `generadores` (`[0, 2, 4] y []`); los dos dan "✓ Correcto" y su explicación.
+- **`proyecto-total-del-pedido`, en los dos idiomas:** sin pestañas ni frecuencia; "Qué vamos a construir", "El código, parte por parte" con las cuatro partes y "Temas que reúne este proyecto" con los siete; en inglés, "What we're building", "The code, part by part" y "Topics this project brings together", y el log con "calling". "Anterior" lleva a `decoradores`, "Siguiente tema" a `errores-y-context-managers`, y el enlace de la parte 2 abre `closures-y-lambdas`.
+- **Sin errores en la consola.** Los comentarios largos de algunos bloques obligan a desplazar el bloque en horizontal, como en `proyecto-crear-pedido`.
+
+### 5.6 `exercises.ts`: una opción puede unir las líneas impresas con "y" o "and"
+
+- **Qué.** El "¿Qué imprime?" de `generadores` imprime dos líneas, y su opción correcta las une con "y" (`[0, 2, 4] y []`; en inglés, "and"). El script las unía solo con un espacio y lo marcaba como PROBLEMA. Ahora acepta un espacio, " y " o " and " entre las líneas.
+- **Por qué.** La respuesta es correcta (la ejecución da `[0, 2, 4]` y `[]`); el aviso era de formato. No se cambia la opción: `options` no puede cambiar (`content-map.md` sección 7).
+- **Cómo deshacerlo.** Volver a comparar solo `lines.join(' ')` en `checkPrints`.
+
+### 5.6 Verificación de la entrada (2026-11-17)
+
+- **`scripts/check/` sobre `proyecto-total-del-pedido`, en los dos idiomas.** `python-blocks.py`: "TODO OK" (13, 11, 7 y 23 líneas). Ejecuta la parte 1 y no las otras tres, porque importan de `app.` o usan un nombre de otra parte; esas se ejecutaron enteras con el script del scratchpad (5.4). `content.ts`: 45 temas, 160 nodos, 250 enlaces, con la paridad de código en verde. `project-entry.ts`, escenario "Entrada de proyecto válida": en los dos idiomas, `kind: project`, sin `freq` ni ejercicios, las secciones `context` y `walkthrough` y los siete temas en el orden declarado, todos de Python; el nodo es un tema de Python con orden 8 y grupo `lenguaje`; el anterior es `decoradores` y el siguiente, hoy, `errores-y-context-managers` (orden 9 provisional). `exercises.ts` no aplica: las entradas no tienen ejercicios.
+- **Sin menciones** de Angular, NestJS ni RxJS en la entrada.
+- **Comprobaciones del proyecto, con el grupo completo.** `typecheck` en verde; `test`, 327 pruebas en 16 archivos; `lint`, 0 errores y los mismos 14 avisos; `build` en verde (`[content] 45 temas, 160 nodos, 250 enlaces → 93 archivos`). Ninguna prueba hubo que adaptarla: la de `contenido-claro.test.ts` ya esperaba esta entrada entre las cinco de `content-map.md` sección 3.
+
+## Resoluciones de Fable 5.2 con el usuario (2026-11-17)
+
+Sesión de specs tras el grupo 5. Cada punto lo eligió el usuario entre opciones; aquí solo se deja dónde quedó escrito. No son decisiones de Opus.
+
+- **5.4, cómo aplica el descuento `proyecto-total-del-pedido`.** Una cuarta opción, distinta de las tres del relevo: regla fija de la tienda, 10 % cuando las líneas suman 100000 pesos o más, aplicada dentro de `calcular_total` con `crear_descuento(10)`. No cambian la firma, las entidades ni la frase sobre el `monto` del pago. El cuerpo de la función en la entrada ya no es la línea única de `generadores` y `decoradores`: la entrada lo presenta como el último paso, y esos temas no se tocan. Escrito en `proyecto-tienda.md` ("Reglas de negocio", tabla de rutas, "Detalles ya fijados" y "Versión final de `calcular_total` y de `registrar`"), `content-map.md` sección 3 y la tarea 5.4.
+- **5.4, el cuerpo de `registrar`.** Vacío que encontró Fable al revisar; no estaba en el relevo. `decoradores` solo dice que `registrar` hace lo mismo que `avisar` pero escribe en el log. La entrada muestra `app/core/registro.py`: el `avisar` del paso 4 con `logging`, que presenta en una frase. Fable ejecutó el código fijado con `python3` 3.14.7 (63000 y 142200, y una línea `INFO` por llamada). Escrito en los mismos sitios; `content-map.md` añade ese archivo a los de la entrada.
+- **5.2, `calcular_total` sin `@registrar` antes de `decoradores`.** Aceptado como lo escribió Opus. La fila de "Detalles ya fijados" dice ahora que lo lleva desde `decoradores` en adelante.
+- **5.2, "por su código SKU" pasa a "por su nombre".** Aceptado como lo escribió Opus.
+
+Siguen sin revisar por Fable las entradas de los grupos 1 a 4 que lista el relevo y las demás del grupo 5 (5.1, 5.3, 5.5 y 5.6).

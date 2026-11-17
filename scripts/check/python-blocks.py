@@ -4,6 +4,7 @@ Uso: python3 scripts/check/python-blocks.py content/python/decoradores/es.md [m�
 
 - Límite de líneas por bloque, contando todas (también las vacías y las de salida): 15; en `walkthrough`, 25.
 - En `code:example` los bloques se ejecutan acumulados: cada paso ve lo definido en los anteriores.
+  Un bloque que termina en error se acumula como en una sesión interactiva: lo asignado antes del error sigue.
   Los bloques de las demás secciones se ejecutan solos.
 - Un bloque que importa de `app.`, FastAPI, SQLModel u otro paquete externo no se ejecuta: solo se revisa su sintaxis.
   Tampoco uno que no escribe salida y falla solo por un nombre de otro paso o del proyecto (NameError).
@@ -15,6 +16,7 @@ import ast
 import re
 import subprocess
 import sys
+import textwrap
 
 NO_EJECUTABLE = re.compile(
     r"^\s*(from|import)\s+(app\b|fastapi|sqlmodel|pydantic|sqlalchemy|starlette|httpx|alembic|jwt|pwdlib|passlib)",
@@ -25,11 +27,20 @@ LIMITE = {"walkthrough": 25}
 
 
 def run(code: str) -> list[str]:
+    return run_status(code)[0]
+
+
+def run_status(code: str) -> tuple[list[str], bool]:
     r = subprocess.run([sys.executable, "-I", "-c", code], capture_output=True, text=True, timeout=20)
     out = r.stdout.rstrip("\n").split("\n") if r.stdout.strip() else []
     if r.returncode != 0 and r.stderr.strip():
         out.append(r.stderr.strip().split("\n")[-1])
-    return out
+    return out, r.returncode != 0
+
+
+def as_session(block: str) -> str:
+    """Un bloque que termina en error, como lo deja una sesión interactiva: lo asignado antes del error sigue."""
+    return "try:\n" + textwrap.indent(block, "    ") + "\nexcept Exception:\n    pass\n"
 
 
 def expected(lines: list[str]) -> list[str]:
@@ -72,8 +83,9 @@ def check(path: str) -> int:
                 continue
             if name == "code:example":
                 before = run(acc) if acc else []
-                acc += b + "\n"
-                out = run(acc)[len(before):]
+                out, failed = run_status(acc + b + "\n")
+                out = out[len(before):]
+                acc += as_session(b) if failed else b + "\n"   # un error no impide ejecutar los pasos siguientes
             else:
                 out = run(b)
             exp = expected(lines)
